@@ -18,13 +18,13 @@ export default function Navbar() {
 
                 {/* Desktop Links */}
                 <div className="hidden md:flex items-center gap-8">
-                    <a href="#features" className="text-sm text-text-muted hover:text-pastel-green-deep transition-colors">
+                    <a href="/#features" className="text-sm text-text-muted hover:text-pastel-green-deep transition-colors">
                         Features
                     </a>
-                    <a href="#transparency" className="text-sm text-text-muted hover:text-pastel-green-deep transition-colors">
+                    <a href="/#transparency" className="text-sm text-text-muted hover:text-pastel-green-deep transition-colors">
                         Trust
                     </a>
-                    <a href="#faq" className="text-sm text-text-muted hover:text-pastel-green-deep transition-colors">
+                    <a href="/#faq" className="text-sm text-text-muted hover:text-pastel-green-deep transition-colors">
                         FAQ
                     </a>
                     <a
@@ -51,21 +51,21 @@ export default function Navbar() {
             {open && (
                 <div className="md:hidden bg-cream/95 backdrop-blur-md border-t border-pastel-green/20 px-6 pb-6 pt-2 space-y-4 animate-fade-in-up">
                     <a
-                        href="#features"
+                        href="/#features"
                         onClick={() => setOpen(false)}
                         className="block text-sm text-text-muted hover:text-pastel-green-deep transition-colors"
                     >
                         Features
                     </a>
                     <a
-                        href="#transparency"
+                        href="/#transparency"
                         onClick={() => setOpen(false)}
                         className="block text-sm text-text-muted hover:text-pastel-green-deep transition-colors"
                     >
                         Trust
                     </a>
                     <a
-                        href="#faq"
+                        href="/#faq"
                         onClick={() => setOpen(false)}
                         className="block text-sm text-text-muted hover:text-pastel-green-deep transition-colors"
                     >
