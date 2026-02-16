@@ -19,35 +19,83 @@
 /* ===== Animation Keyframes ===== */
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-18px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-18px);
+  }
 }
 
 @keyframes float-slow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes drift-right {
-  0% { transform: translateX(-10%); opacity: 0.7; }
-  50% { opacity: 1; }
-  100% { transform: translateX(110vw); opacity: 0.5; }
+  0% {
+    transform: translateX(-10%);
+    opacity: 0.7;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(110vw);
+    opacity: 0.5;
+  }
 }
 
 @keyframes drift-left {
-  0% { transform: translateX(110vw); opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { transform: translateX(-10%); opacity: 0.7; }
+  0% {
+    transform: translateX(110vw);
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(-10%);
+    opacity: 0.7;
+  }
 }
 
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulse-soft {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 /* ===== Utility Classes ===== */
@@ -77,16 +125,44 @@
 }
 
 /* Staggered delays */
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-500 { animation-delay: 0.5s; }
-.delay-700 { animation-delay: 0.7s; }
-.delay-1000 { animation-delay: 1s; }
-.delay-2000 { animation-delay: 2s; }
-.delay-3000 { animation-delay: 3s; }
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-500 {
+  animation-delay: 0.5s;
+}
+
+.delay-700 {
+  animation-delay: 0.7s;
+}
+
+.delay-1000 {
+  animation-delay: 1s;
+}
+
+.delay-2000 {
+  animation-delay: 2s;
+}
+
+.delay-3000 {
+  animation-delay: 3s;
+}
 
 /* ===== Base Styles ===== */
+
+html,
+body {
+  overflow-x: hidden;
+}
 
 html {
   scroll-behavior: smooth;
@@ -95,9 +171,93 @@ html {
 body {
   background-color: var(--color-cream);
   color: var(--color-text-dark);
+  touch-action: pan-y;
 }
 
 ::selection {
   background-color: #A8D5BA80;
   color: var(--color-text-dark);
+}
+
+/* ===== Launchpad Slider ===== */
+
+.launchpad-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1200px;
+  margin: 48px auto 80px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.launchpad-slider {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  padding: 20px 24px;
+  scrollbar-width: none;
+}
+
+.launchpad-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.launchpad-slide {
+  flex: 0 0 auto;
+  width: 340px;
+  scroll-snap-align: start;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.08),
+    0 0 40px rgba(95, 191, 143, 0.08);
+}
+
+.launchpad-slide-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 20px;
+  object-fit: contain;
+}
+
+.launchpad-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.launchpad-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background-color: #D0D5D8;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.launchpad-dot.active {
+  background-color: #5FBF8F;
+  transform: scale(1.25);
+}
+
+/* Mobile: smaller slides, slight peek */
+@media (max-width: 639px) {
+  .launchpad-slide {
+    width: 280px;
+  }
+
+  .launchpad-slider {
+    padding: 16px 16px;
+    gap: 16px;
+  }
 }

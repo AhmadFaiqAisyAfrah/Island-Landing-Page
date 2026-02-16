@@ -1,9 +1,11 @@
 import {
     Timer,
+    Hash,
     Coins,
     Map,
     CalendarDays,
     Headphones,
+    Bell,
 } from "lucide-react";
 
 const features = [
@@ -12,6 +14,13 @@ const features = [
         title: "Focus Sessions",
         desc: "Customizable Pomodoro timer that keeps you in the zone. Every session brings new growth to your island.",
         color: "bg-pastel-green/20",
+        iconColor: "text-pastel-green-deep",
+    },
+    {
+        icon: Hash,
+        title: "Label Your Sessions",
+        desc: "Organize your focus time with custom tags like Study, Work, Reading, or Mindfulness.",
+        color: "bg-[rgba(95,191,143,0.12)]",
         iconColor: "text-pastel-green-deep",
     },
     {
@@ -41,6 +50,13 @@ const features = [
         desc: "Ambient sounds to help you focus — rain, waves, forest, and more. Create your perfect soundscape.",
         color: "bg-pastel-blue/20",
         iconColor: "text-pastel-blue-deep",
+    },
+    {
+        icon: Bell,
+        title: "Gentle Reminders",
+        desc: "Stay consistent with calm, non-intrusive reminders for your focus sessions.",
+        color: "bg-[rgba(255,184,77,0.15)]",
+        iconColor: "text-[#D4922A]",
     },
 ];
 

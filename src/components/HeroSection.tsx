@@ -1,9 +1,10 @@
 import IslandSVG from "./IslandSVG";
 import CloudSVG from "./CloudSVG";
+import LaunchpadSlider from "./LaunchpadSlider";
 
 export default function HeroSection() {
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <section className="relative flex flex-col items-center pt-20">
             {/* Sky gradient background — softer, dreamier */}
             <div className="absolute inset-0 bg-gradient-to-b from-[#D4EEFA] via-[#E8F4F0] to-cream" />
 
@@ -71,9 +72,12 @@ export default function HeroSection() {
                 </div>
             </div>
 
+            {/* Launchpad Slider — product preview carousel */}
+            <LaunchpadSlider />
+
             {/* Bottom wave — smoother */}
-            <div className="absolute bottom-0 left-0 right-0">
-                <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+            <div className="relative w-full mt-auto">
+                <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full block">
                     <path
                         d="M0 80 C240 40 480 95 720 65 C960 35 1200 85 1440 70 L1440 120 L0 120Z"
                         fill="#FDFAF3"
