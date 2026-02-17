@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const footerLinks = [
     { label: "Privacy Policy", href: "/privacy" },
@@ -9,33 +10,32 @@ const footerLinks = [
 
 export default function Footer() {
     return (
-        <footer className="bg-cream-dark border-t border-pastel-green/20">
+        <footer className="bg-[#F4F1EA]">
             <div className="mx-auto max-w-6xl px-6 py-12">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                    {/* Brand */}
-                    <div className="flex items-center gap-2 text-lg font-bold text-text-dark">
-                        <span className="text-xl">🏝️</span>
-                        <span>Island</span>
-                    </div>
+                <div className="flex flex-col items-center text-center space-y-3">
+                    {/* Logo badge */}
+                    <Image src="/island-logo.png" alt="Island" width={100} height={100} className="h-[100px] w-auto object-contain" />
 
-                    {/* Links */}
-                    <div className="flex flex-wrap justify-center gap-6">
+                    {/* Brand name */}
+                    <h3 className="text-2xl font-bold text-[#3A3D3F]">Island</h3>
+
+                    {/* Nav links */}
+                    <div className="flex flex-wrap justify-center gap-5 mt-2">
                         {footerLinks.map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className="text-sm text-text-muted hover:text-pastel-green-deep transition-colors"
+                                className="text-sm text-[#7A7F82] hover:text-[#5FBF8F] transition-colors"
                             >
                                 {link.label}
                             </Link>
                         ))}
                     </div>
-                </div>
 
-                {/* Bottom */}
-                <div className="mt-8 pt-6 border-t border-pastel-green/10 text-center">
-                    <p className="text-xs text-text-muted">
-                        © {new Date().getFullYear()} Island. Built with 💚 for peaceful productivity.
+
+                    {/* Copyright */}
+                    <p className="text-xs text-[#A0A5A8] pt-2">
+                        © 2026 Island — All rights reserved
                     </p>
                 </div>
             </div>

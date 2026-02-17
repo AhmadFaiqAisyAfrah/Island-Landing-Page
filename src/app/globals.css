@@ -186,7 +186,7 @@ body {
   z-index: 10;
   width: 100%;
   max-width: 1200px;
-  margin: 48px auto 80px;
+  margin: 48px auto 32px;
   padding: 0;
   overflow: hidden;
 }
@@ -212,7 +212,7 @@ body {
   flex: 0 0 auto;
   width: 340px;
   scroll-snap-align: start;
-  border-radius: 20px;
+  border-radius: 32px;
   overflow: hidden;
   box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.08),
@@ -223,7 +223,7 @@ body {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 20px;
+  border-radius: 32px;
   object-fit: contain;
 }
 

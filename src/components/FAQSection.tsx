@@ -6,23 +6,43 @@ import { ChevronDown } from "lucide-react";
 const faqs = [
     {
         q: "Is Island free to use?",
-        a: "Yes! Island is completely free to download and use. Focus sessions, the calendar, and white noise are all available at no cost. Optional in-app purchases let you get extra coins to decorate your island faster.",
+        a: "Yes. Focus sessions, the calendar, white noise, and island building are all free. Optional in-app purchases let you buy extra coins or remove ads, but they're never required.",
     },
     {
-        q: "Does Island collect my data?",
-        a: "No. All your focus data, island progress, and settings are stored locally on your device. We don't have servers that track your activity. Your productivity is your business.",
+        q: "What data does Island collect?",
+        a: "Almost nothing. Your focus sessions, island progress, coins, and preferences are stored locally on your device. If you sign in with Google, basic account info is stored in Firebase for authentication only. We never track your productivity habits.",
+    },
+    {
+        q: "Do I need to sign in with Google?",
+        a: "No. Google Sign-In is completely optional. You can use every feature of Island without creating an account. Signing in only enables cloud-based personalization.",
     },
     {
         q: "How do Island Coins work?",
-        a: "You earn coins by completing focus sessions. The longer you focus, the more coins you earn. Spend them on trees, buildings, decorations, and unlocking new island areas. You can also purchase coin bundles through Google Play.",
+        a: "You earn coins by completing focus sessions — the longer you focus, the more you earn. Spend them on trees, buildings, and decorations for your island. You can also buy coin bundles via Google Play.",
     },
     {
         q: "Can I use Island offline?",
-        a: "Absolutely. Island works completely offline. The timer, white noise, and all island features work without an internet connection. You only need internet for in-app purchases.",
+        a: "Yes. The timer, white noise, island features, and session tags all work without an internet connection. You only need internet for in-app purchases or optional Google Sign-In.",
     },
     {
         q: "How do I delete my data?",
-        a: "Since all data is stored locally on your device, you can clear it by clearing the app's data in your device settings, or by uninstalling the app. See our Data Deletion Guide for step-by-step instructions.",
+        a: "Go to your device settings, select Island, and tap \"Clear Data\" — or simply uninstall the app. If you signed in with Google, you can also request Firebase account deletion. See our Data Deletion page for step-by-step instructions.",
+    },
+    {
+        q: "How do purchases and refunds work?",
+        a: "All purchases are processed securely by Google Play Billing. We never see your payment details. For refunds, contact Google Play Support directly through the Play Store.",
+    },
+    {
+        q: "Does Island show ads?",
+        a: "Island shows non-intrusive ads via Google AdMob. You can remove all ads permanently with a one-time \"Remove Ads\" purchase. No personal data is shared with advertisers.",
+    },
+    {
+        q: "What happens if I uninstall Island?",
+        a: "Since your data is stored locally, uninstalling the app removes all focus history, coins, island progress, and preferences. Purchased items (coins, Remove Ads) can be restored through Google Play after reinstalling.",
+    },
+    {
+        q: "Is my data safe?",
+        a: "Yes. All communication uses HTTPS/TLS encryption. Firebase and Google services follow industry-grade security standards. We never sell, share, or monetize your personal data.",
     },
 ];
 

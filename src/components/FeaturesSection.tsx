@@ -1,68 +1,51 @@
-import {
-    Timer,
-    Hash,
-    Coins,
-    Map,
-    CalendarDays,
-    Headphones,
-    Bell,
-} from "lucide-react";
-
 const features = [
     {
-        icon: Timer,
+        emoji: "⏱️",
         title: "Focus Sessions",
         desc: "Customizable Pomodoro timer that keeps you in the zone. Every session brings new growth to your island.",
         color: "bg-pastel-green/20",
-        iconColor: "text-pastel-green-deep",
     },
     {
-        icon: Hash,
+        emoji: "🏷️",
         title: "Label Your Sessions",
         desc: "Organize your focus time with custom tags like Study, Work, Reading, or Mindfulness.",
         color: "bg-[rgba(95,191,143,0.12)]",
-        iconColor: "text-pastel-green-deep",
     },
     {
-        icon: Coins,
+        emoji: "🪙",
         title: "Earn Island Coins",
         desc: "Complete focus sessions to earn coins. Use them to unlock decorations, trees, and buildings.",
         color: "bg-pastel-sand/30",
-        iconColor: "text-pastel-sand-deep",
     },
     {
-        icon: Map,
+        emoji: "🏝️",
         title: "Expand Your Island",
         desc: "Watch your island grow as your focus grows. Unlock new areas and customize your peaceful paradise.",
         color: "bg-pastel-blue/20",
-        iconColor: "text-pastel-blue-deep",
     },
     {
-        icon: CalendarDays,
+        emoji: "📅",
         title: "Visual Calendar",
         desc: "Track your progress with a beautiful visual calendar. See your streaks and celebrate consistency.",
         color: "bg-pastel-green/20",
-        iconColor: "text-pastel-green-deep",
     },
     {
-        icon: Headphones,
+        emoji: "🎧",
         title: "White Noise",
         desc: "Ambient sounds to help you focus — rain, waves, forest, and more. Create your perfect soundscape.",
         color: "bg-pastel-blue/20",
-        iconColor: "text-pastel-blue-deep",
     },
     {
-        icon: Bell,
+        emoji: "🔔",
         title: "Gentle Reminders",
         desc: "Stay consistent with calm, non-intrusive reminders for your focus sessions.",
         color: "bg-[rgba(255,184,77,0.15)]",
-        iconColor: "text-[#D4922A]",
     },
 ];
 
 export default function FeaturesSection() {
     return (
-        <section id="features" className="py-24 bg-cream">
+        <section id="features" className="py-16 bg-cream">
             <div className="mx-auto max-w-6xl px-6">
                 {/* Header */}
                 <div className="text-center space-y-4 mb-16">
@@ -88,7 +71,7 @@ export default function FeaturesSection() {
                             <div
                                 className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${f.color} mb-4`}
                             >
-                                <f.icon className={`w-6 h-6 ${f.iconColor}`} />
+                                <span className="text-[28px] leading-none">{f.emoji}</span>
                             </div>
                             <h3 className="text-lg font-semibold text-text-dark mb-2">
                                 {f.title}

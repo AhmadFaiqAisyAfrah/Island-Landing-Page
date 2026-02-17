@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
@@ -12,7 +13,7 @@ export default function Navbar() {
             <div className="mx-auto max-w-6xl flex items-center justify-between px-6 py-4">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 text-xl font-bold text-text-dark">
-                    <span className="text-2xl">🏝️</span>
+                    <Image src="/island-logo.png" alt="Island" width={58} height={58} className="h-[58px] w-auto object-contain" />
                     <span>Island</span>
                 </Link>
 
