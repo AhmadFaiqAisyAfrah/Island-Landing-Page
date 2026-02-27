@@ -6,13 +6,11 @@ import { getPostBySlug, getPostRecordMap, getPublishedPosts } from '@/lib/notion
 import NotionRenderer from '@/components/NotionRenderer';
 import { ArrowLeft } from 'lucide-react';
 
-export const revalidate = 300; // ISR revalidation 5 mins
+export const revalidate = 300;
 
-interface Props {
-    params: { slug: string };
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(
+    { params }: { params: { slug: string } }
+): Promise<Metadata> {
     const { slug } = params;
     const post = await getPostBySlug(slug);
 
@@ -56,7 +54,9 @@ export async function generateStaticParams() {
     }));
 }
 
-export default async function BlogPostPage({ params }: Props) {
+export default async function BlogPostPage(
+    { params }: { params: { slug: string } }
+) {
     const { slug } = params;
     const post = await getPostBySlug(slug);
 
