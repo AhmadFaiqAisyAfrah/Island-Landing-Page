@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = 'https://island-web.vercel.app'; // Update this to production URL
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://islandapp.id';
 
     return {
         rules: {

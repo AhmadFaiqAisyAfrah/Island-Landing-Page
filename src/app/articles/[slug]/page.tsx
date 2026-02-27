@@ -23,6 +23,8 @@ export async function generateMetadata(
     const title = post.metaTitle || `${post.title} | Island Articles`;
     const description = post.metaDescription || `Read ${post.title} on the Island Articles.`;
 
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://islandapp.id';
+
     return {
         title,
         description,
@@ -30,7 +32,7 @@ export async function generateMetadata(
             title,
             description,
             type: 'article',
-            url: `https://island-web.vercel.app/articles/${post.slug}`,
+            url: `${baseUrl}/articles/${post.slug}`,
             publishedTime: post.publishDate,
             authors: post.author ? [post.author] : [],
             images: post.coverImage ? [post.coverImage] : [],
@@ -42,7 +44,7 @@ export async function generateMetadata(
             images: post.coverImage ? [post.coverImage] : [],
         },
         alternates: {
-            canonical: `https://island-web.vercel.app/articles/${post.slug}`,
+            canonical: `${baseUrl}/articles/${post.slug}`,
         },
     };
 }
