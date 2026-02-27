@@ -9,11 +9,11 @@ import { ArrowLeft } from 'lucide-react';
 export const revalidate = 300; // ISR revalidation 5 mins
 
 interface Props {
-    params: Promise<{ slug: string }>;
+    params: { slug: string };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { slug } = await params;
+    const { slug } = params;
     const post = await getPostBySlug(slug);
 
     if (!post) {
@@ -57,7 +57,7 @@ export async function generateStaticParams() {
 }
 
 export default async function BlogPostPage({ params }: Props) {
-    const { slug } = await params;
+    const { slug } = params;
     const post = await getPostBySlug(slug);
 
     if (!post) {
