@@ -2,8 +2,7 @@ import { MetadataRoute } from 'next';
 import { getPublishedPosts } from '@/lib/notion';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    // Base URLs
-    const baseUrl = 'https://island-web.vercel.app'; // Update this to production URL later
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://islandapp.id';
 
     // Standard routes
     const routes = [
