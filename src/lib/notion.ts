@@ -35,6 +35,8 @@ function extractPropertyValue(property: any): any {
             return property.title?.[0]?.plain_text || '';
         case 'rich_text':
             return property.rich_text?.[0]?.plain_text || '';
+        case 'slug':
+            return property.slug?.slug || '';
         case 'select':
             return property.select?.name || '';
         case 'date':
