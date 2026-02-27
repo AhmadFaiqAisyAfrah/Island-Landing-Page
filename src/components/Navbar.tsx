@@ -28,6 +28,9 @@ export default function Navbar() {
                     <a href="/#faq" className="text-sm text-text-muted hover:text-pastel-green-deep transition-colors">
                         FAQ
                     </a>
+                    <Link href="/articles" className="text-sm text-text-muted hover:text-pastel-green-deep transition-colors">
+                        Articles
+                    </Link>
                     <a
                         href="https://play.google.com/store"
                         target="_blank"
@@ -72,6 +75,13 @@ export default function Navbar() {
                     >
                         FAQ
                     </a>
+                    <Link
+                        href="/articles"
+                        onClick={() => setOpen(false)}
+                        className="block text-sm text-text-muted hover:text-pastel-green-deep transition-colors"
+                    >
+                        Articles
+                    </Link>
                     <a
                         href="https://play.google.com/store"
                         target="_blank"

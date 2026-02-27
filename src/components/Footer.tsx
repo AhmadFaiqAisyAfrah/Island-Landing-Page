@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 const footerLinks = [
+    { label: "Articles", href: "/articles" },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms & Conditions", href: "/terms" },
     { label: "Data Deletion", href: "/data-deletion" },
