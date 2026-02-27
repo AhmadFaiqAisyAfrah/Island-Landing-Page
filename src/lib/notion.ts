@@ -12,7 +12,18 @@ export const notionAPI = new NotionAPI({
     authToken: process.env.NOTION_TOKEN_V2,         // Needed only if pages are not public
 });
 
-export const DATABASE_ID = process.env.NOTION_DATABASE_ID!;
+export const NOTION_TOKEN = process.env.NOTION_TOKEN;
+export const DATABASE_ID = process.env.NOTION_DATABASE_ID as string;
+
+console.log('[notion.ts] NOTION_TOKEN:', NOTION_TOKEN ? 'defined' : 'undefined');
+console.log('[notion.ts] DATABASE_ID:', DATABASE_ID ? 'defined' : 'undefined');
+
+if (!NOTION_TOKEN) {
+    throw new Error('NOTION_TOKEN is required');
+}
+if (!DATABASE_ID) {
+    throw new Error('DATABASE_ID is required');
+}
 
 export interface BlogPost {
     id: string;
@@ -36,7 +47,7 @@ function extractPropertyValue(property: any): any {
         case 'rich_text':
             return property.rich_text?.[0]?.plain_text || '';
         case 'slug':
-            return property.slug?.slug || '';
+            return property.slug || '';
         case 'select':
             return property.select?.name || '';
         case 'date':
@@ -54,7 +65,7 @@ function mapNotionPageToBlogPost(page: any): BlogPost {
     return {
         id: page.id,
         title: extractPropertyValue(page.properties['Title']),
-        slug: extractPropertyValue(page.properties['Slug']),
+        slug: extractPropertyValue(page.properties['slug']),
         status: extractPropertyValue(page.properties['Status']),
         metaTitle: extractPropertyValue(page.properties['Meta Title']),
         metaDescription: extractPropertyValue(page.properties['Meta Description']),
@@ -99,7 +110,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
             filter: {
                 and: [
                     {
-                        property: 'Slug',
+                        property: 'slug',
                         rich_text: {
                             equals: slug,
                         },
@@ -114,6 +125,9 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
             },
             page_size: 1,
         });
+
+        console.log('[getPostBySlug] slug:', slug);
+        console.log('[getPostBySlug] response.results.length:', response.results.length);
 
         if (response.results.length === 0) {
             return null;
