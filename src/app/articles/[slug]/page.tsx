@@ -9,9 +9,9 @@ import { ArrowLeft } from 'lucide-react';
 export const revalidate = 300;
 
 export async function generateMetadata(
-    { params }: { params: { slug: string } }
+    { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
-    const { slug } = params;
+    const { slug } = await params;
     const post = await getPostBySlug(slug);
 
     if (!post) {
@@ -55,9 +55,9 @@ export async function generateStaticParams() {
 }
 
 export default async function BlogPostPage(
-    { params }: { params: { slug: string } }
+    { params }: { params: Promise<{ slug: string }> }
 ) {
-    const { slug } = params;
+    const { slug } = await params;
     const post = await getPostBySlug(slug);
 
     if (!post) {
