@@ -15,9 +15,6 @@ export const notionAPI = new NotionAPI({
 export const NOTION_TOKEN = process.env.NOTION_TOKEN;
 export const DATABASE_ID = process.env.NOTION_DATABASE_ID as string;
 
-console.log('[notion.ts] NOTION_TOKEN:', NOTION_TOKEN ? 'defined' : 'undefined');
-console.log('[notion.ts] DATABASE_ID:', DATABASE_ID ? 'defined' : 'undefined');
-
 if (!NOTION_TOKEN) {
     throw new Error('NOTION_TOKEN is required');
 }
@@ -125,9 +122,6 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
             },
             page_size: 1,
         });
-
-        console.log('[getPostBySlug] slug:', slug);
-        console.log('[getPostBySlug] response.results.length:', response.results.length);
 
         if (response.results.length === 0) {
             return null;
