@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
+    const pathname = usePathname();
 
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 backdrop-blur-md border-b border-pastel-green/20">
@@ -28,8 +30,11 @@ export default function Navbar() {
                     <a href="/#faq" className="text-sm text-text-muted hover:text-pastel-green-deep transition-colors">
                         FAQ
                     </a>
-                    <Link href="/articles" className="text-sm text-text-muted hover:text-pastel-green-deep transition-colors">
+                    <Link href="/articles" className={`text-sm transition-colors ${pathname.startsWith("/articles") ? "text-pastel-green-deep font-semibold" : "text-text-muted hover:text-pastel-green-deep"}`}>
                         Articles
+                    </Link>
+                    <Link href="/about" className={`text-sm transition-colors ${pathname === "/about" ? "text-pastel-green-deep font-semibold" : "text-text-muted hover:text-pastel-green-deep"}`}>
+                        About
                     </Link>
                     <a
                         href="https://play.google.com/store"
@@ -78,9 +83,16 @@ export default function Navbar() {
                     <Link
                         href="/articles"
                         onClick={() => setOpen(false)}
-                        className="block text-sm text-text-muted hover:text-pastel-green-deep transition-colors"
+                        className={`block text-sm transition-colors ${pathname.startsWith("/articles") ? "text-pastel-green-deep font-semibold" : "text-text-muted hover:text-pastel-green-deep"}`}
                     >
                         Articles
+                    </Link>
+                    <Link
+                        href="/about"
+                        onClick={() => setOpen(false)}
+                        className={`block text-sm transition-colors ${pathname === "/about" ? "text-pastel-green-deep font-semibold" : "text-text-muted hover:text-pastel-green-deep"}`}
+                    >
+                        About
                     </Link>
                     <a
                         href="https://play.google.com/store"
