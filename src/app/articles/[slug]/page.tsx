@@ -68,26 +68,69 @@ export default async function BlogPostPage(
 
     const recordMap = await getPostRecordMap(post.id);
 
+    // Process Dates
+    const publishedIso = new Date(post.publishDate).toISOString();
+    const modifiedIso = new Date(post.publishDate).toISOString(); // Fallback if no specific modified date
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://islandapp.id';
+
     // Generate Article JSON-LD
     const jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Article',
         headline: post.title,
-        image: post.coverImage ? [post.coverImage] : [],
-        datePublished: post.publishDate,
-        dateModified: post.publishDate,
-        author: [{
+        description: post.metaDescription || `Read ${post.title} on the Island Articles.`,
+        ...(post.coverImage && { image: post.coverImage }),
+        author: {
             '@type': 'Person',
-            name: post.author || 'Island Team',
-        }],
-        description: post.metaDescription || post.title,
+            name: post.author || 'Ahmad Faiq', // Using requested default author if not exists
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'Island',
+            logo: {
+                '@type': 'ImageObject',
+                url: 'https://islandapp.id/island-logo.png', // Assuming logo path based on standard deployment
+            },
+        },
+        datePublished: publishedIso,
+        dateModified: modifiedIso,
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `${baseUrl}/articles/${post.slug}`,
+        },
+    };
+
+    // Generate Breadcrumb JSON-LD
+    const breadcrumbLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: baseUrl,
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Articles',
+                item: `${baseUrl}/articles`,
+            },
+            {
+                '@type': 'ListItem',
+                position: 3,
+                name: post.title,
+                item: `${baseUrl}/articles/${post.slug}`,
+            },
+        ],
     };
 
     return (
         <div className="min-h-screen flex flex-col pt-32 pb-16 bg-[var(--color-cream)]">
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }}
             />
 
             <article className="flex-1 w-full max-w-[800px] mx-auto px-6 md:px-0 relative animate-fade-in-up">
