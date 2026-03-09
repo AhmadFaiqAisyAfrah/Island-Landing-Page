@@ -1,4 +1,5 @@
 import FocusDemo from "@/components/FocusDemo";
+import MonetagInPagePush from "@/components/MonetagInPagePush";
 
 export const metadata = {
     title: "Explore Focus Demo - Island",
@@ -8,6 +9,7 @@ export const metadata = {
 export default function ExplorePage() {
     return (
         <div className="pt-24 min-h-screen bg-[var(--bg-primary)]">
+            <MonetagInPagePush />
             <FocusDemo />
         </div>
     );
