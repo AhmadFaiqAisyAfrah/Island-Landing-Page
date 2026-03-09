@@ -41,7 +41,7 @@ const cards: TrustCard[] = [
 function Card({ card, delay }: { card: TrustCard; delay: number }) {
     return (
         <div
-            className="rounded-2xl bg-white/70 backdrop-blur-sm border border-pastel-green/10 p-8 hover:shadow-lg transition-all duration-300 animate-fade-in-up"
+            className="rounded-2xl bg-[var(--card-bg)] backdrop-blur-sm border border-[var(--border-color)] p-8 hover:shadow-[0_14px_28px_rgba(8,15,26,0.22)] transition-all duration-300 animate-fade-in-up"
             style={{ animationDelay: `${delay}ms` }}
         >
             <div
@@ -49,10 +49,10 @@ function Card({ card, delay }: { card: TrustCard; delay: number }) {
             >
                 <span className="text-[28px] leading-none">{card.emoji}</span>
             </div>
-            <h3 className="text-xl font-semibold text-text-dark mb-3">
+            <h3 className="text-xl font-semibold text-[var(--heading-text)] mb-3">
                 {card.title}
             </h3>
-            <p className="text-text-muted leading-relaxed">{card.desc}</p>
+            <p className="text-[var(--paragraph-text)] leading-relaxed">{card.desc}</p>
         </div>
     );
 }
@@ -62,17 +62,17 @@ export default function TransparencySection() {
     const bottomRow = cards.slice(3);
 
     return (
-        <section id="transparency" className="py-24 bg-cream">
+        <section id="transparency" className="py-24 bg-[var(--bg-primary)]">
             <div className="mx-auto max-w-6xl px-6">
                 {/* Header */}
                 <div className="text-center space-y-4 mb-14">
-                    <span className="inline-block rounded-full bg-pastel-sand/40 px-4 py-1.5 text-xs font-medium text-pastel-sand-deep">
+                    <span className="inline-block rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-1.5 text-xs font-medium text-[var(--accent-green)]">
                         🔒 Transparency
                     </span>
-                    <h2 className="text-3xl sm:text-4xl font-bold text-text-dark">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-[var(--heading-text)]">
                         Built on trust
                     </h2>
-                    <p className="text-text-muted max-w-lg mx-auto">
+                    <p className="text-[var(--paragraph-text)] max-w-lg mx-auto">
                         We respect your privacy and keep things simple and honest.
                     </p>
                 </div>

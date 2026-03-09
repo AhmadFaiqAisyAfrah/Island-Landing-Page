@@ -50,14 +50,20 @@ export default function FAQSection() {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
     return (
-        <section id="faq" className="py-24 bg-gradient-to-b from-cream to-cream-dark">
+        <section
+            id="faq"
+            className="py-24"
+            style={{
+                background: "linear-gradient(to bottom, var(--bg-primary), var(--bg-secondary))",
+            }}
+        >
             <div className="mx-auto max-w-3xl px-6">
                 {/* Header */}
                 <div className="text-center space-y-4 mb-14">
-                    <span className="inline-block rounded-full bg-pastel-green/30 px-4 py-1.5 text-xs font-medium text-pastel-green-deep">
+                    <span className="inline-block rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-1.5 text-xs font-medium text-[var(--accent-green)]">
                         💬 Questions?
                     </span>
-                    <h2 className="text-3xl sm:text-4xl font-bold text-text-dark">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-[var(--heading-text)]">
                         Frequently asked questions
                     </h2>
                 </div>
@@ -69,17 +75,17 @@ export default function FAQSection() {
                         return (
                             <div
                                 key={i}
-                                className="rounded-2xl bg-white/70 backdrop-blur-sm border border-pastel-green/10 overflow-hidden transition-shadow hover:shadow-md"
+                                className="rounded-2xl bg-[var(--card-bg)] backdrop-blur-sm border border-[var(--border-color)] overflow-hidden transition-shadow hover:shadow-[0_10px_22px_rgba(8,15,26,0.2)]"
                             >
                                 <button
                                     onClick={() => setOpenIndex(isOpen ? null : i)}
                                     className="w-full flex items-center justify-between px-6 py-5 text-left"
                                 >
-                                    <span className="font-medium text-text-dark pr-4">
+                                    <span className="font-medium text-[var(--heading-text)] pr-4">
                                         {faq.q}
                                     </span>
                                     <ChevronDown
-                                        className={`w-5 h-5 text-text-muted shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+                                        className={`w-5 h-5 text-[var(--text-secondary)] shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : ""
                                             }`}
                                     />
                                 </button>
@@ -88,7 +94,7 @@ export default function FAQSection() {
                                         }`}
                                 >
                                     <div className="overflow-hidden">
-                                        <p className="px-6 pb-5 text-sm text-text-muted leading-relaxed">
+                                        <p className="px-6 pb-5 text-sm text-[var(--paragraph-text)] leading-relaxed">
                                             {faq.a}
                                         </p>
                                     </div>

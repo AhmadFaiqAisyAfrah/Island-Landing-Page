@@ -4,7 +4,13 @@ export default function EmotionalSection() {
     return (
         <section className="relative py-28 overflow-hidden">
             {/* Gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-pastel-green/20 via-pastel-blue/15 to-pastel-sand/20" />
+            <div
+                className="absolute inset-0"
+                style={{
+                    background:
+                        "linear-gradient(to bottom right, color-mix(in srgb, var(--accent-green) 20%, transparent), color-mix(in srgb, var(--bg-secondary) 80%, transparent), color-mix(in srgb, var(--border-color) 45%, transparent))",
+                }}
+            />
 
             {/* Decorative clouds */}
             <div className="absolute top-10 right-10 w-32 opacity-30 animate-float-slow">
@@ -23,13 +29,13 @@ export default function EmotionalSection() {
                     <span className="w-2 h-2 rounded-full bg-pastel-sand animate-pulse-soft delay-500" />
                 </div>
 
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-text-dark leading-tight">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[var(--heading-text)] leading-tight">
                     Productivity doesn&apos;t have
                     <br />
-                    to feel <span className="text-pastel-green-deep">heavy</span>.
+                    to feel <span className="text-[var(--accent-green)]">heavy</span>.
                 </h2>
 
-                <p className="text-lg text-text-muted max-w-xl mx-auto leading-relaxed">
+                <p className="text-lg text-[var(--paragraph-text)] max-w-xl mx-auto leading-relaxed">
                     We believe in gentle progress — small steps that add up to big change.
                     Island turns your focus into something beautiful, one peaceful session at a time.
                 </p>

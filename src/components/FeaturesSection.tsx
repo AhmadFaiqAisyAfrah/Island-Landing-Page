@@ -45,17 +45,17 @@ const features = [
 
 export default function FeaturesSection() {
     return (
-        <section id="features" className="py-16 bg-cream">
+        <section id="features" className="py-16 bg-[var(--bg-primary)]">
             <div className="mx-auto max-w-6xl px-6">
                 {/* Header */}
                 <div className="text-center space-y-4 mb-16">
-                    <span className="inline-block rounded-full bg-pastel-blue/30 px-4 py-1.5 text-xs font-medium text-pastel-blue-deep">
+                    <span className="inline-block rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-1.5 text-xs font-medium text-[var(--accent-green)]">
                         ✨ Everything you need
                     </span>
-                    <h2 className="text-3xl sm:text-4xl font-bold text-text-dark">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-[var(--heading-text)]">
                         Simple tools for a focused life
                     </h2>
-                    <p className="text-text-muted max-w-lg mx-auto">
+                    <p className="text-[var(--paragraph-text)] max-w-lg mx-auto">
                         No overwhelming features. Just what you need to build a calm, productive routine.
                     </p>
                 </div>
@@ -65,7 +65,7 @@ export default function FeaturesSection() {
                     {features.map((f, i) => (
                         <div
                             key={f.title}
-                            className="group rounded-2xl bg-white/70 backdrop-blur-sm border border-pastel-green/10 p-7 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 animate-fade-in-up"
+                            className="group rounded-2xl bg-[var(--card-bg)] backdrop-blur-sm border border-[var(--border-color)] p-7 hover:shadow-[0_14px_28px_rgba(8,15,26,0.22)] hover:-translate-y-1 transition-all duration-300 animate-fade-in-up"
                             style={{ animationDelay: `${i * 100}ms` }}
                         >
                             <div
@@ -73,10 +73,10 @@ export default function FeaturesSection() {
                             >
                                 <span className="text-[28px] leading-none">{f.emoji}</span>
                             </div>
-                            <h3 className="text-lg font-semibold text-text-dark mb-2">
+                            <h3 className="text-lg font-semibold text-[var(--heading-text)] mb-2">
                                 {f.title}
                             </h3>
-                            <p className="text-sm text-text-muted leading-relaxed">
+                            <p className="text-sm text-[var(--paragraph-text)] leading-relaxed">
                                 {f.desc}
                             </p>
                         </div>

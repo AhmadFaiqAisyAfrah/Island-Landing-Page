@@ -11,14 +11,14 @@ const footerLinks = [
 
 export default function Footer() {
     return (
-        <footer className="bg-[#F4F1EA]">
+        <footer className="bg-[var(--bg-secondary)] border-t border-[var(--border-color)]">
             <div className="mx-auto max-w-6xl px-6 py-12">
                 <div className="flex flex-col items-center text-center space-y-3">
                     {/* Logo badge */}
                     <Image src="/island-logo.png" alt="Island" width={100} height={100} className="h-[100px] w-auto object-contain" />
 
                     {/* Brand name */}
-                    <h3 className="text-2xl font-bold text-[#3A3D3F]">Island</h3>
+                    <h3 className="text-2xl font-bold text-[var(--heading-text)]">Island</h3>
 
                     {/* Nav links */}
                     <div className="flex flex-wrap justify-center gap-5 mt-2">
@@ -26,7 +26,7 @@ export default function Footer() {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className="text-sm text-[#7A7F82] hover:text-[#5FBF8F] transition-colors"
+                                className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors"
                             >
                                 {link.label}
                             </Link>
@@ -35,7 +35,7 @@ export default function Footer() {
 
 
                     {/* Copyright */}
-                    <p className="text-xs text-[#A0A5A8] pt-2">
+                    <p className="text-xs text-[var(--text-secondary)] pt-2">
                         © 2026 Island — All rights reserved
                     </p>
                 </div>

@@ -1,6 +1,19 @@
 @import "tailwindcss";
 
 @theme {
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-card-bg: var(--card-bg);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-heading-text: var(--heading-text);
+  --color-paragraph-text: var(--paragraph-text);
+  --color-border-color: var(--border-color);
+  --color-accent-green: var(--accent-green);
+  --color-button-bg: var(--button-bg);
+  --color-button-hover: var(--button-hover);
+  --color-button-text: var(--button-text);
+
   --color-cream: #FDFAF3;
   --color-cream-dark: #F7F0E0;
   --color-pastel-green: #A8D5BA;
@@ -14,6 +27,64 @@
   --color-white: #FFFFFF;
 
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #edf2f7;
+    --card-bg: #ffffff;
+    --text-primary: #1f2937;
+    --text-secondary: #4b5563;
+    --heading-text: #1f2937;
+    --paragraph-text: #4b5563;
+    --border-color: #d3deea;
+    --accent-green: #6bbf8a;
+    --button-bg: #6bbf8a;
+    --button-hover: #77ca96;
+    --button-text: #ffffff;
+    --nav-bg: rgba(248, 250, 252, 0.84);
+    --hero-from: #d4eefa;
+    --hero-via: #e8f4f0;
+    --hero-to: #f8fafc;
+    --demo-ring-track: #334155;
+    --demo-panel-bg: #0f172a;
+  }
+
+  .dark-mode {
+    --bg-primary: #0b1a2b;
+    --bg-secondary: #12233a;
+    --card-bg: #162a44;
+    --text-primary: #ffffff;
+    --text-secondary: #b8c4d6;
+    --heading-text: #e6edf7;
+    --paragraph-text: #aab6c8;
+    --border-color: #223a55;
+    --accent-green: #6cc48e;
+    --button-bg: #6cc48e;
+    --button-hover: #79d09b;
+    --button-text: #ffffff;
+    --nav-bg: rgba(11, 26, 43, 0.86);
+    --hero-from: #10253b;
+    --hero-via: #0f2236;
+    --hero-to: #0b1a2b;
+    --demo-ring-track: #4f6783;
+    --demo-panel-bg: #0a1626;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, color, border-color, fill, stroke, box-shadow;
+    transition-duration: 250ms;
+    transition-timing-function: ease;
+  }
 }
 
 /* ===== Animation Keyframes ===== */
@@ -98,6 +169,30 @@
   }
 }
 
+@keyframes breathe {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+
+  50% {
+    opacity: 0.2;
+  }
+}
+
 /* ===== Utility Classes ===== */
 
 .animate-float {
@@ -122,6 +217,14 @@
 
 .animate-pulse-soft {
   animation: pulse-soft 3s ease-in-out infinite;
+}
+
+.animate-breathe {
+  animation: breathe 5s ease-in-out infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle 4s ease-in-out infinite;
 }
 
 /* Staggered delays */
@@ -169,14 +272,14 @@ html {
 }
 
 body {
-  background-color: var(--color-cream);
-  color: var(--color-text-dark);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   touch-action: pan-y;
 }
 
 ::selection {
-  background-color: #A8D5BA80;
-  color: var(--color-text-dark);
+  background-color: var(--accent-green);
+  color: var(--text-primary);
 }
 
 /* ===== Launchpad Slider ===== */
@@ -241,12 +344,12 @@ body {
   border: none;
   padding: 0;
   cursor: pointer;
-  background-color: #D0D5D8;
+  background-color: color-mix(in srgb, var(--text-secondary) 40%, transparent);
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .launchpad-dot.active {
-  background-color: #5FBF8F;
+  background-color: var(--accent-green);
   transform: scale(1.25);
 }
 
@@ -266,12 +369,12 @@ body {
   border: none;
   padding: 0;
   cursor: pointer;
-  background-color: #D0D5D8;
+  background-color: color-mix(in srgb, var(--text-secondary) 40%, transparent);
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .launchpad-dot.active {
-  background-color: #5FBF8F;
+  background-color: var(--accent-green);
   transform: scale(1.25);
 }
 
