@@ -62,7 +62,7 @@ export default function DataDeletionPage() {
                             <li>Anonymous technical identifiers (Firebase UID)</li>
                         </ul>
                         <p className="text-text-muted">
-                            This data is used solely to personalize your experience and improve Island's features.
+                            This data is used solely to personalize your experience and improve Island&apos;s features.
                         </p>
                     </section>
 
@@ -73,7 +73,7 @@ export default function DataDeletionPage() {
                         </h2>
                         <div className="rounded-2xl bg-white/70 border border-pastel-green/10 p-6 space-y-2">
                             <p>
-                                1. Open your device's <strong>Settings</strong>
+                                1. Open your device&apos;s <strong>Settings</strong>
                             </p>
                             <p>
                                 2. Go to <strong>Apps</strong> → <strong>Island</strong>

@@ -1,5 +1,6 @@
 import { Client } from '@notionhq/client';
 import { NotionAPI } from 'notion-client';
+import type { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 
 // Official client for querying databases
 export const notion = new Client({
@@ -35,7 +36,9 @@ export interface BlogPost {
     status: 'Draft' | 'Published';
 }
 
-function extractPropertyValue(property: any): any {
+type NotionPropertyValue = PageObjectResponse['properties'][string];
+
+function extractPropertyValue(property: NotionPropertyValue | null | undefined): string | boolean | null {
     if (!property) return null;
 
     switch (property.type) {
@@ -43,8 +46,6 @@ function extractPropertyValue(property: any): any {
             return property.title?.[0]?.plain_text || '';
         case 'rich_text':
             return property.rich_text?.[0]?.plain_text || '';
-        case 'slug':
-            return property.slug || '';
         case 'select':
             return property.select?.name || '';
         case 'date':
@@ -52,26 +53,37 @@ function extractPropertyValue(property: any): any {
         case 'checkbox':
             return property.checkbox || false;
         case 'files':
-            return property.files?.[0]?.file?.url || property.files?.[0]?.external?.url || '';
+            if (property.files?.[0]) {
+                const file = property.files[0];
+                if (file.type === 'file') return file.file.url;
+                if (file.type === 'external') return file.external.url;
+            }
+            return '';
         default:
             return null;
     }
 }
 
-function mapNotionPageToBlogPost(page: any): BlogPost {
+function mapNotionPageToBlogPost(page: PageObjectResponse): BlogPost {
+    const coverUrl = page.cover
+        ? page.cover.type === 'file'
+            ? page.cover.file.url
+            : page.cover.type === 'external'
+                ? page.cover.external.url
+                : undefined
+        : undefined;
+
     return {
         id: page.id,
-        title: extractPropertyValue(page.properties['Title']),
-        slug: extractPropertyValue(page.properties['slug']),
-        status: extractPropertyValue(page.properties['Status']),
-        metaTitle: extractPropertyValue(page.properties['Meta Title']),
-        metaDescription: extractPropertyValue(page.properties['Meta Description']),
-        coverImage:
-            extractPropertyValue(page.properties['Cover Image']) ||
-            (page.cover?.file?.url || page.cover?.external?.url || undefined),
-        publishDate: extractPropertyValue(page.properties['Publish Date']) || page.created_time,
-        author: extractPropertyValue(page.properties['Author']),
-        featured: extractPropertyValue(page.properties['Featured']),
+        title: (extractPropertyValue(page.properties['Title']) as string) || '',
+        slug: (extractPropertyValue(page.properties['slug']) as string) || '',
+        status: (extractPropertyValue(page.properties['Status']) as BlogPost['status']) || 'Draft',
+        metaTitle: (extractPropertyValue(page.properties['Meta Title']) as string) || undefined,
+        metaDescription: (extractPropertyValue(page.properties['Meta Description']) as string) || undefined,
+        coverImage: (extractPropertyValue(page.properties['Cover Image']) as string) || coverUrl || undefined,
+        publishDate: (extractPropertyValue(page.properties['Publish Date']) as string) || page.created_time,
+        author: (extractPropertyValue(page.properties['Author']) as string) || undefined,
+        featured: (extractPropertyValue(page.properties['Featured']) as boolean) || false,
     };
 }
 
@@ -93,7 +105,7 @@ export async function getPublishedPosts(): Promise<BlogPost[]> {
             ],
         });
 
-        return response.results.map(mapNotionPageToBlogPost);
+        return (response.results as PageObjectResponse[]).map(mapNotionPageToBlogPost);
     } catch (error) {
         console.error('Error fetching published posts from Notion:', error);
         return [];
@@ -127,7 +139,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
             return null;
         }
 
-        return mapNotionPageToBlogPost(response.results[0]);
+        return mapNotionPageToBlogPost(response.results[0] as PageObjectResponse);
     } catch (error) {
         console.error(`Error fetching post with slug "${slug}":`, error);
         return null;

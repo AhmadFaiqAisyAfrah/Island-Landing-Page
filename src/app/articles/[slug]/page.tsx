@@ -192,9 +192,9 @@ export default async function BlogPostPage(
                     <p className="text-[var(--color-text-muted)] mb-8 max-w-md mx-auto">
                         Design your ideal environment and start building sustainable productivity habits today.
                     </p>
-                    <a href="/#download" className="inline-block px-8 py-4 bg-[var(--color-pastel-green-deep)] text-white font-medium rounded-full hover:bg-[#5FBF8F] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    <Link href="/#download" className="inline-block px-8 py-4 bg-[var(--color-pastel-green-deep)] text-white font-medium rounded-full hover:bg-[#5FBF8F] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                         Get Started
-                    </a>
+                    </Link>
                 </div>
 
             </article>

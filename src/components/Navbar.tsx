@@ -22,15 +22,15 @@ export default function Navbar() {
 
                 {/* Desktop Links */}
                 <div className="hidden md:flex items-center gap-8">
-                    <a href="/#features" className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
+                    <Link href="/#features" className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
                         Features
-                    </a>
-                    <a href="/#transparency" className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
+                    </Link>
+                    <Link href="/#transparency" className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
                         Trust
-                    </a>
-                    <a href="/#faq" className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
+                    </Link>
+                    <Link href="/#faq" className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
                         FAQ
-                    </a>
+                    </Link>
                     <Link href="/articles" className={`text-sm transition-colors ${pathname.startsWith("/articles") ? "text-[var(--accent-green)] font-semibold" : "text-[var(--paragraph-text)] hover:text-[var(--accent-green)]"}`}>
                         Articles
                     </Link>
@@ -67,27 +67,27 @@ export default function Navbar() {
             {/* Mobile Menu */}
             {open && (
                 <div className="md:hidden bg-[var(--nav-bg)] backdrop-blur-md border-t border-[var(--border-color)] px-6 pb-6 pt-2 space-y-4 animate-fade-in-up">
-                    <a
+                    <Link
                         href="/#features"
                         onClick={() => setOpen(false)}
                         className="block text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors"
                     >
                         Features
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                         href="/#transparency"
                         onClick={() => setOpen(false)}
                         className="block text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors"
                     >
                         Trust
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                         href="/#faq"
                         onClick={() => setOpen(false)}
                         className="block text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors"
                     >
                         FAQ
-                    </a>
+                    </Link>
                     <Link
                         href="/articles"
                         onClick={() => setOpen(false)}

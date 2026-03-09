@@ -6,7 +6,7 @@ import { ChevronDown } from "lucide-react";
 const faqs = [
     {
         q: "Is Island free to use?",
-        a: "Yes. Focus sessions, the calendar, white noise, and island building are all free. Optional in-app purchases let you buy extra coins or remove ads, but they're never required.",
+        a: "Yes. Focus sessions, the calendar, white noise, and island building are all free. Optional in-app purchases let you buy extra coins or remove ads, but they\u0027re never required.",
     },
     {
         q: "What data does Island collect?",

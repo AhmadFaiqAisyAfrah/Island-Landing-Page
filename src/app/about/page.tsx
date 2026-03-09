@@ -103,9 +103,9 @@ export default function AboutPage() {
                         <Link href="/articles" className="w-full sm:w-auto px-8 py-4 bg-white text-[var(--color-text-dark)] font-medium rounded-full border border-[var(--color-pastel-sand)] hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md text-center">
                             Baca Artikel
                         </Link>
-                        <a href="/#download" className="w-full sm:w-auto px-8 py-4 bg-[var(--color-pastel-green-deep)] text-white font-medium rounded-full border border-transparent hover:bg-[#5FBF8F] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center">
+                        <Link href="/#download" className="w-full sm:w-auto px-8 py-4 bg-[var(--color-pastel-green-deep)] text-white font-medium rounded-full border border-transparent hover:bg-[#5FBF8F] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center">
                             Coba Aplikasi
-                        </a>
+                        </Link>
                     </div>
                 </section>
 
