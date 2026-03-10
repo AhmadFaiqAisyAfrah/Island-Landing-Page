@@ -41,8 +41,14 @@ export default function Navbar() {
                         Explore
                     </Link>
 
-                    <div className="flex items-center gap-4 border-l border-[var(--border-color)] pl-4 ml-2">
+                    <div className="flex items-center gap-3 border-l border-[var(--border-color)] pl-4 ml-2">
                         <ThemeToggle />
+                        <button className="text-sm font-medium text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
+                            Sign In
+                        </button>
+                        <button className="rounded-full border border-[var(--accent-green)] px-4 py-2 text-sm font-semibold text-[var(--accent-green)] hover:bg-[var(--accent-green)] hover:text-white transition-all">
+                            Sign Up
+                        </button>
                         <a
                             href="https://play.google.com/store"
                             target="_blank"
@@ -110,13 +116,21 @@ export default function Navbar() {
                         Explore
                     </Link>
 
-                    <div className="flex items-center gap-4 pt-2 border-t border-[var(--border-color)]">
-                        <ThemeToggle />
+                    <div className="flex flex-col gap-3 pt-2 border-t border-[var(--border-color)]">
+                        <div className="flex items-center gap-3">
+                            <ThemeToggle />
+                            <button className="text-sm font-medium text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
+                                Sign In
+                            </button>
+                            <button className="rounded-full border border-[var(--accent-green)] px-4 py-2 text-sm font-semibold text-[var(--accent-green)] hover:bg-[var(--accent-green)] hover:text-white transition-all">
+                                Sign Up
+                            </button>
+                        </div>
                         <a
                             href="https://play.google.com/store"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block rounded-full bg-[var(--button-bg)] px-5 py-2 text-sm font-semibold text-[var(--button-text)] shadow-[0_10px_20px_rgba(8,15,26,0.25)] hover:bg-[var(--button-hover)]"
+                            className="inline-block rounded-full bg-[var(--button-bg)] px-5 py-2 text-sm font-semibold text-[var(--button-text)] shadow-[0_10px_20px_rgba(8,15,26,0.25)] hover:bg-[var(--button-hover)] text-center"
                         >
                             Get the App
                         </a>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { ChevronLeft, ChevronRight, RotateCcw, Plus, Pencil, Trash2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, Plus, Pencil, Trash2, X, Save } from "lucide-react";
+import AuthModal from "@/components/AuthModal";
 
 interface Flashcard {
     question: string;
@@ -25,6 +26,7 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
     const [modalQuestion, setModalQuestion] = useState("");
     const [modalAnswer, setModalAnswer] = useState("");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showAuthModal, setShowAuthModal] = useState(false);
 
     const card = cards[currentIndex];
 
@@ -220,14 +222,21 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
                 </>
             )}
 
-            {/* Add Card button */}
-            <div className="flex justify-center mt-6">
+            {/* Add Card + Save Deck buttons */}
+            <div className="flex flex-col items-center gap-3 mt-6">
                 <button
                     onClick={openAddModal}
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--accent-green)] text-white text-sm font-medium hover:bg-[#5FBF8F] transition-colors shadow-md"
                 >
                     <Plus className="w-4 h-4" />
                     Add Card
+                </button>
+                <button
+                    onClick={() => setShowAuthModal(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--accent-green)] text-white text-sm font-medium hover:bg-[#5FBF8F] transition-colors shadow-md"
+                >
+                    <Save className="w-4 h-4" />
+                    Save Deck
                 </button>
             </div>
 
@@ -335,6 +344,11 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Auth Modal */}
+            {showAuthModal && (
+                <AuthModal onClose={() => setShowAuthModal(false)} />
             )}
         </div>
     );
