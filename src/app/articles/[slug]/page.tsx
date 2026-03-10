@@ -190,11 +190,16 @@ export default async function BlogPostPage(
                         Find your focus with Island
                     </h3>
                     <p className="text-[var(--color-text-muted)] mb-8 max-w-md mx-auto">
-                        Design your ideal environment and start building sustainable productivity habits today.
+                        Try our free pomodoro timer and start building sustainable productivity habits today.
                     </p>
-                    <Link href="/#download" className="inline-block px-8 py-4 bg-[var(--color-pastel-green-deep)] text-white font-medium rounded-full hover:bg-[#5FBF8F] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                        Get Started
-                    </Link>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <Link href="/explore/pomodoro" className="w-full sm:w-auto px-8 py-4 bg-[var(--color-pastel-green-deep)] text-white font-medium rounded-full hover:bg-[#5FBF8F] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center">
+                            Start Focus Session
+                        </Link>
+                        <Link href="/explore" className="w-full sm:w-auto px-8 py-4 bg-white text-[var(--color-text-dark)] font-medium rounded-full border border-[var(--color-pastel-sand)] hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md text-center">
+                            Explore Study Tools
+                        </Link>
+                    </div>
                 </div>
 
             </article>

@@ -168,12 +168,12 @@ export default function FocusDemo() {
                     <span className="text-[var(--accent-green)] font-bold tracking-wider uppercase text-sm mb-4 block">
                         Island Pomodoro
                     </span>
-                    <h2 className="text-4xl md:text-5xl font-bold text-[var(--heading-text)] mb-6 tracking-tight">
+                    <h1 className="text-4xl md:text-5xl font-bold text-[var(--heading-text)] mb-6 tracking-tight">
+                        Pomodoro Timer Online
+                    </h1>
+                    <h2 className="text-xl text-[var(--paragraph-text)] max-w-2xl mx-auto leading-relaxed font-normal">
                         A quiet place to focus
                     </h2>
-                    <p className="text-xl text-[var(--paragraph-text)] max-w-2xl mx-auto leading-relaxed">
-                        Set your timer and start a peaceful focus session.
-                    </p>
                 </div>
 
                 <div className="grid md:grid-cols-[1.3fr_1fr] gap-8 md:gap-16 items-center bg-[var(--card-bg)] rounded-[40px] p-8 md:p-12 shadow-[0_24px_52px_rgba(8,15,26,0.25)] border border-[var(--border-color)] relative overflow-hidden">
