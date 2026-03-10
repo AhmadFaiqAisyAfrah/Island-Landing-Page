@@ -1,26 +1,31 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { ChevronLeft, ChevronRight, RotateCcw, Plus, Pencil, Trash2, X, Save } from "lucide-react";
-import AuthModal from "@/components/AuthModal";
-import { getClientAuth, db } from "@/lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { useState, useCallback } from "react";
+import { ChevronLeft, ChevronRight, RotateCcw, Plus, Pencil, Trash2, X } from "lucide-react";
 
 interface Flashcard {
+    id?: string;
     question: string;
     answer: string;
 }
 
 interface FlashcardViewerProps {
     title: string;
-    initialCards: Flashcard[];
+    cards: Flashcard[];
+    onAddCard?: (question: string, answer: string) => void;
+    onEditCard?: (index: number, question: string, answer: string) => void;
+    onDeleteCard?: (index: number) => void;
 }
 
 type ModalType = "add" | "edit" | null;
 
-export default function FlashcardViewer({ title, initialCards }: FlashcardViewerProps) {
-    const [cards, setCards] = useState<Flashcard[]>(initialCards);
+export default function FlashcardViewer({
+    title,
+    cards,
+    onAddCard,
+    onEditCard,
+    onDeleteCard,
+}: FlashcardViewerProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
 
@@ -29,31 +34,6 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
     const [modalQuestion, setModalQuestion] = useState("");
     const [modalAnswer, setModalAnswer] = useState("");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [showAuthModal, setShowAuthModal] = useState(false);
-
-    // Load saved deck from Firestore when auth state resolves
-    useEffect(() => {
-        const auth = getClientAuth();
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (!user) return;
-            try {
-                const docRef = doc(db, "users", user.uid, "flashcardDeck", "main");
-                const snapshot = await getDoc(docRef);
-                if (snapshot.exists()) {
-                    const data = snapshot.data();
-                    if (data.cards && data.cards.length > 0) {
-                        setCards(data.cards);
-                        setCurrentIndex(0);
-                        setIsFlipped(false);
-                        console.log("Loaded deck from Firestore:", data.cards.length, "cards");
-                    }
-                }
-            } catch (error) {
-                console.error("Error loading deck:", error);
-            }
-        });
-        return () => unsubscribe();
-    }, []);
 
     const card = cards[currentIndex];
 
@@ -78,9 +58,8 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
 
     function handleAdd() {
         if (!modalQuestion.trim() || !modalAnswer.trim()) return;
-        const newCards = [...cards, { question: modalQuestion.trim(), answer: modalAnswer.trim() }];
-        setCards(newCards);
-        setCurrentIndex(newCards.length - 1);
+        onAddCard?.(modalQuestion.trim(), modalAnswer.trim());
+        setCurrentIndex(cards.length); // will point to new last card
         setIsFlipped(false);
         setModalType(null);
     }
@@ -94,18 +73,15 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
 
     function handleEdit() {
         if (!modalQuestion.trim() || !modalAnswer.trim()) return;
-        const updated = [...cards];
-        updated[currentIndex] = { question: modalQuestion.trim(), answer: modalAnswer.trim() };
-        setCards(updated);
+        onEditCard?.(currentIndex, modalQuestion.trim(), modalAnswer.trim());
         setIsFlipped(false);
         setModalType(null);
     }
 
     // --- Delete ---
     function handleDelete() {
-        const newCards = cards.filter((_, i) => i !== currentIndex);
-        setCards(newCards);
-        setCurrentIndex((prev) => Math.min(prev, newCards.length - 1));
+        onDeleteCard?.(currentIndex);
+        setCurrentIndex((prev) => Math.max(0, Math.min(prev, cards.length - 2)));
         setIsFlipped(false);
         setShowDeleteConfirm(false);
     }
@@ -128,76 +104,44 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
 
             {/* Flip Card or Empty State */}
             {isEmpty ? (
-                <div className="w-full aspect-[4/3] rounded-3xl bg-[var(--card-bg)] border border-dashed border-[var(--border-color)] flex flex-col items-center justify-center p-8">
-                    <p className="text-[var(--paragraph-text)] mb-4">No flashcards yet</p>
-                    <button
-                        onClick={openAddModal}
-                        className="px-5 py-2.5 rounded-full bg-[var(--accent-green)] text-white text-sm font-medium hover:bg-[#5FBF8F] transition-colors"
-                    >
-                        Add your first card
-                    </button>
+                <div className="flex flex-col items-center justify-center py-16 px-6 rounded-3xl border-2 border-dashed border-[var(--border-color)] bg-[var(--bg-secondary)]/30">
+                    <div className="w-16 h-16 rounded-2xl bg-[var(--bg-secondary)] flex items-center justify-center mb-4">
+                        <Plus className="w-8 h-8 text-[var(--paragraph-text)] opacity-40" />
+                    </div>
+                    <p className="text-[var(--paragraph-text)] text-sm mb-4">No flashcards yet</p>
+                    {onAddCard && (
+                        <button
+                            onClick={openAddModal}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--accent-green)] text-white text-sm font-medium hover:bg-[#5FBF8F] transition-colors shadow-md"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Add Your First Card
+                        </button>
+                    )}
                 </div>
             ) : (
                 <>
-                    <div
-                        className="relative w-full aspect-[4/3] cursor-pointer select-none"
-                        style={{ perspective: "1000px" }}
+                    {/* Card */}
+                    <button
                         onClick={handleFlip}
-                        role="button"
-                        tabIndex={0}
-                        aria-label={isFlipped ? "Showing answer, click to show question" : "Showing question, click to show answer"}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleFlip(); }
-                            if (e.key === "ArrowLeft") handlePrevious();
-                            if (e.key === "ArrowRight") handleNext();
-                        }}
+                        className="w-full min-h-[260px] rounded-3xl bg-[var(--card-bg)] border border-[var(--border-color)] shadow-[0_12px_32px_rgba(8,15,26,0.12)] p-8 cursor-pointer transition-all duration-300 hover:shadow-[0_16px_40px_rgba(8,15,26,0.18)] hover:-translate-y-0.5 flex flex-col items-center justify-center text-center relative overflow-hidden group"
                     >
-                        <div
-                            className="relative w-full h-full transition-transform duration-500"
-                            style={{
-                                transformStyle: "preserve-3d",
-                                transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-                            }}
-                        >
-                            {/* Front (Question) */}
-                            <div
-                                className="absolute inset-0 rounded-3xl bg-[var(--card-bg)] border border-[var(--border-color)] shadow-[0_12px_36px_rgba(8,15,26,0.12)] flex flex-col items-center justify-center p-8 md:p-12"
-                                style={{ backfaceVisibility: "hidden" }}
-                            >
-                                <span className="text-xs font-bold uppercase tracking-wider text-[var(--accent-green)] mb-4">
-                                    Question
-                                </span>
-                                <p className="text-xl md:text-2xl font-semibold text-[var(--heading-text)] text-center leading-relaxed">
-                                    {card.question}
-                                </p>
-                                <span className="mt-6 text-xs text-[var(--paragraph-text)] opacity-60">
-                                    Tap to reveal answer
-                                </span>
-                            </div>
+                        {/* Side indicator */}
+                        <span className="absolute top-4 left-5 text-xs font-semibold tracking-wider uppercase text-[var(--paragraph-text)] opacity-40">
+                            {isFlipped ? "Answer" : "Question"}
+                        </span>
 
-                            {/* Back (Answer) */}
-                            <div
-                                className="absolute inset-0 rounded-3xl bg-[var(--card-bg)] border border-[var(--border-color)] shadow-[0_12px_36px_rgba(8,15,26,0.12)] flex flex-col items-center justify-center p-8 md:p-12"
-                                style={{
-                                    backfaceVisibility: "hidden",
-                                    transform: "rotateY(180deg)",
-                                }}
-                            >
-                                <span className="text-xs font-bold uppercase tracking-wider text-blue-500 mb-4">
-                                    Answer
-                                </span>
-                                <p className="text-lg md:text-xl text-[var(--heading-text)] text-center leading-relaxed">
-                                    {card.answer}
-                                </p>
-                                <span className="mt-6 text-xs text-[var(--paragraph-text)] opacity-60">
-                                    Tap to see question
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                        <p className="text-lg md:text-xl font-semibold text-[var(--heading-text)] leading-relaxed max-w-[90%]">
+                            {isFlipped ? card.answer : card.question}
+                        </p>
 
-                    {/* Navigation: Previous / Flip / Next */}
-                    <div className="flex items-center justify-center gap-4 mt-8">
+                        <span className="absolute bottom-4 text-xs text-[var(--paragraph-text)] opacity-30 group-hover:opacity-50 transition-opacity">
+                            Tap to {isFlipped ? "see question" : "reveal answer"}
+                        </span>
+                    </button>
+
+                    {/* Navigation + Flip */}
+                    <div className="flex items-center justify-center gap-4 mt-6">
                         <button
                             onClick={handlePrevious}
                             className="w-12 h-12 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] flex items-center justify-center text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors shadow-sm"
@@ -208,7 +152,7 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
 
                         <button
                             onClick={handleFlip}
-                            className="px-6 py-3 rounded-full bg-[var(--accent-green)] text-white text-sm font-medium hover:bg-[#5FBF8F] transition-colors shadow-md"
+                            className="px-6 py-3 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] text-sm font-medium text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors shadow-sm"
                         >
                             Flip
                         </button>
@@ -224,20 +168,24 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
 
                     {/* Edit / Delete / Reset row */}
                     <div className="flex items-center justify-center gap-3 mt-4">
-                        <button
-                            onClick={openEditModal}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] text-sm text-[var(--paragraph-text)] hover:bg-[var(--bg-secondary)] transition-colors"
-                        >
-                            <Pencil className="w-3.5 h-3.5" />
-                            Edit
-                        </button>
-                        <button
-                            onClick={() => setShowDeleteConfirm(true)}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                        >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            Delete
-                        </button>
+                        {onEditCard && (
+                            <button
+                                onClick={openEditModal}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] text-sm text-[var(--paragraph-text)] hover:bg-[var(--bg-secondary)] transition-colors"
+                            >
+                                <Pencil className="w-3.5 h-3.5" />
+                                Edit
+                            </button>
+                        )}
+                        {onDeleteCard && (
+                            <button
+                                onClick={() => setShowDeleteConfirm(true)}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                Delete
+                            </button>
+                        )}
                         <button
                             onClick={() => { setIsFlipped(false); setCurrentIndex(0); }}
                             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] text-sm text-[var(--paragraph-text)] hover:bg-[var(--bg-secondary)] transition-colors"
@@ -249,43 +197,18 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
                 </>
             )}
 
-            {/* Add Card + Save Deck buttons */}
-            <div className="flex flex-col items-center gap-3 mt-6">
-                <button
-                    onClick={openAddModal}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--accent-green)] text-white text-sm font-medium hover:bg-[#5FBF8F] transition-colors shadow-md"
-                >
-                    <Plus className="w-4 h-4" />
-                    Add Card
-                </button>
-                <button
-                    onClick={async () => {
-                        const auth = getClientAuth();
-                        const user = auth.currentUser;
-                        if (!user) {
-                            setShowAuthModal(true);
-                            return;
-                        }
-                        try {
-                            console.log("Saving cards:", cards);
-                            await setDoc(
-                                doc(db, "users", user.uid, "flashcardDeck", "main"),
-                                {
-                                    cards: cards,
-                                    updatedAt: Date.now(),
-                                }
-                            );
-                            console.log("Deck saved successfully");
-                        } catch (error) {
-                            console.error("Error saving deck:", error);
-                        }
-                    }}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--accent-green)] text-white text-sm font-medium hover:bg-[#5FBF8F] transition-colors shadow-md"
-                >
-                    <Save className="w-4 h-4" />
-                    Save Deck
-                </button>
-            </div>
+            {/* Add Card button */}
+            {onAddCard && !isEmpty && (
+                <div className="flex justify-center mt-6">
+                    <button
+                        onClick={openAddModal}
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--accent-green)] text-white text-sm font-medium hover:bg-[#5FBF8F] transition-colors shadow-md"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Add Card
+                    </button>
+                </div>
+            )}
 
             {/* Keyboard hint */}
             {!isEmpty && (
@@ -301,7 +224,6 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
                         className="w-full max-w-md bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl p-6 md:p-8 shadow-[0_24px_52px_rgba(8,15,26,0.25)] relative"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Close */}
                         <button
                             onClick={() => setModalType(null)}
                             className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--paragraph-text)] hover:text-[var(--heading-text)] transition-colors"
@@ -391,11 +313,6 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
                         </div>
                     </div>
                 </div>
-            )}
-
-            {/* Auth Modal */}
-            {showAuthModal && (
-                <AuthModal onClose={() => setShowAuthModal(false)} />
             )}
         </div>
     );

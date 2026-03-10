@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import FlashcardViewer from "@/components/FlashcardViewer";
+import FlashcardDeckList from "@/components/FlashcardDeckList";
 import MonetagInPagePush from "@/components/MonetagInPagePush";
 import { ArrowLeft } from "lucide-react";
 
@@ -24,21 +24,6 @@ export const metadata: Metadata = {
         url: "https://islandapp.id/explore/flashcards",
     },
 };
-
-const studyTechniquesCards = [
-    {
-        question: "What is the Pomodoro Technique?",
-        answer: "A time management method that uses focused work sessions followed by short breaks.",
-    },
-    {
-        question: "What improves memory retention?",
-        answer: "Spaced repetition and active recall.",
-    },
-    {
-        question: "Why are breaks important during studying?",
-        answer: "They reduce cognitive fatigue and improve concentration.",
-    },
-];
 
 export default function FlashcardsPage() {
     return (
@@ -64,18 +49,15 @@ export default function FlashcardsPage() {
                         Study Flashcards Online
                     </h1>
                     <p className="text-xl text-[var(--paragraph-text)] max-w-2xl mx-auto leading-relaxed">
-                        Tap a card to reveal the answer. Use flashcards to improve memory retention through active recall.
+                        Create flashcard decks to improve memory retention through active recall and spaced repetition.
                     </p>
                 </div>
 
                 <MonetagInPagePush />
 
-                {/* Flashcard Viewer */}
+                {/* Deck List (auth-gated) */}
                 <div className="pb-24">
-                    <FlashcardViewer
-                        title="Study Techniques"
-                        initialCards={studyTechniquesCards}
-                    />
+                    <FlashcardDeckList />
                 </div>
 
                 {/* SEO Content */}
