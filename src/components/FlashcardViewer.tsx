@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ChevronLeft, ChevronRight, RotateCcw, Plus, Pencil, Trash2, X, Save } from "lucide-react";
 import AuthModal from "@/components/AuthModal";
+import { getClientAuth, db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
 interface Flashcard {
     question: string;
@@ -27,6 +30,30 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
     const [modalAnswer, setModalAnswer] = useState("");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showAuthModal, setShowAuthModal] = useState(false);
+
+    // Load saved deck from Firestore when auth state resolves
+    useEffect(() => {
+        const auth = getClientAuth();
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (!user) return;
+            try {
+                const docRef = doc(db, "users", user.uid, "flashcardDeck", "main");
+                const snapshot = await getDoc(docRef);
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (data.cards && data.cards.length > 0) {
+                        setCards(data.cards);
+                        setCurrentIndex(0);
+                        setIsFlipped(false);
+                        console.log("Loaded deck from Firestore:", data.cards.length, "cards");
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading deck:", error);
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
     const card = cards[currentIndex];
 
@@ -232,7 +259,27 @@ export default function FlashcardViewer({ title, initialCards }: FlashcardViewer
                     Add Card
                 </button>
                 <button
-                    onClick={() => setShowAuthModal(true)}
+                    onClick={async () => {
+                        const auth = getClientAuth();
+                        const user = auth.currentUser;
+                        if (!user) {
+                            setShowAuthModal(true);
+                            return;
+                        }
+                        try {
+                            console.log("Saving cards:", cards);
+                            await setDoc(
+                                doc(db, "users", user.uid, "flashcardDeck", "main"),
+                                {
+                                    cards: cards,
+                                    updatedAt: Date.now(),
+                                }
+                            );
+                            console.log("Deck saved successfully");
+                        } catch (error) {
+                            console.error("Error saving deck:", error);
+                        }
+                    }}
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--accent-green)] text-white text-sm font-medium hover:bg-[#5FBF8F] transition-colors shadow-md"
                 >
                     <Save className="w-4 h-4" />

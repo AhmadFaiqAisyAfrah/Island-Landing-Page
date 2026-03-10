@@ -1,12 +1,26 @@
 "use client";
 
 import { X } from "lucide-react";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getClientAuth } from "@/lib/firebase";
 
 interface AuthModalProps {
     onClose: () => void;
 }
 
 export default function AuthModal({ onClose }: AuthModalProps) {
+    const handleGoogleLogin = async () => {
+        try {
+            const auth = getClientAuth();
+            const provider = new GoogleAuthProvider();
+            await signInWithPopup(auth, provider);
+            console.log("User logged in");
+            onClose();
+        } catch (error) {
+            console.error("Google login failed:", error);
+        }
+    };
+
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
@@ -44,9 +58,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 <div className="flex flex-col gap-3">
                     {/* Google sign-in button */}
                     <button
-                        onClick={() => {
-                            // TODO: connect to Firebase Auth later
-                        }}
+                        onClick={handleGoogleLogin}
                         className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-full bg-[var(--accent-green)] text-white text-sm font-semibold hover:bg-[#5FBF8F] transition-colors shadow-md"
                     >
                         {/* Google icon */}
