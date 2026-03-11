@@ -1,8 +1,11 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import FocusDemo from "@/components/FocusDemo";
+import FocusNotebooks from "@/components/FocusNotebooks";
 import MonetagInPagePush from "@/components/MonetagInPagePush";
 import { ArrowLeft } from "lucide-react";
+import { readdir } from "node:fs/promises";
+import path from "node:path";
 
 export const metadata: Metadata = {
     title: "Pomodoro Timer Online – Calm Focus Timer | Island",
@@ -25,7 +28,69 @@ export const metadata: Metadata = {
     },
 };
 
-export default function PomodoroPage() {
+const LABEL_MAP: Record<string, string> = {
+    forest_vibes: "Forest",
+    night_vibes: "Midnight",
+    ocean_vibes: "Ocean",
+    rainy_vibes: "Rainy",
+    snow_vibes: "Snow",
+};
+
+const ORDER_MAP: Record<string, number> = {
+    forest_vibes: 1,
+    night_vibes: 2,
+    ocean_vibes: 3,
+    rainy_vibes: 4,
+    snow_vibes: 5,
+};
+
+const formatLabel = (baseName: string) => {
+    if (LABEL_MAP[baseName]) {
+        return LABEL_MAP[baseName];
+    }
+
+    return baseName
+        .replaceAll("_", " ")
+        .trim()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const getMusicOptions = async () => {
+    const audioDir = path.join(process.cwd(), "public", "audio");
+    const entries = await readdir(audioDir, { withFileTypes: true });
+
+    const tracks = entries
+        .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".ogg"))
+        .map((entry) => {
+            const fileName = entry.name;
+            const baseName = fileName.replace(/\.ogg$/i, "");
+
+            return {
+                value: baseName,
+                label: formatLabel(baseName),
+                src: `/audio/${fileName}`,
+                sortOrder: ORDER_MAP[baseName] ?? 999,
+            };
+        })
+        .sort((a, b) => {
+            if (a.sortOrder !== b.sortOrder) {
+                return a.sortOrder - b.sortOrder;
+            }
+
+            return a.label.localeCompare(b.label);
+        })
+        .map((track) => ({
+            value: track.value,
+            label: track.label,
+            src: track.src,
+        }));
+
+    return [{ value: "none", label: "None", src: null }, ...tracks];
+};
+
+export default async function PomodoroPage() {
+    const musicOptions = await getMusicOptions();
+
     return (
         <div className="pt-24 min-h-screen bg-[var(--bg-primary)]">
             <div className="max-w-[1200px] mx-auto px-6 mb-4">
@@ -39,7 +104,26 @@ export default function PomodoroPage() {
             </div>
 
             <MonetagInPagePush />
-            <FocusDemo />
+            <FocusDemo musicOptions={musicOptions} />
+            <FocusNotebooks />
+
+            {/* Download Island CTA */}
+            <div className="py-24 bg-[var(--bg-primary)]">
+                <div className="max-w-[1200px] mx-auto px-6">
+                    <div className="text-center max-w-2xl mx-auto">
+                        <p className="text-[var(--paragraph-text)] mb-6 text-lg">
+                            Unlock the full island experience in the Island app. Focus sessions, tree variety, daily journals, and more.
+                        </p>
+                        <Link
+                            href="https://play.google.com/store/apps/details?id=com.ahmadfaiq.island"
+                            target="_blank"
+                            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--button-bg)] text-[var(--button-text)] rounded-full font-medium hover:bg-[var(--button-hover)] transition-all hover:scale-105"
+                        >
+                            Download Island on Google Play
+                        </Link>
+                    </div>
+                </div>
+            </div>
 
             {/* SEO Content Section */}
             <section className="max-w-[800px] mx-auto px-6 pb-24 pt-8">

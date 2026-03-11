@@ -31,7 +31,13 @@ const STAR_PARTICLES = [
     { top: "88%", left: "60%", size: 1.4, opacity: 0.24, delay: 2190 },
 ];
 
-export default function FocusDemo() {
+type MusicOption = {
+    value: string;
+    label: string;
+    src: string | null;
+};
+
+export default function FocusDemo({ musicOptions }: { musicOptions: MusicOption[] }) {
     const [isFocusing, setIsFocusing] = useState(false);
     const [selectedMinutes, setSelectedMinutes] = useState(DEFAULT_DURATION_MINUTES);
     const [sessionDurationSeconds, setSessionDurationSeconds] = useState(DEFAULT_DURATION_MINUTES * 60);
@@ -39,20 +45,64 @@ export default function FocusDemo() {
     const [completionState, setCompletionState] = useState<"hidden" | "open" | "closing">("hidden");
     const [isDragging, setIsDragging] = useState(false);
     const [dragProgress, setDragProgress] = useState<number | null>(null);
+    const [selectedMusic, setSelectedMusic] = useState("none");
 
     const endTimeRef = useRef<number | null>(null);
     const ringSvgRef = useRef<SVGSVGElement | null>(null);
     const closeDialogTimeoutRef = useRef<number | null>(null);
     const lastAngleRef = useRef<number | null>(null);
     const accumulatedMinutesRef = useRef<number>(DEFAULT_DURATION_MINUTES);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
         return () => {
             if (closeDialogTimeoutRef.current) {
                 window.clearTimeout(closeDialogTimeoutRef.current);
             }
+
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+                audioRef.current = null;
+            }
         };
     }, []);
+
+    const stopMusic = () => {
+        if (!audioRef.current) {
+            return;
+        }
+
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+    };
+
+    const playMusic = (musicValue: string) => {
+        const selectedOption = musicOptions.find((option) => option.value === musicValue);
+        if (!selectedOption || !selectedOption.src) {
+            stopMusic();
+            return;
+        }
+
+        const currentAudio = audioRef.current;
+        if (currentAudio && currentAudio.src.endsWith(selectedOption.src)) {
+            if (currentAudio.paused) {
+                currentAudio.play().catch(() => undefined);
+            }
+            return;
+        }
+
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+        }
+
+        const nextAudio = new Audio(selectedOption.src);
+        nextAudio.loop = true;
+        nextAudio.volume = 0.6;
+        audioRef.current = nextAudio;
+        nextAudio.play().catch(() => undefined);
+    };
 
     useEffect(() => {
         if (!isFocusing) {
@@ -71,6 +121,7 @@ export default function FocusDemo() {
             setRemainingMs(remaining);
 
             if (remaining <= 0) {
+                stopMusic();
                 setIsFocusing(false);
                 setCompletionState("open");
                 endTimeRef.current = null;
@@ -141,6 +192,7 @@ export default function FocusDemo() {
 
     const toggleFocus = () => {
         if (isFocusing) {
+            stopMusic();
             setIsFocusing(false);
             setRemainingMs(selectedMinutes * 60 * 1000);
             endTimeRef.current = null;
@@ -151,6 +203,18 @@ export default function FocusDemo() {
             endTimeRef.current = Date.now() + durationSeconds * 1000;
             setIsFocusing(true);
             setCompletionState("hidden");
+
+            if (selectedMusic !== "none") {
+                playMusic(selectedMusic);
+            }
+        }
+    };
+
+    const handleMusicChange = (nextMusic: string) => {
+        setSelectedMusic(nextMusic);
+
+        if (nextMusic === "none") {
+            stopMusic();
         }
     };
 
@@ -440,6 +504,24 @@ export default function FocusDemo() {
                             </div>
                         </div>
 
+                        <div className="w-full mb-6 rounded-2xl border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--card-bg)_78%,transparent)] px-4 py-3 backdrop-blur-sm">
+                            <label htmlFor="focus-music" className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)] mb-2 block">
+                                🎵 Focus Music
+                            </label>
+                            <select
+                                id="focus-music"
+                                value={selectedMusic}
+                                onChange={(event) => handleMusicChange(event.target.value)}
+                                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2.5 text-[var(--heading-text)] outline-none transition-colors hover:border-[var(--accent-green)] focus:border-[var(--accent-green)]"
+                            >
+                                {musicOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                         <button
                             onClick={toggleFocus}
                             className={`w-full py-5 rounded-[24px] font-bold text-lg flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 ${isFocusing
@@ -462,19 +544,6 @@ export default function FocusDemo() {
                     </div>
                 </div>
 
-                {/* Bottom CTA */}
-                <div className="mt-16 text-center max-w-2xl mx-auto">
-                    <p className="text-[var(--paragraph-text)] mb-6 text-lg">
-                        Unlock the full island experience in the Island app. Focus sessions, tree variety, daily journals, and more.
-                    </p>
-                    <Link
-                        href="https://play.google.com/store/apps/details?id=com.ahmadfaiq.island"
-                        target="_blank"
-                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--button-bg)] text-[var(--button-text)] rounded-full font-medium hover:bg-[var(--button-hover)] transition-all hover:scale-105"
-                    >
-                        Download Island on Google Play
-                    </Link>
-                </div>
 
             </div>
         </div>
