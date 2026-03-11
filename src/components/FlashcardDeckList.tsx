@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Layers } from "lucide-react";
+import { Plus, Layers, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { getClientAuth, db } from "@/lib/firebase";
 import { collection, query, orderBy, getDocs, addDoc } from "firebase/firestore";
