@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight, RotateCcw, Plus, Pencil, Trash2, X } from "lucide-react";
+import TinderCard from "react-tinder-card";
+import StudyCompletedModal from "@/components/StudyCompletedModal";
 
 interface Flashcard {
     id?: string;
@@ -11,7 +13,9 @@ interface Flashcard {
 
 interface FlashcardViewerProps {
     title: string;
+    deckId: string;
     cards: Flashcard[];
+    studyMode?: boolean;
     onAddCard?: (question: string, answer: string) => void;
     onEditCard?: (index: number, question: string, answer: string) => void;
     onDeleteCard?: (index: number) => void;
@@ -21,13 +25,18 @@ type ModalType = "add" | "edit" | null;
 
 export default function FlashcardViewer({
     title,
+    deckId,
     cards,
+    studyMode = false,
     onAddCard,
     onEditCard,
     onDeleteCard,
 }: FlashcardViewerProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
+    const [studyCompleted, setStudyCompleted] = useState(false);
+    const [cardStatus, setCardStatus] = useState<Record<number, "review" | "mastered" | null>>({});
+    const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
 
     // Modal state
     const [modalType, setModalType] = useState<ModalType>(null);
@@ -46,7 +55,53 @@ export default function FlashcardViewer({
 
     function handleNext() {
         setIsFlipped(false);
-        setCurrentIndex((prev) => (prev === cards.length - 1 ? 0 : prev + 1));
+        if (currentIndex === cards.length - 1) {
+            setStudyCompleted(true);
+        } else {
+            setCurrentIndex((prev) => prev + 1);
+        }
+    }
+
+    function handleStudyAgain() {
+        setCurrentIndex(0);
+        setIsFlipped(false);
+        setStudyCompleted(false);
+        setCardStatus({});
+    }
+
+    const markCard = useCallback((status: "review" | "mastered") => {
+        setCardStatus((prev) => {
+            if (prev[currentIndex] === status) return prev;
+            return {
+                ...prev,
+                [currentIndex]: status,
+            };
+        });
+    }, [currentIndex]);
+
+    const masteredCount = Object.values(cardStatus).filter((value) => value === "mastered").length;
+    const reviewCount = Object.values(cardStatus).filter((value) => value === "review").length;
+    function handleSwipe(direction: string) {
+        if (!studyMode) return;
+
+        setSwipeDirection(direction as "left" | "right");
+
+        if (direction === "left") {
+            markCard("review");
+        }
+
+        if (direction === "right") {
+            markCard("mastered");
+        }
+
+        if (currentIndex < cards.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+        } else {
+            setStudyCompleted(true);
+        }
+
+        setIsFlipped(false);
+        setTimeout(() => setSwipeDirection(null), 220);
     }
 
     // --- Add ---
@@ -89,9 +144,9 @@ export default function FlashcardViewer({
     const isEmpty = cards.length === 0;
 
     return (
-        <div className="w-full max-w-[600px] mx-auto">
+        <div className={`${studyMode ? "w-full flex flex-col items-center justify-center min-h-[75vh]" : "w-full max-w-[600px] mx-auto"}`}>
             {/* Deck Title + Counter */}
-            <div className="flex items-center justify-between mb-6">
+            <div className={`flex items-center justify-between mb-6 ${studyMode ? "w-full max-w-4xl" : ""}`}>
                 <h2 className="text-xl font-bold text-[var(--heading-text)]">
                     {title}
                 </h2>
@@ -122,51 +177,147 @@ export default function FlashcardViewer({
             ) : (
                 <>
                     {/* Card */}
-                    <button
-                        onClick={handleFlip}
-                        className="w-full min-h-[260px] rounded-3xl bg-[var(--card-bg)] border border-[var(--border-color)] shadow-[0_12px_32px_rgba(8,15,26,0.12)] p-8 cursor-pointer transition-all duration-300 hover:shadow-[0_16px_40px_rgba(8,15,26,0.18)] hover:-translate-y-0.5 flex flex-col items-center justify-center text-center relative overflow-hidden group"
-                    >
-                        {/* Side indicator */}
-                        <span className="absolute top-4 left-5 text-xs font-semibold tracking-wider uppercase text-[var(--paragraph-text)] opacity-40">
-                            {isFlipped ? "Answer" : "Question"}
-                        </span>
+                    {studyMode ? (
+                        <div className="flex justify-center items-center w-full">
+                            <div className="relative w-full max-w-4xl mx-auto h-[420px] flex items-center justify-center">
+                                <div className="absolute inset-0 grid grid-cols-3 rounded-3xl overflow-hidden pointer-events-none">
+                                    <div className="flex items-center justify-center bg-yellow-400 text-black font-semibold">
+                                        Review
+                                    </div>
+                                    <div />
+                                    <div className="flex items-center justify-center bg-green-500 text-black font-semibold">
+                                        Mastered
+                                    </div>
+                                </div>
 
-                        <p className="text-lg md:text-xl font-semibold text-[var(--heading-text)] leading-relaxed max-w-[90%]">
-                            {isFlipped ? card.answer : card.question}
-                        </p>
+                                <div className="relative z-10 w-full max-w-2xl h-[420px] flex items-center justify-center">
+                                    <TinderCard
+                                        key={currentIndex}
+                                        onSwipe={handleSwipe}
+                                        preventSwipe={["up", "down"]}
+                                        className="absolute"
+                                    >
+                                        <div
+                                            onClick={handleFlip}
+                                            className={`w-full max-w-2xl h-[420px] flex items-center justify-center text-center px-16 rounded-3xl bg-[var(--card-bg)] border border-[var(--border-color)] shadow-[0_12px_32px_rgba(8,15,26,0.12)] relative overflow-hidden transition-all duration-300 ${swipeDirection === "right" ? "border-green-500 border-2" : swipeDirection === "left" ? "border-yellow-500 border-2" : ""}`}
+                                        >
+                                            {/* Swipe feedback overlay */}
+                                            {swipeDirection === "right" && (
+                                                <div className="absolute inset-0 bg-green-500/20 rounded-3xl flex items-center justify-center z-10">
+                                                    <span className="text-green-500 font-bold text-2xl transform -rotate-12">MASTERED</span>
+                                                </div>
+                                            )}
+                                            {swipeDirection === "left" && (
+                                                <div className="absolute inset-0 bg-yellow-500/20 rounded-3xl flex items-center justify-center z-10">
+                                                    <span className="text-yellow-500 font-bold text-2xl transform rotate-12">REVIEW</span>
+                                                </div>
+                                            )}
 
-                        <span className="absolute bottom-4 text-xs text-[var(--paragraph-text)] opacity-30 group-hover:opacity-50 transition-opacity">
-                            Tap to {isFlipped ? "see question" : "reveal answer"}
-                        </span>
-                    </button>
+                                            {/* Side indicator */}
+                                            <span className="absolute top-4 left-5 text-xs font-semibold tracking-wider uppercase text-[var(--paragraph-text)] opacity-40">
+                                                {isFlipped ? "Answer" : "Question"}
+                                            </span>
 
-                    {/* Navigation + Flip */}
-                    <div className="flex items-center justify-center gap-4 mt-6">
-                        <button
-                            onClick={handlePrevious}
-                            className="w-12 h-12 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] flex items-center justify-center text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors shadow-sm"
-                            aria-label="Previous card"
-                        >
-                            <ChevronLeft className="w-5 h-5" />
-                        </button>
+                                            {/* Text wrapper */}
+                                            <div className="max-w-2xl">
+                                                <p className="text-xl md:text-2xl font-semibold text-[var(--heading-text)] leading-relaxed break-words">
+                                                    {isFlipped ? card.answer : card.question}
+                                                </p>
+                                            </div>
 
+                                            <span className="absolute bottom-4 text-xs text-[var(--paragraph-text)] opacity-30">
+                                                Swipe left (review) or right (mastered)
+                                            </span>
+                                        </div>
+                                    </TinderCard>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
                         <button
                             onClick={handleFlip}
-                            className="px-6 py-3 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] text-sm font-medium text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors shadow-sm"
+                            className="w-full min-h-[260px] rounded-3xl bg-[var(--card-bg)] border border-[var(--border-color)] shadow-[0_12px_32px_rgba(8,15,26,0.12)] p-8 cursor-pointer transition-all duration-300 hover:shadow-[0_16px_40px_rgba(8,15,26,0.18)] hover:-translate-y-0.5 flex flex-col items-center justify-center text-center relative overflow-hidden group"
                         >
-                            Flip
-                        </button>
+                            {/* Side indicator */}
+                            <span className="absolute top-4 left-5 text-xs font-semibold tracking-wider uppercase text-[var(--paragraph-text)] opacity-40">
+                                {isFlipped ? "Answer" : "Question"}
+                            </span>
 
-                        <button
-                            onClick={handleNext}
-                            className="w-12 h-12 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] flex items-center justify-center text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors shadow-sm"
-                            aria-label="Next card"
-                        >
-                            <ChevronRight className="w-5 h-5" />
-                        </button>
-                    </div>
+                            <p className="text-lg md:text-xl font-semibold text-[var(--heading-text)] leading-relaxed max-w-[90%]">
+                                {isFlipped ? card.answer : card.question}
+                            </p>
 
-                    {/* Edit / Delete / Reset row */}
+                            <span className="absolute bottom-4 text-xs text-[var(--paragraph-text)] opacity-30 group-hover:opacity-50 transition-opacity">
+                                Tap to {isFlipped ? "see question" : "reveal answer"}
+                            </span>
+                        </button>
+                    )}
+
+                    {/* Navigation + Flip */}
+                    {studyMode ? (
+                        <div className="flex flex-col items-center gap-4 mt-4">
+                            {/* Navigation row */}
+                            <div className="flex items-center gap-6">
+                                <button
+                                    onClick={handlePrevious}
+                                    className="w-12 h-12 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] flex items-center justify-center text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors shadow-sm"
+                                    aria-label="Previous card"
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                </button>
+
+                                <button
+                                    onClick={handleFlip}
+                                    className="px-8 py-3 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] text-sm font-medium text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors shadow-sm"
+                                >
+                                    Flip
+                                </button>
+
+                                <button
+                                    onClick={handleNext}
+                                    className="w-12 h-12 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] flex items-center justify-center text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors shadow-sm"
+                                    aria-label="Next card"
+                                >
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Study progress stats */}
+                            <div className="flex items-center gap-4 mt-2">
+                                <span className="text-sm text-green-500 font-medium">{masteredCount} mastered</span>
+                                <span className="text-[var(--border-color)]">|</span>
+                                <span className="text-sm text-yellow-500 font-medium">{reviewCount} review</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center gap-4 mt-6">
+                            <button
+                                onClick={handlePrevious}
+                                className="w-12 h-12 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] flex items-center justify-center text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors shadow-sm"
+                                aria-label="Previous card"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+
+                            <button
+                                onClick={handleFlip}
+                                className="px-6 py-3 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] text-sm font-medium text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors shadow-sm"
+                            >
+                                Flip
+                            </button>
+
+                            <button
+                                onClick={handleNext}
+                                className="w-12 h-12 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] flex items-center justify-center text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors shadow-sm"
+                                aria-label="Next card"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Edit / Delete / Reset row - hidden in study mode */}
+                    {!studyMode && (
                     <div className="flex items-center justify-center gap-3 mt-4">
                         {onEditCard && (
                             <button
@@ -194,11 +345,12 @@ export default function FlashcardViewer({
                             Reset
                         </button>
                     </div>
+                    )}
                 </>
             )}
 
-            {/* Add Card button */}
-            {onAddCard && !isEmpty && (
+            {/* Add Card button - hidden in study mode */}
+            {onAddCard && !isEmpty && !studyMode && (
                 <div className="flex justify-center mt-6">
                     <button
                         onClick={openAddModal}
@@ -211,7 +363,7 @@ export default function FlashcardViewer({
             )}
 
             {/* Keyboard hint */}
-            {!isEmpty && (
+            {!isEmpty && !studyMode && (
                 <p className="text-center text-xs text-[var(--paragraph-text)] opacity-50 mt-4 hidden md:block">
                     Use ← → arrow keys to navigate, Enter to flip
                 </p>
@@ -313,6 +465,15 @@ export default function FlashcardViewer({
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* ══════ Study Completed Modal ══════ */}
+            {studyCompleted && (
+                <StudyCompletedModal
+                    deckId={deckId}
+                    onStudyAgain={handleStudyAgain}
+                    onClose={() => setStudyCompleted(false)}
+                />
             )}
         </div>
     );

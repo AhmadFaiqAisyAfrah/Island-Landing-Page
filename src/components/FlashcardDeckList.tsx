@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, BookOpen, Layers } from "lucide-react";
+import { Plus, Layers } from "lucide-react";
 import Link from "next/link";
 import { getClientAuth, db } from "@/lib/firebase";
 import { collection, query, orderBy, getDocs, addDoc } from "firebase/firestore";
@@ -12,6 +12,7 @@ import CreateDeckModal from "@/components/CreateDeckModal";
 interface Deck {
     id: string;
     title: string;
+    icon: string;
     cardCount: number;
     updatedAt: number;
 }
@@ -60,6 +61,7 @@ export default function FlashcardDeckList() {
                 result.push({
                     id: d.id,
                     title: data.title,
+                    icon: data.icon || "📚",
                     cardCount: cardsSnap.size,
                     updatedAt: data.updatedAt || 0,
                 });
@@ -71,12 +73,13 @@ export default function FlashcardDeckList() {
         setLoading(false);
     }
 
-    async function handleCreateDeck(name: string) {
+    async function handleCreateDeck(name: string, icon: string) {
         if (!user) return;
         try {
             const now = Date.now();
             await addDoc(collection(db, "users", user.uid, "flashcardDecks"), {
                 title: name,
+                icon: icon,
                 createdAt: now,
                 updatedAt: now,
             });
@@ -158,8 +161,8 @@ export default function FlashcardDeckList() {
                             className="group block rounded-2xl bg-[var(--card-bg)] border border-[var(--border-color)] p-6 shadow-sm hover:shadow-[0_12px_32px_rgba(8,15,26,0.12)] hover:-translate-y-0.5 transition-all"
                         >
                             <div className="flex items-start justify-between mb-3">
-                                <div className="w-10 h-10 rounded-xl bg-[var(--accent-green)]/10 flex items-center justify-center">
-                                    <BookOpen className="w-5 h-5 text-[var(--accent-green)]" />
+                                <div className="w-10 h-10 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-xl">
+                                    {deck.icon}
                                 </div>
                             </div>
                             <h3 className="text-base font-semibold text-[var(--heading-text)] mb-1 group-hover:text-[var(--accent-green)] transition-colors">

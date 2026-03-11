@@ -194,7 +194,9 @@ export default function DeckDetailPage() {
                     <div className="pb-24">
                         <FlashcardViewer
                             title={deckTitle}
+                            deckId={deckId}
                             cards={cards}
+                            studyMode={studyMode}
                             onAddCard={handleAddCard}
                             onEditCard={handleEditCard}
                             onDeleteCard={handleDeleteCard}
