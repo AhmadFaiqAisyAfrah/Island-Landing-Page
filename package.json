@@ -2,6 +2,9 @@
   "name": "island-web",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,7 +13,7 @@
   },
   "dependencies": {
     "@notionhq/client": "^2.2.15",
-    "@react-spring/web": "^10.0.3",
+    "@react-spring/web": "^9.7.5",
     "date-fns": "^4.1.0",
     "firebase": "^12.10.0",
     "lucide-react": "^0.468.0",
@@ -18,8 +21,8 @@
     "notion-client": "^7.8.2",
     "notion-utils": "^7.8.2",
     "prismjs": "^1.30.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-notion-x": "^7.8.2",
     "react-tinder-card": "^1.6.4"
   },
@@ -28,8 +31,8 @@
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.0.0",
     "@types/prismjs": "^1.26.6",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.1.0",
     "postcss": "^8.5.0",
