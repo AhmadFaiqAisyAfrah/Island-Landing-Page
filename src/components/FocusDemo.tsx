@@ -13,16 +13,32 @@ const RING_RADIUS = 180;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 const SVG_SIZE = 400;
 const SVG_CENTER = SVG_SIZE / 2;
+const STAR_PARTICLES = [
+    { top: "7%", left: "8%", size: 1.4, opacity: 0.36, delay: 120 },
+    { top: "10%", left: "46%", size: 1.2, opacity: 0.22, delay: 260 },
+    { top: "12%", left: "83%", size: 2.2, opacity: 0.34, delay: 420 },
+    { top: "22%", left: "17%", size: 1.8, opacity: 0.29, delay: 560 },
+    { top: "25%", left: "63%", size: 1.6, opacity: 0.32, delay: 710 },
+    { top: "31%", left: "90%", size: 2.4, opacity: 0.28, delay: 860 },
+    { top: "39%", left: "28%", size: 1.3, opacity: 0.26, delay: 1020 },
+    { top: "42%", left: "70%", size: 2.0, opacity: 0.33, delay: 1150 },
+    { top: "51%", left: "7%", size: 1.5, opacity: 0.28, delay: 1290 },
+    { top: "58%", left: "87%", size: 1.7, opacity: 0.3, delay: 1450 },
+    { top: "66%", left: "22%", size: 2.1, opacity: 0.27, delay: 1600 },
+    { top: "71%", left: "52%", size: 1.2, opacity: 0.3, delay: 1740 },
+    { top: "76%", left: "80%", size: 1.8, opacity: 0.25, delay: 1890 },
+    { top: "85%", left: "12%", size: 1.6, opacity: 0.3, delay: 2030 },
+    { top: "88%", left: "60%", size: 1.4, opacity: 0.24, delay: 2190 },
+];
 
 export default function FocusDemo() {
     const [isFocusing, setIsFocusing] = useState(false);
     const [selectedMinutes, setSelectedMinutes] = useState(DEFAULT_DURATION_MINUTES);
     const [sessionDurationSeconds, setSessionDurationSeconds] = useState(DEFAULT_DURATION_MINUTES * 60);
-    const [timeLeft, setTimeLeft] = useState(DEFAULT_DURATION_MINUTES * 60);
+    const [remainingMs, setRemainingMs] = useState(DEFAULT_DURATION_MINUTES * 60 * 1000);
     const [completionState, setCompletionState] = useState<"hidden" | "open" | "closing">("hidden");
     const [isDragging, setIsDragging] = useState(false);
     const [dragProgress, setDragProgress] = useState<number | null>(null);
-    const [isRingHovered, setIsRingHovered] = useState(false);
 
     const endTimeRef = useRef<number | null>(null);
     const ringSvgRef = useRef<SVGSVGElement | null>(null);
@@ -44,25 +60,34 @@ export default function FocusDemo() {
             return;
         }
 
-        const interval = setInterval(() => {
-            const now = Date.now();
-            const remaining = Math.max(0, Math.ceil((endTimeRef.current! - now) / 1000));
+        let frame = 0;
 
-            setTimeLeft(remaining);
+        const animate = () => {
+            if (!endTimeRef.current) {
+                return;
+            }
+
+            const remaining = Math.max(0, endTimeRef.current - Date.now());
+            setRemainingMs(remaining);
 
             if (remaining <= 0) {
                 setIsFocusing(false);
                 setCompletionState("open");
                 endTimeRef.current = null;
+                return;
             }
-        }, 250);
 
-        return () => clearInterval(interval);
+            frame = window.requestAnimationFrame(animate);
+        };
+
+        frame = window.requestAnimationFrame(animate);
+
+        return () => window.cancelAnimationFrame(frame);
     }, [isFocusing]);
 
     useEffect(() => {
         if (!isFocusing) {
-            setTimeLeft(selectedMinutes * 60);
+            setRemainingMs(selectedMinutes * 60 * 1000);
         }
     }, [isFocusing, selectedMinutes]);
 
@@ -117,12 +142,12 @@ export default function FocusDemo() {
     const toggleFocus = () => {
         if (isFocusing) {
             setIsFocusing(false);
-            setTimeLeft(selectedMinutes * 60);
+            setRemainingMs(selectedMinutes * 60 * 1000);
             endTimeRef.current = null;
         } else {
             const durationSeconds = selectedMinutes * 60;
             setSessionDurationSeconds(durationSeconds);
-            setTimeLeft(durationSeconds);
+            setRemainingMs(durationSeconds * 1000);
             endTimeRef.current = Date.now() + durationSeconds * 1000;
             setIsFocusing(true);
             setCompletionState("hidden");
@@ -151,11 +176,12 @@ export default function FocusDemo() {
     const sliderProgress = isDragging && dragProgress !== null
         ? dragProgress
         : selectedMinutes / MAX_DURATION_MINUTES;
-    const elapsedProgress = 1 - timeLeft / sessionDurationSeconds;
+    const timeLeft = Math.max(0, Math.ceil(remainingMs / 1000));
+    const elapsedProgress = 1 - remainingMs / (sessionDurationSeconds * 1000);
     const progress = isFocusing ? elapsedProgress : sliderProgress;
     const clampedProgress = Math.min(1, Math.max(0, progress));
-    const filledLength = RING_CIRCUMFERENCE * clampedProgress;
-    const knobAngle = -Math.PI / 2 + 2 * Math.PI * sliderProgress;
+    const strokeDashoffset = RING_CIRCUMFERENCE * (1 - clampedProgress);
+    const knobAngle = -Math.PI / 2 + 2 * Math.PI * clampedProgress;
     const handleX = SVG_CENTER + RING_RADIUS * Math.cos(knobAngle);
     const handleY = SVG_CENTER + RING_RADIUS * Math.sin(knobAngle);
     const isCompletionVisible = completionState !== "hidden";
@@ -179,34 +205,100 @@ export default function FocusDemo() {
                 <div className="grid md:grid-cols-[1.3fr_1fr] gap-8 md:gap-16 items-center bg-[var(--card-bg)] rounded-[40px] p-8 md:p-12 shadow-[0_24px_52px_rgba(8,15,26,0.25)] border border-[var(--border-color)] relative overflow-hidden">
 
                     {/* LEFT SIDE: Island Visual */}
-                    <div className="relative w-full aspect-square md:aspect-auto md:h-[500px] flex items-center justify-center bg-[var(--demo-panel-bg)] rounded-3xl overflow-hidden">
+                    <div
+                        className="relative w-full aspect-square md:aspect-auto md:h-[520px] flex items-center justify-center rounded-3xl overflow-hidden"
+                        style={{
+                            background: "radial-gradient(circle at 50% 0%, #3f5978 0%, #314b6a 36%, #273f5a 72%, #213650 100%)",
+                        }}
+                    >
+
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_14%,rgba(255,255,255,0.12),transparent_32%),radial-gradient(circle_at_86%_88%,rgba(141,170,198,0.18),transparent_38%)]" />
 
                         {/* Stars Background */}
                         <div className="absolute inset-0 overflow-hidden">
-                            <div className={`absolute top-[15%] left-[20%] w-1.5 h-1.5 bg-white rounded-full ${isFocusing ? 'animate-twinkle delay-100' : 'opacity-40'}`} />
-                            <div className={`absolute top-[25%] left-[70%] w-2 h-2 bg-white rounded-full ${isFocusing ? 'animate-twinkle delay-500' : 'opacity-30'}`} />
-                            <div className={`absolute top-[45%] left-[10%] w-1 h-1 bg-white rounded-full ${isFocusing ? 'animate-twinkle delay-300' : 'opacity-50'}`} />
-                            <div className={`absolute top-[10%] left-[80%] w-1.5 h-1.5 bg-white rounded-full ${isFocusing ? 'animate-twinkle delay-700' : 'opacity-20'}`} />
-                            <div className={`absolute top-[60%] left-[85%] w-2 h-2 bg-white rounded-full ${isFocusing ? 'animate-twinkle delay-1000' : 'opacity-40'}`} />
+                            {STAR_PARTICLES.map((star, index) => (
+                                <div
+                                    key={`star-${index}`}
+                                    className={`absolute rounded-full ${isFocusing ? "animate-twinkle" : ""}`}
+                                    style={{
+                                        top: star.top,
+                                        left: star.left,
+                                        width: `${star.size}px`,
+                                        height: `${star.size}px`,
+                                        background: "rgba(229,242,255,0.95)",
+                                        boxShadow: "0 0 6px rgba(203,226,249,0.28)",
+                                        opacity: isFocusing ? Math.min(0.52, star.opacity + 0.08) : star.opacity,
+                                        animationDelay: `${star.delay}ms`,
+                                    }}
+                                />
+                            ))}
                         </div>
 
                         {/* Island SVG and Progress Ring container */}
-                        <div className="relative w-full max-w-[400px] aspect-square flex items-center justify-center z-10 drop-shadow-2xl">
-                            <IslandSVG isFocusing={isFocusing} className="w-[85%] h-[85%] relative z-10" />
+                        <div className="relative w-full max-w-[470px] aspect-square flex items-center justify-center z-10">
+                            <div className="absolute inset-[23%] rounded-full bg-[#7b94ad]/20 blur-[40px]" />
+
+                            <div className={`relative z-10 w-[89%] h-[89%] ${isFocusing ? "animate-float" : "animate-float-slow"}`}>
+                                <IslandSVG isFocusing={isFocusing} className="w-full h-full" />
+                            </div>
+
+                            <div className="absolute bottom-[20%] w-[39%] h-[7%] rounded-full bg-[#111f31]/40 blur-[14px] z-[5]" />
 
                             <svg
                                 ref={ringSvgRef}
                                 viewBox="0 0 400 400"
                                 className="absolute inset-0 w-full h-full z-20"
                             >
+                                <defs>
+                                    <linearGradient id="orbitProgress" x1="0" y1="0" x2="1" y2="1">
+                                        <stop offset="0%" stopColor="rgba(255,255,255,0.92)" />
+                                        <stop offset="100%" stopColor="rgba(226,238,251,0.72)" />
+                                    </linearGradient>
+                                    <linearGradient id="orbitLeftGlow" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stopColor="rgba(255,255,255,0.45)" />
+                                        <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                                    </linearGradient>
+                                    <filter id="orbitGlowBlur" x="-50%" y="-50%" width="200%" height="200%">
+                                        <feGaussianBlur stdDeviation="5.4" />
+                                    </filter>
+                                </defs>
+
                                 {/* Background Ring Track */}
                                 <circle
                                     cx="200"
                                     cy="200"
                                     r="180"
                                     fill="none"
-                                    stroke="var(--demo-ring-track)"
-                                    strokeWidth="6"
+                                    stroke="rgba(180, 197, 216, 0.35)"
+                                    strokeWidth="2.2"
+                                />
+
+                                <path
+                                    d="M 58 202 A 142 142 0 0 1 86 115"
+                                    fill="none"
+                                    stroke="url(#orbitLeftGlow)"
+                                    strokeWidth="12"
+                                    strokeLinecap="round"
+                                    filter="url(#orbitGlowBlur)"
+                                    opacity="0.9"
+                                />
+
+                                <path
+                                    d="M 82 106 A 156 156 0 0 1 136 64"
+                                    fill="none"
+                                    stroke="rgba(255,255,255,0.32)"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    opacity="0.82"
+                                />
+
+                                <path
+                                    d="M 294 351 A 154 154 0 0 0 338 320"
+                                    fill="none"
+                                    stroke="rgba(194,214,236,0.22)"
+                                    strokeWidth="2.8"
+                                    strokeLinecap="round"
+                                    filter="url(#orbitGlowBlur)"
                                 />
 
                                 {isDragging && !isFocusing && (
@@ -215,9 +307,8 @@ export default function FocusDemo() {
                                         cy="200"
                                         r="180"
                                         fill="none"
-                                        stroke="var(--accent-green)"
-                                        strokeWidth="12"
-                                        strokeOpacity="0.2"
+                                        stroke="rgba(226,236,248,0.2)"
+                                        strokeWidth="6"
                                     />
                                 )}
 
@@ -227,17 +318,27 @@ export default function FocusDemo() {
                                     cy="200"
                                     r="180"
                                     fill="none"
-                                    stroke="var(--accent-green)"
-                                    strokeWidth="8"
+                                    stroke="url(#orbitProgress)"
+                                    strokeWidth="4.8"
                                     strokeLinecap="round"
-                                    strokeDasharray={`${filledLength} ${RING_CIRCUMFERENCE}`}
-                                    strokeDashoffset="0"
+                                    strokeDasharray={RING_CIRCUMFERENCE}
+                                    strokeDashoffset={strokeDashoffset}
                                     transform="rotate(-90 200 200)"
-                                    className={isFocusing ? "transition-[stroke-dasharray] duration-500" : (isDragging ? "" : "transition-[stroke,stroke-dasharray] duration-150")}
+                                    className={isFocusing ? "" : (isDragging ? "" : "transition-[stroke,stroke-dashoffset] duration-150")}
                                     style={{
                                         transition: isDragging ? "none" : undefined,
-                                        filter: isDragging ? "drop-shadow(0 0 6px rgba(168, 213, 186, 0.35))" : "none",
+                                        filter: "drop-shadow(0 0 5px rgba(246, 251, 255, 0.32))",
                                     }}
+                                />
+
+                                <circle
+                                    cx={handleX}
+                                    cy={handleY}
+                                    r={isFocusing ? 6 : 7}
+                                    fill="#f8fbff"
+                                    stroke="rgba(156,179,202,0.6)"
+                                    strokeWidth="1.2"
+                                    style={{ filter: "drop-shadow(0 0 6px rgba(234,244,255,0.5))" }}
                                 />
 
                                 {!isFocusing && (
@@ -258,8 +359,6 @@ export default function FocusDemo() {
                                             r="30"
                                             fill="transparent"
                                             className="cursor-grab active:cursor-grabbing touch-none"
-                                            onMouseEnter={() => setIsRingHovered(true)}
-                                            onMouseLeave={() => setIsRingHovered(false)}
                                             onPointerDown={(event) => {
                                                 event.preventDefault();
                                                 const angle = getPointerAngle(event.clientX, event.clientY);
@@ -283,19 +382,6 @@ export default function FocusDemo() {
                                                 setDragProgress(null);
                                                 lastAngleRef.current = null;
                                                 event.currentTarget.releasePointerCapture(event.pointerId);
-                                            }}
-                                        />
-                                        <circle
-                                            cx={handleX}
-                                            cy={handleY}
-                                            r="8"
-                                            fill={isRingHovered || isDragging ? "#8ad8a9" : "var(--accent-green)"}
-                                            stroke="var(--demo-panel-bg)"
-                                            strokeWidth="2"
-                                            style={{
-                                                filter: isRingHovered || isDragging
-                                                    ? "drop-shadow(0 0 8px rgba(198, 230, 210, 0.6))"
-                                                    : "none",
                                             }}
                                         />
                                     </>
@@ -330,7 +416,7 @@ export default function FocusDemo() {
                                         className="flex items-center justify-center gap-2 w-full py-4 bg-[var(--button-bg)] text-[var(--button-text)] rounded-2xl font-medium hover:bg-[var(--button-hover)] transition-colors"
                                     >
                                         <Image
-                                            src="/launchpad/ic_launcher.png"
+                                            src="/island-logo.png"
                                             alt="Island Logo"
                                             width={24}
                                             height={24}
