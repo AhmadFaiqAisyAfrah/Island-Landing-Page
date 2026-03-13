@@ -3,6 +3,9 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { ArrowLeft, Plus, Check, CalendarDays } from "lucide-react";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { addDoc, collection, doc, onSnapshot, orderBy, query, updateDoc } from "firebase/firestore";
+import { db, getClientAuth } from "@/lib/firebase";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
@@ -1069,39 +1072,119 @@ function NotebookRoom({
 /* ─────────────── Main FocusNotebooks ─────────────── */
 
 export default function FocusNotebooks() {
+    const [user, setUser] = useState<User | null>(null);
+    const [authLoading, setAuthLoading] = useState(true);
     const [notebooks, setNotebooks] = useState<Notebook[]>(DEFAULT_NOTEBOOKS);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [notebookName, setNotebookName] = useState("");
     const [activeNotebookId, setActiveNotebookId] = useState<string | null>(null);
 
+    useEffect(() => {
+        const auth = getClientAuth();
+        const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
+            setUser(nextUser);
+            setAuthLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        if (authLoading) return;
+        if (!user) {
+            setNotebooks(DEFAULT_NOTEBOOKS);
+            return;
+        }
+
+        const notebooksRef = collection(db, "users", user.uid, "focusNotebooks");
+        const notebooksQuery = query(notebooksRef, orderBy("createdAt", "asc"));
+
+        const unsubscribe = onSnapshot(notebooksQuery, (snapshot) => {
+            const nextNotebooks: Notebook[] = snapshot.docs.map((snapshotDoc) => {
+                const data = snapshotDoc.data();
+                const rawTasks = Array.isArray(data.tasks) ? data.tasks : [];
+
+                return {
+                    id: snapshotDoc.id,
+                    emoji: typeof data.emoji === "string" ? data.emoji : "📒",
+                    name: typeof data.name === "string" ? data.name : "Untitled Notebook",
+                    createdLabel: typeof data.createdLabel === "string" ? data.createdLabel : "Created today",
+                    tasks: rawTasks.map((task: Partial<Task>) => ({
+                        id: typeof task.id === "string" ? task.id : `task-${Math.random().toString(36).slice(2, 8)}`,
+                        name: typeof task.name === "string" ? task.name : "",
+                        date: typeof task.date === "string" ? task.date : "",
+                        tag: typeof task.tag === "string" ? task.tag : "",
+                        emoji: typeof task.emoji === "string" ? task.emoji : "",
+                        estimatedMinutes: typeof task.estimatedMinutes === "number" ? task.estimatedMinutes : null,
+                        remainingMinutes: typeof task.remainingMinutes === "number" ? task.remainingMinutes : null,
+                        completed: Boolean(task.completed),
+                    })),
+                };
+            });
+
+            setNotebooks(nextNotebooks);
+        });
+
+        return () => unsubscribe();
+    }, [user, authLoading]);
+
     const activeNotebook = activeNotebookId
         ? notebooks.find((n) => n.id === activeNotebookId) ?? null
         : null;
 
-    const handleCreateNotebook = () => {
+    const handleCreateNotebook = async () => {
         const trimmed = notebookName.trim();
         if (!trimmed) return;
 
-        const newNotebook: Notebook = {
-            id: `notebook-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-            emoji: NOTEBOOK_EMOJI_POOL[Math.floor(Math.random() * NOTEBOOK_EMOJI_POOL.length)] || "📒",
-            name: trimmed,
-            createdLabel: "Created today",
-            tasks: [],
-        };
+        const randomEmoji = NOTEBOOK_EMOJI_POOL[Math.floor(Math.random() * NOTEBOOK_EMOJI_POOL.length)] || "📒";
 
-        setNotebooks((prev) => [...prev, newNotebook]);
+        if (user) {
+            try {
+                const docRef = await addDoc(collection(db, "users", user.uid, "focusNotebooks"), {
+                    emoji: randomEmoji,
+                    name: trimmed,
+                    createdLabel: "Created today",
+                    tasks: [],
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                });
+
+                setActiveNotebookId(docRef.id);
+            } catch (error) {
+                console.error("Error creating focus notebook:", error);
+                return;
+            }
+        } else {
+            const newNotebook: Notebook = {
+                id: `notebook-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                emoji: randomEmoji,
+                name: trimmed,
+                createdLabel: "Created today",
+                tasks: [],
+            };
+
+            setNotebooks((prev) => [...prev, newNotebook]);
+            setActiveNotebookId(newNotebook.id);
+        }
+
         setIsCreateModalOpen(false);
         setNotebookName("");
-        // Open the notebook room immediately
-        setActiveNotebookId(newNotebook.id);
     };
 
     const handleUpdateTasks = useCallback((notebookId: string, tasks: Task[]) => {
         setNotebooks((prev) =>
             prev.map((n) => (n.id === notebookId ? { ...n, tasks } : n))
         );
-    }, []);
+
+        if (!user) return;
+
+        updateDoc(doc(db, "users", user.uid, "focusNotebooks", notebookId), {
+            tasks,
+            updatedAt: Date.now(),
+        }).catch((error) => {
+            console.error("Error updating focus notebook tasks:", error);
+        });
+    }, [user]);
 
     useEffect(() => {
         const handleFocusSessionCompleted = (event: Event) => {
