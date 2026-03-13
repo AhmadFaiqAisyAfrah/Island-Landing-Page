@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { ArrowLeft, Plus, Check, CalendarDays } from "lucide-react";
+import { ArrowLeft, Plus, Check, CalendarDays, MoreHorizontal } from "lucide-react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { addDoc, collection, doc, onSnapshot, orderBy, query, updateDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, onSnapshot, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { db, getClientAuth } from "@/lib/firebase";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
@@ -61,6 +61,7 @@ const NOTEBOOK_EMOJI_OPTIONS = [
 ];
 
 const NOTEBOOK_EMOJI_POOL = NOTEBOOK_EMOJI_OPTIONS.map((option) => option.emoji);
+const NOTEBOOKS_COLLECTION = "notebooks";
 
 /* ─────────────── Notebook Room (To-Do view) ─────────────── */
 
@@ -1078,6 +1079,10 @@ export default function FocusNotebooks() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [notebookName, setNotebookName] = useState("");
     const [activeNotebookId, setActiveNotebookId] = useState<string | null>(null);
+    const [openNotebookMenuId, setOpenNotebookMenuId] = useState<string | null>(null);
+    const [renamingNotebookId, setRenamingNotebookId] = useState<string | null>(null);
+    const [renameNotebookName, setRenameNotebookName] = useState("");
+    const [deletingNotebookId, setDeletingNotebookId] = useState<string | null>(null);
 
     useEffect(() => {
         const auth = getClientAuth();
@@ -1096,75 +1101,172 @@ export default function FocusNotebooks() {
             return;
         }
 
-        const notebooksRef = collection(db, "users", user.uid, "focusNotebooks");
-        const notebooksQuery = query(notebooksRef, orderBy("createdAt", "asc"));
+        const notebooksRef = collection(db, "users", user.uid, NOTEBOOKS_COLLECTION);
 
-        const unsubscribe = onSnapshot(notebooksQuery, (snapshot) => {
-            const nextNotebooks: Notebook[] = snapshot.docs.map((snapshotDoc) => {
-                const data = snapshotDoc.data();
-                const rawTasks = Array.isArray(data.tasks) ? data.tasks : [];
+        const unsubscribe = onSnapshot(
+            notebooksRef,
+            (snapshot) => {
+                console.log("notebooks snapshot:", snapshot.docs);
+                const nextNotebooks: Notebook[] = snapshot.docs.map((snapshotDoc) => {
+                    const data = snapshotDoc.data();
+                    const rawTasks = Array.isArray(data.tasks) ? data.tasks : [];
 
-                return {
-                    id: snapshotDoc.id,
-                    emoji: typeof data.emoji === "string" ? data.emoji : "📒",
-                    name: typeof data.name === "string" ? data.name : "Untitled Notebook",
-                    createdLabel: typeof data.createdLabel === "string" ? data.createdLabel : "Created today",
-                    tasks: rawTasks.map((task: Partial<Task>) => ({
-                        id: typeof task.id === "string" ? task.id : `task-${Math.random().toString(36).slice(2, 8)}`,
-                        name: typeof task.name === "string" ? task.name : "",
-                        date: typeof task.date === "string" ? task.date : "",
-                        tag: typeof task.tag === "string" ? task.tag : "",
-                        emoji: typeof task.emoji === "string" ? task.emoji : "",
-                        estimatedMinutes: typeof task.estimatedMinutes === "number" ? task.estimatedMinutes : null,
-                        remainingMinutes: typeof task.remainingMinutes === "number" ? task.remainingMinutes : null,
-                        completed: Boolean(task.completed),
-                    })),
-                };
-            });
+                    return {
+                        id: snapshotDoc.id,
+                        emoji: typeof data.emoji === "string" ? data.emoji : "📒",
+                        name: typeof data.name === "string" ? data.name : "Untitled Notebook",
+                        createdLabel: typeof data.createdLabel === "string" ? data.createdLabel : "Created today",
+                        tasks: rawTasks.map((task: Partial<Task>) => ({
+                            id: typeof task.id === "string" ? task.id : `task-${Math.random().toString(36).slice(2, 8)}`,
+                            name: typeof task.name === "string" ? task.name : "",
+                            date: typeof task.date === "string" ? task.date : "",
+                            tag: typeof task.tag === "string" ? task.tag : "",
+                            emoji: typeof task.emoji === "string" ? task.emoji : "",
+                            estimatedMinutes: typeof task.estimatedMinutes === "number" ? task.estimatedMinutes : null,
+                            remainingMinutes: typeof task.remainingMinutes === "number" ? task.remainingMinutes : null,
+                            completed: Boolean(task.completed),
+                        })),
+                    };
+                });
 
-            setNotebooks(nextNotebooks);
-        });
+                setNotebooks(nextNotebooks);
+            },
+            (error) => {
+                console.error("Error listening focus notebooks:", error);
+            }
+        );
 
         return () => unsubscribe();
     }, [user, authLoading]);
+
+    useEffect(() => {
+        if (!openNotebookMenuId) return;
+
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement | null;
+            if (!target?.closest("[data-notebook-menu-root='true']")) {
+                setOpenNotebookMenuId(null);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [openNotebookMenuId]);
 
     const activeNotebook = activeNotebookId
         ? notebooks.find((n) => n.id === activeNotebookId) ?? null
         : null;
 
+    const canCreateNotebook = notebookName.trim().length > 0;
+
+    const openRenameNotebookModal = (notebook: Notebook) => {
+        setOpenNotebookMenuId(null);
+        setRenamingNotebookId(notebook.id);
+        setRenameNotebookName(notebook.name);
+    };
+
+    const closeRenameNotebookModal = () => {
+        setRenamingNotebookId(null);
+        setRenameNotebookName("");
+    };
+
+    const saveNotebookRename = async () => {
+        const trimmed = renameNotebookName.trim();
+        if (!trimmed || !renamingNotebookId) return;
+
+        if (user) {
+            try {
+                await updateDoc(doc(db, "users", user.uid, NOTEBOOKS_COLLECTION, renamingNotebookId), {
+                    name: trimmed,
+                    updatedAt: serverTimestamp(),
+                });
+            } catch (error) {
+                console.error("Error renaming focus notebook:", error);
+                return;
+            }
+        } else {
+            setNotebooks((prev) => prev.map((notebook) => (
+                notebook.id === renamingNotebookId ? { ...notebook, name: trimmed } : notebook
+            )));
+        }
+
+        closeRenameNotebookModal();
+    };
+
+    const deleteNotebook = async () => {
+        if (!deletingNotebookId) return;
+
+        if (user) {
+            try {
+                await deleteDoc(doc(db, "users", user.uid, NOTEBOOKS_COLLECTION, deletingNotebookId));
+            } catch (error) {
+                console.error("Error deleting focus notebook:", error);
+                return;
+            }
+        } else {
+            setNotebooks((prev) => prev.filter((notebook) => notebook.id !== deletingNotebookId));
+        }
+
+        if (activeNotebookId === deletingNotebookId) {
+            setActiveNotebookId(null);
+        }
+
+        setDeletingNotebookId(null);
+        setOpenNotebookMenuId(null);
+    };
+
     const handleCreateNotebook = async () => {
         const trimmed = notebookName.trim();
         if (!trimmed) return;
 
+        if (!user) {
+            console.error("Cannot create notebook: no authenticated user.");
+            return;
+        }
+
         const randomEmoji = NOTEBOOK_EMOJI_POOL[Math.floor(Math.random() * NOTEBOOK_EMOJI_POOL.length)] || "📒";
+        try {
+            console.log("Creating notebook for user:", user.uid);
 
-        if (user) {
-            try {
-                const docRef = await addDoc(collection(db, "users", user.uid, "focusNotebooks"), {
-                    emoji: randomEmoji,
-                    name: trimmed,
-                    createdLabel: "Created today",
-                    tasks: [],
-                    createdAt: Date.now(),
-                    updatedAt: Date.now(),
-                });
+            await setDoc(
+                doc(db, "users", user.uid),
+                { updatedAt: serverTimestamp() },
+                { merge: true }
+            );
 
-                setActiveNotebookId(docRef.id);
-            } catch (error) {
-                console.error("Error creating focus notebook:", error);
-                return;
-            }
-        } else {
-            const newNotebook: Notebook = {
-                id: `notebook-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            const docRef = await addDoc(collection(db, "users", user.uid, NOTEBOOKS_COLLECTION), {
                 emoji: randomEmoji,
                 name: trimmed,
                 createdLabel: "Created today",
                 tasks: [],
-            };
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+            });
 
-            setNotebooks((prev) => [...prev, newNotebook]);
-            setActiveNotebookId(newNotebook.id);
+            console.log("Notebook successfully written to Firestore");
+
+            setNotebooks((prev) => {
+                if (prev.some((notebook) => notebook.id === docRef.id)) {
+                    return prev;
+                }
+
+                return [
+                    ...prev,
+                    {
+                        id: docRef.id,
+                        emoji: randomEmoji,
+                        name: trimmed,
+                        createdLabel: "Created today",
+                        tasks: [],
+                    },
+                ];
+            });
+            setActiveNotebookId(docRef.id);
+        } catch (error) {
+            console.error("Error creating focus notebook:", error);
+            return;
         }
 
         setIsCreateModalOpen(false);
@@ -1178,9 +1280,9 @@ export default function FocusNotebooks() {
 
         if (!user) return;
 
-        updateDoc(doc(db, "users", user.uid, "focusNotebooks", notebookId), {
+        updateDoc(doc(db, "users", user.uid, NOTEBOOKS_COLLECTION, notebookId), {
             tasks,
-            updatedAt: Date.now(),
+            updatedAt: serverTimestamp(),
         }).catch((error) => {
             console.error("Error updating focus notebook tasks:", error);
         });
@@ -1258,7 +1360,7 @@ export default function FocusNotebooks() {
                     <button
                         type="button"
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="group min-h-[150px] rounded-2xl border border-dashed border-[var(--accent-green)]/60 bg-[color:color-mix(in_srgb,var(--bg-secondary)_70%,white)] p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_24px_rgba(8,15,26,0.12)]"
+                        className="group min-h-[150px] cursor-pointer rounded-2xl border border-dashed border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-green)] hover:bg-[color:color-mix(in_srgb,var(--bg-secondary)_82%,var(--card-bg))] hover:shadow-[0_14px_24px_rgba(8,15,26,0.12)]"
                     >
                         <span className="text-3xl leading-none text-[var(--accent-green)] block">+</span>
                         <p className="mt-4 text-base font-semibold text-[var(--heading-text)]">Create Focus Notebook</p>
@@ -1266,16 +1368,70 @@ export default function FocusNotebooks() {
                     </button>
 
                     {notebooks.map((notebook) => (
-                        <button
+                        <div
                             key={notebook.id}
-                            type="button"
-                            onClick={() => setActiveNotebookId(notebook.id)}
-                            className="min-h-[150px] rounded-2xl border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--card-bg)_88%,transparent)] p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_24px_rgba(8,15,26,0.12)]"
+                            className="group relative min-h-[150px] rounded-2xl border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--card-bg)_88%,transparent)] p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_24px_rgba(8,15,26,0.12)]"
                         >
-                            <span className="text-lg" aria-hidden="true">{notebook.emoji || "📒"}</span>
-                            <p className="mt-3 text-base font-semibold text-[var(--heading-text)] line-clamp-2">{notebook.name}</p>
-                            <p className="mt-2 text-xs text-[var(--text-secondary)]">{notebook.createdLabel} · {notebook.tasks.length} tasks</p>
-                        </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveNotebookId(notebook.id)}
+                                className="block w-full text-left"
+                                aria-label={`Open notebook ${notebook.name}`}
+                            >
+                                <span className="text-lg" aria-hidden="true">{notebook.emoji || "📒"}</span>
+                                <p className="mt-3 text-base font-semibold text-[var(--heading-text)] line-clamp-2">{notebook.name}</p>
+                                <p className="mt-2 text-xs text-[var(--text-secondary)]">{notebook.createdLabel} · {notebook.tasks.length} tasks</p>
+                            </button>
+
+                            <div className="absolute right-4 top-4 z-10 flex items-start justify-end" data-notebook-menu-root="true">
+                                <button
+                                    type="button"
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        setOpenNotebookMenuId((prev) => (prev === notebook.id ? null : notebook.id));
+                                    }}
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] text-[var(--text-secondary)] opacity-0 transition-opacity duration-150 hover:text-[var(--heading-text)] group-hover:opacity-100"
+                                    aria-label={`Open notebook menu for ${notebook.name}`}
+                                >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </button>
+
+                                {openNotebookMenuId === notebook.id && (
+                                    <div
+                                        className="absolute right-0 top-9 z-20 min-w-[168px] rounded-[10px] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-1.5 shadow-[0_14px_28px_rgba(8,15,26,0.2)]"
+                                        onClick={(event) => {
+                                            event.preventDefault();
+                                            event.stopPropagation();
+                                        }}
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={(event) => {
+                                                event.preventDefault();
+                                                event.stopPropagation();
+                                                openRenameNotebookModal(notebook);
+                                            }}
+                                            className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[var(--heading-text)] transition-colors hover:bg-[var(--bg-primary)]"
+                                        >
+                                            Rename notebook
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={(event) => {
+                                                event.preventDefault();
+                                                event.stopPropagation();
+                                                setOpenNotebookMenuId(null);
+                                                setDeletingNotebookId(notebook.id);
+                                            }}
+                                            className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#ff6b6b] transition-colors hover:bg-[var(--bg-primary)]"
+                                        >
+                                            Delete notebook
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     ))}
                 </div>
             </div>
@@ -1293,6 +1449,7 @@ export default function FocusNotebooks() {
                                 type="text"
                                 value={notebookName}
                                 onChange={(event) => setNotebookName(event.target.value)}
+                                onInput={(event) => setNotebookName((event.target as HTMLInputElement).value)}
                                 onKeyDown={(e) => {
                                     if (e.key === "Enter") {
                                         e.preventDefault();
@@ -1318,10 +1475,76 @@ export default function FocusNotebooks() {
                             <button
                                 type="button"
                                 onClick={handleCreateNotebook}
-                                disabled={!notebookName.trim()}
+                                disabled={!canCreateNotebook}
                                 className="px-5 py-2 rounded-xl bg-[var(--button-bg)] text-[var(--button-text)] font-semibold hover:bg-[var(--button-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 Create
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {renamingNotebookId && (
+                <div className="fixed inset-0 z-50 bg-[#0F172A]/45 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-md rounded-3xl border border-[var(--border-color)] bg-[var(--card-bg)] p-6 shadow-[0_24px_44px_rgba(8,15,26,0.24)]">
+                        <h3 className="text-xl font-bold text-[var(--heading-text)]">Rename notebook</h3>
+                        <div className="mt-5">
+                            <input
+                                type="text"
+                                value={renameNotebookName}
+                                onChange={(event) => setRenameNotebookName(event.target.value)}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                        event.preventDefault();
+                                        saveNotebookRename();
+                                    }
+                                }}
+                                autoFocus
+                                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2.5 text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
+                            />
+                        </div>
+
+                        <div className="mt-6 flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={closeRenameNotebookModal}
+                                className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={saveNotebookRename}
+                                disabled={!renameNotebookName.trim()}
+                                className="px-5 py-2 rounded-xl bg-[var(--button-bg)] text-[var(--button-text)] font-semibold hover:bg-[var(--button-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {deletingNotebookId && (
+                <div className="fixed inset-0 z-50 bg-[#0F172A]/45 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-md rounded-3xl border border-[var(--border-color)] bg-[var(--card-bg)] p-6 shadow-[0_24px_44px_rgba(8,15,26,0.24)]">
+                        <h3 className="text-xl font-bold text-[var(--heading-text)]">Delete this notebook?</h3>
+                        <p className="mt-2 text-sm text-[var(--text-secondary)]">This action cannot be undone.</p>
+                        <div className="mt-6 flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setDeletingNotebookId(null)}
+                                className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={deleteNotebook}
+                                className="px-5 py-2 rounded-xl bg-[#ff6b6b] text-white font-semibold hover:bg-[#ff5a5a] transition-colors"
+                            >
+                                Delete
                             </button>
                         </div>
                     </div>
