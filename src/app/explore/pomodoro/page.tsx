@@ -53,6 +53,13 @@ const ORDER_MAP: Record<string, number> = {
     snow_vibes: 5,
 };
 
+type MusicOption = {
+    value: string;
+    label: string;
+    emoji: string;
+    src: string | null;
+};
+
 const formatLabel = (baseName: string) => {
     if (LABEL_MAP[baseName]) {
         return LABEL_MAP[baseName];
@@ -64,11 +71,11 @@ const formatLabel = (baseName: string) => {
         .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
-const getMusicOptions = async () => {
+const getMusicOptions = async (): Promise<MusicOption[]> => {
     const audioDir = path.join(process.cwd(), "public", "audio");
     const entries = await readdir(audioDir, { withFileTypes: true });
 
-    const tracks = entries
+    const tracks: MusicOption[] = entries
         .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".ogg"))
         .map((entry) => {
             const fileName = entry.name;

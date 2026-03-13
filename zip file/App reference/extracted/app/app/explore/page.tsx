@@ -1,12 +1,12 @@
 import FocusDemo from "@/components/FocusDemo";
 
 const musicOptions = [
-    { value: "none", label: "None", src: null },
-    { value: "forest_vibes", label: "Forest", src: "/audio/forest_vibes.ogg" },
-    { value: "night_vibes", label: "Midnight", src: "/audio/night_vibes.ogg" },
-    { value: "ocean_vibes", label: "Ocean", src: "/audio/ocean_vibes.ogg" },
-    { value: "rainy_vibes", label: "Rainy", src: "/audio/rainy_vibes.ogg" },
-    { value: "snow_vibes", label: "Snow", src: "/audio/snow_vibes.ogg" },
+    { value: "none", label: "None", emoji: "🔇", src: null },
+    { value: "forest_vibes", label: "Forest", emoji: "🌲", src: "/audio/forest_vibes.ogg" },
+    { value: "night_vibes", label: "Midnight", emoji: "🌙", src: "/audio/night_vibes.ogg" },
+    { value: "ocean_vibes", label: "Ocean", emoji: "🌊", src: "/audio/ocean_vibes.ogg" },
+    { value: "rainy_vibes", label: "Rainy", emoji: "🌧️", src: "/audio/rainy_vibes.ogg" },
+    { value: "snow_vibes", label: "Snow", emoji: "❄️", src: "/audio/snow_vibes.ogg" },
 ];
 
 export const metadata = {
