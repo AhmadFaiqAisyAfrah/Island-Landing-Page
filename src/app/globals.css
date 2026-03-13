@@ -245,6 +245,16 @@
   animation: modal-pop 0.24s ease-out both;
 }
 
+.island-date-input::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+.island-date-input::-webkit-clear-button,
+.island-date-input::-webkit-inner-spin-button {
+  display: none;
+}
+
 .animate-pulse-soft {
   animation: pulse-soft 3s ease-in-out infinite;
 }

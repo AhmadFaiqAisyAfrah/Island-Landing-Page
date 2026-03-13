@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { ArrowLeft, Plus, Check } from "lucide-react";
+import { ArrowLeft, Plus, Check, CalendarDays } from "lucide-react";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
@@ -109,6 +109,16 @@ function NotebookRoom({
         const parsedDate = parseDateValue(dateValue);
         if (!parsedDate) return "";
         return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(parsedDate);
+    };
+
+    const openNativeDatePicker = (input: HTMLInputElement | null) => {
+        if (!input) return;
+        input.focus();
+        try {
+            input.showPicker?.();
+        } catch {
+            // Browser may block showPicker; focus keeps native behavior.
+        }
     };
 
     const toDateInputValue = (date: Date) => {
@@ -498,15 +508,19 @@ function NotebookRoom({
                                     <div className="absolute left-0 top-11 z-30 w-[min(92vw,360px)] rounded-2xl border border-[var(--border-color)] bg-[var(--card-bg)] p-4 shadow-[0_18px_34px_rgba(8,15,26,0.24)]">
                                         <label className="space-y-1.5 block">
                                             <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Select Date</span>
-                                            <input
-                                                ref={dateFilterStartInputRef}
-                                                type="date"
-                                                value={dateFilterStart}
-                                                onChange={(event) => setDateFilterStart(event.target.value)}
-                                                onClick={() => dateFilterStartInputRef.current?.showPicker?.()}
-                                                onFocus={() => dateFilterStartInputRef.current?.showPicker?.()}
-                                                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
-                                            />
+                                            <div
+                                                className="relative cursor-pointer"
+                                                onClick={() => openNativeDatePicker(dateFilterStartInputRef.current)}
+                                            >
+                                                <input
+                                                    ref={dateFilterStartInputRef}
+                                                    type="date"
+                                                    value={dateFilterStart}
+                                                    onChange={(event) => setDateFilterStart(event.target.value)}
+                                                    className="island-date-input w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 pr-10 text-sm text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
+                                                />
+                                                <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-secondary)]" />
+                                            </div>
                                         </label>
 
                                         <div className="mt-3 flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2">
@@ -536,15 +550,19 @@ function NotebookRoom({
                                         {isDateRangeEnabled && (
                                             <label className="mt-3 space-y-1.5 block">
                                                 <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">End Date</span>
-                                                <input
-                                                    ref={dateFilterEndInputRef}
-                                                    type="date"
-                                                    value={dateFilterEnd}
-                                                    onChange={(event) => setDateFilterEnd(event.target.value)}
-                                                    onClick={() => dateFilterEndInputRef.current?.showPicker?.()}
-                                                    onFocus={() => dateFilterEndInputRef.current?.showPicker?.()}
-                                                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
-                                                />
+                                                <div
+                                                    className="relative cursor-pointer"
+                                                    onClick={() => openNativeDatePicker(dateFilterEndInputRef.current)}
+                                                >
+                                                    <input
+                                                        ref={dateFilterEndInputRef}
+                                                        type="date"
+                                                        value={dateFilterEnd}
+                                                        onChange={(event) => setDateFilterEnd(event.target.value)}
+                                                        className="island-date-input w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 pr-10 text-sm text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
+                                                    />
+                                                    <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-secondary)]" />
+                                                </div>
                                             </label>
                                         )}
 
@@ -589,7 +607,7 @@ function NotebookRoom({
                                             </div>
                                         </div>
 
-                                        <div className="mt-4 flex items-center justify-between">
+                                        <div className="mt-4 flex items-center justify-start">
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -601,14 +619,11 @@ function NotebookRoom({
                                             >
                                                 Clear date filter
                                             </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setIsDateFilterPickerOpen(false)}
-                                                className="rounded-lg bg-[var(--button-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors"
-                                            >
-                                                Done
-                                            </button>
                                         </div>
+
+                                        <p className="mt-3 text-xs text-[var(--text-secondary)] opacity-80">
+                                            Date selection is automatically saved. Click outside to close.
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -825,15 +840,19 @@ function NotebookRoom({
 
                                 <label className="space-y-2">
                                     <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Date</span>
-                                    <input
-                                        ref={dateInputRef}
-                                        type="date"
-                                        value={newTaskDate}
-                                        onChange={(e) => setNewTaskDate(e.target.value)}
-                                        onClick={() => dateInputRef.current?.showPicker?.()}
-                                        onFocus={() => dateInputRef.current?.showPicker?.()}
-                                        className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
-                                    />
+                                    <div
+                                        className="relative cursor-pointer"
+                                        onClick={() => openNativeDatePicker(dateInputRef.current)}
+                                    >
+                                        <input
+                                            ref={dateInputRef}
+                                            type="date"
+                                            value={newTaskDate}
+                                            onChange={(e) => setNewTaskDate(e.target.value)}
+                                            className="island-date-input w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 pr-10 text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
+                                        />
+                                        <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-secondary)]" />
+                                    </div>
                                 </label>
 
                                 <div className="space-y-2">
@@ -970,15 +989,19 @@ function NotebookRoom({
 
                                 <label className="space-y-2">
                                     <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Date</span>
-                                    <input
-                                        ref={editDateInputRef}
-                                        type="date"
-                                        value={editTaskDate}
-                                        onChange={(e) => setEditTaskDate(e.target.value)}
-                                        onClick={() => editDateInputRef.current?.showPicker?.()}
-                                        onFocus={() => editDateInputRef.current?.showPicker?.()}
-                                        className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
-                                    />
+                                    <div
+                                        className="relative cursor-pointer"
+                                        onClick={() => openNativeDatePicker(editDateInputRef.current)}
+                                    >
+                                        <input
+                                            ref={editDateInputRef}
+                                            type="date"
+                                            value={editTaskDate}
+                                            onChange={(e) => setEditTaskDate(e.target.value)}
+                                            className="island-date-input w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 pr-10 text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
+                                        />
+                                        <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-secondary)]" />
+                                    </div>
                                 </label>
 
                                 <div className="space-y-2">
