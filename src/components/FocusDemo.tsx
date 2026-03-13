@@ -34,6 +34,7 @@ const STAR_PARTICLES = [
 type MusicOption = {
     value: string;
     label: string;
+    emoji: string;
     src: string | null;
 };
 
@@ -283,6 +284,9 @@ export default function FocusDemo({
     const sliderProgress = isDragging && dragProgress !== null
         ? dragProgress
         : selectedMinutes / MAX_DURATION_MINUTES;
+    const selectedMusicOption = musicOptions.find((option) => option.value === selectedMusic);
+    const selectedMusicLabel = selectedMusicOption?.label ?? "None";
+    const selectedMusicEmoji = selectedMusicOption?.emoji ?? "🔇";
     const timeLeft = Math.max(0, Math.ceil(remainingMs / 1000));
     const elapsedProgress = 1 - remainingMs / (sessionDurationSeconds * 1000);
     const progress = isFocusing ? elapsedProgress : sliderProgress;
@@ -544,13 +548,13 @@ export default function FocusDemo({
                                     <p className="text-[10px] font-semibold tracking-[0.14em] uppercase text-[var(--text-secondary)]">
                                         Currently focusing on
                                     </p>
+                                    <p className="mt-1.5 text-base font-semibold text-[var(--heading-text)] line-clamp-2">{currentFocusTask.name}</p>
                                     {currentFocusTask.tag && (
-                                        <p className="mt-1.5 text-sm font-semibold text-[var(--heading-text)]">
+                                        <p className="mt-1 text-xs text-[var(--paragraph-text)] opacity-80">
                                             <span aria-hidden="true">{currentFocusTask.emoji || "🏷"}</span>{" "}
                                             {currentFocusTask.tag}
                                         </p>
                                     )}
-                                    <p className="mt-1 text-sm text-[var(--paragraph-text)] line-clamp-2">{currentFocusTask.name}</p>
                                 </div>
                             )}
 
@@ -566,18 +570,24 @@ export default function FocusDemo({
                             <label htmlFor="focus-music" className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)] mb-2 block">
                                 🎵 Focus Music
                             </label>
-                            <select
-                                id="focus-music"
-                                value={selectedMusic}
-                                onChange={(event) => handleMusicChange(event.target.value)}
-                                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2.5 text-[var(--heading-text)] outline-none transition-colors hover:border-[var(--accent-green)] focus:border-[var(--accent-green)]"
-                            >
-                                {musicOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
+                            {isFocusing ? (
+                                <div className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2.5 text-[var(--heading-text)]">
+                                    {selectedMusicEmoji} {selectedMusicLabel}
+                                </div>
+                            ) : (
+                                <select
+                                    id="focus-music"
+                                    value={selectedMusic}
+                                    onChange={(event) => handleMusicChange(event.target.value)}
+                                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2.5 text-[var(--heading-text)] outline-none transition-colors hover:border-[var(--accent-green)] focus:border-[var(--accent-green)]"
+                                >
+                                    {musicOptions.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.emoji} {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
 
                         <button

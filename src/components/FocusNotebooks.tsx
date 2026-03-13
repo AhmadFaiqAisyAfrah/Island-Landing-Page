@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { ArrowLeft, Plus, Check } from "lucide-react";
 
@@ -57,6 +57,8 @@ const NOTEBOOK_EMOJI_OPTIONS = [
     { emoji: "🚀", label: "Projects" },
 ];
 
+const NOTEBOOK_EMOJI_POOL = NOTEBOOK_EMOJI_OPTIONS.map((option) => option.emoji);
+
 /* ─────────────── Notebook Room (To-Do view) ─────────────── */
 
 function NotebookRoom({
@@ -68,6 +70,12 @@ function NotebookRoom({
     onBack: () => void;
     onUpdateTasks: (notebookId: string, tasks: Task[]) => void;
 }) {
+    const [tagFilter, setTagFilter] = useState("all");
+    const [dateFilterStart, setDateFilterStart] = useState("");
+    const [dateFilterEnd, setDateFilterEnd] = useState("");
+    const [isDateRangeEnabled, setIsDateRangeEnabled] = useState(false);
+    const [isDateFilterPickerOpen, setIsDateFilterPickerOpen] = useState(false);
+    const [statusFilter, setStatusFilter] = useState("all");
     const [isAddTaskFormOpen, setIsAddTaskFormOpen] = useState(false);
     const [newTaskName, setNewTaskName] = useState("");
     const [newTaskDate, setNewTaskDate] = useState("");
@@ -86,6 +94,9 @@ function NotebookRoom({
     const [editSelectedTagId, setEditSelectedTagId] = useState("none");
     const dateInputRef = useRef<HTMLInputElement | null>(null);
     const editDateInputRef = useRef<HTMLInputElement | null>(null);
+    const dateFilterStartInputRef = useRef<HTMLInputElement | null>(null);
+    const dateFilterEndInputRef = useRef<HTMLInputElement | null>(null);
+    const dateFilterPickerRef = useRef<HTMLDivElement | null>(null);
 
     const formatDateLabel = (dateValue: string) => {
         if (!dateValue) return "";
@@ -93,6 +104,140 @@ function NotebookRoom({
         if (Number.isNaN(date.getTime())) return "";
         return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(date);
     };
+
+    const formatDateWithYearLabel = (dateValue: string) => {
+        const parsedDate = parseDateValue(dateValue);
+        if (!parsedDate) return "";
+        return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(parsedDate);
+    };
+
+    const toDateInputValue = (date: Date) => {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, "0");
+        const dd = String(date.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+    };
+
+    const parseDateValue = (dateValue: string) => {
+        if (!dateValue) return null;
+        const [yearString, monthString, dayString] = dateValue.split("-");
+        const year = Number.parseInt(yearString, 10);
+        const month = Number.parseInt(monthString, 10);
+        const day = Number.parseInt(dayString, 10);
+        if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) return null;
+
+        const date = new Date(year, month - 1, day);
+        if (Number.isNaN(date.getTime())) return null;
+        return date;
+    };
+
+    const filterTagOptions = useMemo(() => {
+        const tagSet = new Set<string>();
+        notebook.tasks.forEach((task) => {
+            const trimmedTag = task.tag.trim();
+            if (trimmedTag) {
+                tagSet.add(trimmedTag);
+            }
+        });
+        return Array.from(tagSet).sort((firstTag, secondTag) => firstTag.localeCompare(secondTag));
+    }, [notebook.tasks]);
+
+    const activeDateFilterRange = useMemo(() => {
+        const startDate = parseDateValue(dateFilterStart);
+        if (!startDate) return null;
+
+        if (!isDateRangeEnabled) {
+            return {
+                start: startDate,
+                end: startDate,
+            };
+        }
+
+        const endDate = parseDateValue(dateFilterEnd);
+        if (!endDate) {
+            return {
+                start: startDate,
+                end: startDate,
+            };
+        }
+
+        return {
+            start: startDate <= endDate ? startDate : endDate,
+            end: startDate <= endDate ? endDate : startDate,
+        };
+    }, [dateFilterStart, dateFilterEnd, isDateRangeEnabled]);
+
+    const dateFilterDisplayLabel = !dateFilterStart
+        ? "Select Date"
+        : isDateRangeEnabled && dateFilterEnd
+            ? `${formatDateWithYearLabel(dateFilterStart)} → ${formatDateWithYearLabel(dateFilterEnd)}`
+            : formatDateWithYearLabel(dateFilterStart);
+
+    const filteredTasks = useMemo(() => {
+        return notebook.tasks.filter((task) => {
+            if (tagFilter !== "all" && task.tag !== tagFilter) {
+                return false;
+            }
+
+            if (activeDateFilterRange) {
+                const taskDate = parseDateValue(task.date);
+                if (!taskDate) return false;
+
+                if (taskDate < activeDateFilterRange.start || taskDate > activeDateFilterRange.end) {
+                    return false;
+                }
+            }
+
+            const isCompleted = task.completed || task.remainingMinutes === 0;
+            if (statusFilter === "completed" && !isCompleted) {
+                return false;
+            }
+
+            if (statusFilter === "incomplete" && isCompleted) {
+                return false;
+            }
+
+            return true;
+        });
+    }, [
+        notebook.tasks,
+        tagFilter,
+        activeDateFilterRange,
+        statusFilter,
+    ]);
+
+    const applyDateQuickRange = (days: number) => {
+        const endDate = new Date();
+        endDate.setHours(0, 0, 0, 0);
+        const startDate = new Date(endDate);
+        startDate.setDate(endDate.getDate() - days);
+
+        setIsDateRangeEnabled(true);
+        setDateFilterStart(toDateInputValue(startDate));
+        setDateFilterEnd(toDateInputValue(endDate));
+    };
+
+    useEffect(() => {
+        if (tagFilter !== "all" && !filterTagOptions.includes(tagFilter)) {
+            setTagFilter("all");
+        }
+    }, [tagFilter, filterTagOptions]);
+
+    useEffect(() => {
+        if (!isDateFilterPickerOpen) return;
+
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement | null;
+            if (!dateFilterPickerRef.current?.contains(target || null)) {
+                setIsDateFilterPickerOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isDateFilterPickerOpen]);
 
     const resetAddTaskForm = () => {
         setNewTaskName("");
@@ -110,11 +255,33 @@ function NotebookRoom({
         setIsAddTaskFormOpen(false);
     };
 
+    const resolveTagSelection = (
+        selectedId: string,
+        fallback?: { tag: string; emoji: string }
+    ) => {
+        if (selectedId === "none") {
+            return { tag: "", emoji: "" };
+        }
+
+        const selectedTag = tagOptions.find((tag) => tag.id === selectedId);
+        if (selectedTag) {
+            return {
+                tag: selectedTag.label,
+                emoji: selectedTag.emoji,
+            };
+        }
+
+        return {
+            tag: fallback?.tag ?? "",
+            emoji: fallback?.emoji ?? "",
+        };
+    };
+
     const addTask = () => {
         const trimmed = newTaskName.trim();
         if (!trimmed) return;
 
-        const selectedTag = tagOptions.find((tag) => tag.id === selectedTagId);
+        const selectedTagValue = resolveTagSelection(selectedTagId);
         const parsedMinutes = Number.parseInt(newTaskEstimatedMinutes, 10);
         const estimatedMinutes = Number.isNaN(parsedMinutes) || parsedMinutes <= 0 ? null : parsedMinutes;
 
@@ -122,8 +289,8 @@ function NotebookRoom({
             id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             name: trimmed,
             date: newTaskDate,
-            tag: selectedTag && selectedTag.id !== "none" ? selectedTag.label : "",
-            emoji: selectedTag && selectedTag.id !== "none" ? selectedTag.emoji : "",
+            tag: selectedTagValue.tag,
+            emoji: selectedTagValue.emoji,
             estimatedMinutes,
             remainingMinutes: estimatedMinutes,
             completed: false,
@@ -173,10 +340,30 @@ function NotebookRoom({
             tagOptions.find((tag) => tag.label === task.tag) ??
             null;
 
+        if (!matchedTag && task.tag.trim()) {
+            const generatedId = `from-task-${task.tag.toLowerCase().replace(/\s+/g, "-")}`;
+            setTagOptions((prev) => {
+                if (prev.some((tag) => tag.id === generatedId || tag.label === task.tag)) {
+                    return prev;
+                }
+
+                return [
+                    ...prev,
+                    {
+                        id: generatedId,
+                        label: task.tag,
+                        emoji: task.emoji || "🏷",
+                    },
+                ];
+            });
+            setEditSelectedTagId(generatedId);
+        } else {
+            setEditSelectedTagId(matchedTag?.id ?? "none");
+        }
+
         setEditTaskName(task.name);
         setEditTaskDate(task.date);
         setEditTaskEstimatedMinutes(task.estimatedMinutes !== null ? String(task.estimatedMinutes) : "");
-        setEditSelectedTagId(matchedTag?.id ?? "none");
         setEditingTaskId(task.id);
     };
 
@@ -194,7 +381,10 @@ function NotebookRoom({
         const trimmed = editTaskName.trim();
         if (!trimmed) return;
 
-        const selectedTag = tagOptions.find((tag) => tag.id === editSelectedTagId);
+        const selectedTagValue = resolveTagSelection(editSelectedTagId, {
+            tag: notebook.tasks.find((task) => task.id === editingTaskId)?.tag ?? "",
+            emoji: notebook.tasks.find((task) => task.id === editingTaskId)?.emoji ?? "",
+        });
         const parsedMinutes = Number.parseInt(editTaskEstimatedMinutes, 10);
         const nextEstimatedMinutes = Number.isNaN(parsedMinutes) || parsedMinutes <= 0 ? null : parsedMinutes;
 
@@ -217,8 +407,8 @@ function NotebookRoom({
                 ...task,
                 name: trimmed,
                 date: editTaskDate,
-                tag: selectedTag && selectedTag.id !== "none" ? selectedTag.label : "",
-                emoji: selectedTag && selectedTag.id !== "none" ? selectedTag.emoji : "",
+                tag: selectedTagValue.tag,
+                emoji: selectedTagValue.emoji,
                 estimatedMinutes: nextEstimatedMinutes,
                 remainingMinutes: nextRemainingMinutes,
                 completed: task.completed || (nextRemainingMinutes !== null && nextRemainingMinutes <= 0),
@@ -276,10 +466,174 @@ function NotebookRoom({
 
                 <div className="mt-6 border-t border-[var(--border-color)]" />
 
+                <div className="mt-6 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4">
+                    <p className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Filter</p>
+                    <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <label className="space-y-1.5">
+                            <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Tag</span>
+                            <select
+                                value={tagFilter}
+                                onChange={(event) => setTagFilter(event.target.value)}
+                                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
+                            >
+                                <option value="all">All</option>
+                                {filterTagOptions.map((tagLabel) => (
+                                    <option key={tagLabel} value={tagLabel}>{tagLabel}</option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <label className="space-y-1.5">
+                            <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Date</span>
+                            <div ref={dateFilterPickerRef} className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsDateFilterPickerOpen((prev) => !prev)}
+                                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-2 text-left text-sm text-[var(--heading-text)] outline-none transition-colors hover:border-[var(--accent-green)]"
+                                >
+                                    {dateFilterDisplayLabel}
+                                </button>
+
+                                {isDateFilterPickerOpen && (
+                                    <div className="absolute left-0 top-11 z-30 w-[min(92vw,360px)] rounded-2xl border border-[var(--border-color)] bg-[var(--card-bg)] p-4 shadow-[0_18px_34px_rgba(8,15,26,0.24)]">
+                                        <label className="space-y-1.5 block">
+                                            <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Select Date</span>
+                                            <input
+                                                ref={dateFilterStartInputRef}
+                                                type="date"
+                                                value={dateFilterStart}
+                                                onChange={(event) => setDateFilterStart(event.target.value)}
+                                                onClick={() => dateFilterStartInputRef.current?.showPicker?.()}
+                                                onFocus={() => dateFilterStartInputRef.current?.showPicker?.()}
+                                                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
+                                            />
+                                        </label>
+
+                                        <div className="mt-3 flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2">
+                                            <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">End Date</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsDateRangeEnabled((prev) => {
+                                                        const next = !prev;
+                                                        if (!next) {
+                                                            setDateFilterEnd("");
+                                                        } else if (!dateFilterEnd && dateFilterStart) {
+                                                            setDateFilterEnd(dateFilterStart);
+                                                        }
+                                                        return next;
+                                                    });
+                                                }}
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isDateRangeEnabled ? "bg-[var(--accent-green)]" : "bg-[var(--border-color)]"}`}
+                                                aria-pressed={isDateRangeEnabled}
+                                            >
+                                                <span
+                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isDateRangeEnabled ? "translate-x-6" : "translate-x-1"}`}
+                                                />
+                                            </button>
+                                        </div>
+
+                                        {isDateRangeEnabled && (
+                                            <label className="mt-3 space-y-1.5 block">
+                                                <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">End Date</span>
+                                                <input
+                                                    ref={dateFilterEndInputRef}
+                                                    type="date"
+                                                    value={dateFilterEnd}
+                                                    onChange={(event) => setDateFilterEnd(event.target.value)}
+                                                    onClick={() => dateFilterEndInputRef.current?.showPicker?.()}
+                                                    onFocus={() => dateFilterEndInputRef.current?.showPicker?.()}
+                                                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
+                                                />
+                                            </label>
+                                        )}
+
+                                        <div className="mt-3">
+                                            <p className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Quick ranges</p>
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => applyDateQuickRange(7)}
+                                                    className="rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-1.5 text-xs text-[var(--heading-text)] hover:border-[var(--accent-green)] transition-colors"
+                                                >
+                                                    Last week
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => applyDateQuickRange(30)}
+                                                    className="rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-1.5 text-xs text-[var(--heading-text)] hover:border-[var(--accent-green)] transition-colors"
+                                                >
+                                                    Last month
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => applyDateQuickRange(90)}
+                                                    className="rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-1.5 text-xs text-[var(--heading-text)] hover:border-[var(--accent-green)] transition-colors"
+                                                >
+                                                    Last 3 months
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => applyDateQuickRange(180)}
+                                                    className="rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-1.5 text-xs text-[var(--heading-text)] hover:border-[var(--accent-green)] transition-colors"
+                                                >
+                                                    Last 6 months
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => applyDateQuickRange(365)}
+                                                    className="rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-1.5 text-xs text-[var(--heading-text)] hover:border-[var(--accent-green)] transition-colors"
+                                                >
+                                                    Last year
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 flex items-center justify-between">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setDateFilterStart("");
+                                                    setDateFilterEnd("");
+                                                    setIsDateRangeEnabled(false);
+                                                }}
+                                                className="text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--heading-text)] transition-colors"
+                                            >
+                                                Clear date filter
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsDateFilterPickerOpen(false)}
+                                                className="rounded-lg bg-[var(--button-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors"
+                                            >
+                                                Done
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </label>
+
+                        <label className="space-y-1.5">
+                            <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Status</span>
+                            <select
+                                value={statusFilter}
+                                onChange={(event) => setStatusFilter(event.target.value)}
+                                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
+                            >
+                                <option value="all">All</option>
+                                <option value="completed">Completed</option>
+                                <option value="incomplete">Incomplete</option>
+                            </select>
+                        </label>
+                    </div>
+
+                </div>
+
                 <button
                     type="button"
                     onClick={() => setIsAddTaskFormOpen(true)}
-                    className="mt-6 text-base font-semibold text-[var(--heading-text)] hover:text-[var(--accent-green)] transition-colors"
+                    className="mt-4 text-base font-semibold text-[var(--heading-text)] hover:text-[var(--accent-green)] transition-colors"
                 >
                     + Add Task
                 </button>
@@ -297,114 +651,157 @@ function NotebookRoom({
                         </p>
                     )}
 
-                    {notebook.tasks.map((task) => (
-                        <div
-                            key={task.id}
-                            className={`w-full flex items-start justify-between gap-4 rounded-xl px-4 py-3 text-left transition-all duration-200 hover:bg-[var(--bg-secondary)] ${task.completed ? "opacity-80" : ""
-                                }`}
-                        >
-                            <div className="flex items-start gap-3 min-w-0">
-                                {/* Checkbox */}
-                                <button
-                                    type="button"
-                                    onClick={() => toggleTask(task.id)}
-                                    className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 ${task.completed
-                                        ? "bg-[var(--accent-green)] border-[var(--accent-green)]"
-                                        : "border-[var(--border-color)]"
-                                        }`}
-                                >
-                                    {task.completed && <Check className="w-3.5 h-3.5 text-white" />}
-                                </button>
+                    {notebook.tasks.length > 0 && filteredTasks.length === 0 && (
+                        <p className="text-sm text-[var(--text-secondary)] py-8 text-center">
+                            No tasks match the selected filters.
+                        </p>
+                    )}
 
-                                {/* Text */}
-                                <button
-                                    type="button"
-                                    onClick={() => toggleTask(task.id)}
-                                    className={`text-base text-[var(--heading-text)] transition-all duration-200 break-words ${task.completed ? "line-through" : ""
-                                        }`}
-                                >
-                                    {task.name}
-                                </button>
-                            </div>
+                    {filteredTasks.map((task) => {
+                        const remainingMinutes = task.remainingMinutes ?? task.estimatedMinutes;
+                        const safeRemainingMinutes = remainingMinutes !== null ? Math.max(0, remainingMinutes) : null;
+                        const isCompleted = task.completed || safeRemainingMinutes === 0;
+                        const progressPercent =
+                            task.estimatedMinutes !== null && safeRemainingMinutes !== null && task.estimatedMinutes > 0
+                                ? Math.min(
+                                    100,
+                                    Math.max(
+                                        0,
+                                        Math.round(((task.estimatedMinutes - safeRemainingMinutes) / task.estimatedMinutes) * 100)
+                                    )
+                                )
+                                : isCompleted
+                                    ? 100
+                                    : 0;
 
-                            <div className="flex items-start justify-end gap-2 max-w-[60%]">
-                                <div className="flex flex-wrap items-center justify-end gap-2">
-                                    {task.tag && (
-                                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_68%,white)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
-                                            <span aria-hidden="true">{task.emoji || "🏷"}</span>
-                                            {task.tag}
-                                        </span>
-                                    )}
-                                    {task.remainingMinutes !== null && (
-                                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_68%,white)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
-                                            <span aria-hidden="true">⏱</span>
-                                            {task.remainingMinutes}m left
-                                        </span>
-                                    )}
-                                    {task.date && (
-                                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_68%,white)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
-                                            <span aria-hidden="true">📅</span>
-                                            {formatDateLabel(task.date)}
-                                        </span>
-                                    )}
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            window.dispatchEvent(new CustomEvent("focus-task-selected", {
-                                                detail: {
-                                                    notebookId: notebook.id,
-                                                    taskId: task.id,
-                                                    name: task.name,
-                                                    tag: task.tag,
-                                                    emoji: task.emoji,
-                                                },
-                                            }));
+                        const progressStatusText = isCompleted
+                            ? "Completed"
+                            : safeRemainingMinutes !== null
+                                ? `${safeRemainingMinutes}m left`
+                                : "No estimate";
 
-                                            const pomodoroSection = document.getElementById("pomodoro-focus-section");
-                                            pomodoroSection?.scrollIntoView({ behavior: "smooth", block: "start" });
-                                        }}
-                                        className="inline-flex items-center rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--heading-text)] transition-colors hover:border-[var(--accent-green)]"
-                                    >
-                                        Begin Focus
-                                    </button>
-                                </div>
+                        return (
+                            <div
+                                key={task.id}
+                                className={`w-full rounded-xl px-4 py-3 text-left transition-all duration-200 hover:bg-[var(--bg-secondary)] ${isCompleted ? "opacity-80" : ""
+                                    }`}
+                            >
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex items-start gap-3 min-w-0">
+                                        {/* Checkbox */}
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleTask(task.id)}
+                                            className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 ${isCompleted
+                                                ? "bg-[var(--accent-green)] border-[var(--accent-green)]"
+                                                : "border-[var(--border-color)]"
+                                                }`}
+                                        >
+                                            {isCompleted && <Check className="w-3.5 h-3.5 text-white" />}
+                                        </button>
 
-                                <div className="relative" data-task-menu-root="true">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setOpenTaskMenuId((prev) => (prev === task.id ? null : task.id));
-                                        }}
-                                        className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--heading-text)] hover:border-[var(--accent-green)]"
-                                        aria-label={`Open task menu for ${task.name}`}
-                                    >
-                                        ⋯
-                                    </button>
-                                    {openTaskMenuId === task.id && (
-                                        <div className="absolute right-0 top-9 z-20 min-w-[140px] rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)] p-1.5 shadow-[0_14px_28px_rgba(8,15,26,0.2)]">
+                                        {/* Text */}
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleTask(task.id)}
+                                            className={`text-base text-[var(--heading-text)] transition-all duration-200 break-words ${isCompleted ? "line-through" : ""
+                                                }`}
+                                        >
+                                            {task.name}
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-start justify-end gap-2 max-w-[60%]">
+                                        <div className="flex flex-wrap items-center justify-end gap-2">
+                                            {task.tag && (
+                                                <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_68%,white)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
+                                                    <span aria-hidden="true">{task.emoji || "🏷"}</span>
+                                                    {task.tag}
+                                                </span>
+                                            )}
+                                            {task.date && (
+                                                <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_68%,white)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
+                                                    <span aria-hidden="true">📅</span>
+                                                    {formatDateLabel(task.date)}
+                                                </span>
+                                            )}
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    setOpenTaskMenuId(null);
-                                                    openEditTask(task);
+                                                    window.dispatchEvent(new CustomEvent("focus-task-selected", {
+                                                        detail: {
+                                                            notebookId: notebook.id,
+                                                            taskId: task.id,
+                                                            name: task.name,
+                                                            tag: task.tag,
+                                                            emoji: task.emoji,
+                                                        },
+                                                    }));
+
+                                                    const pomodoroSection = document.getElementById("pomodoro-focus-section");
+                                                    pomodoroSection?.scrollIntoView({ behavior: "smooth", block: "start" });
                                                 }}
-                                                className="w-full rounded-lg px-3 py-2 text-left text-sm text-[var(--heading-text)] transition-colors hover:bg-[var(--bg-secondary)]"
+                                                className="inline-flex items-center rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--heading-text)] transition-colors hover:border-[var(--accent-green)]"
                                             >
-                                                Edit Task
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => deleteTask(task.id)}
-                                                className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-500 transition-colors hover:bg-red-50"
-                                            >
-                                                Delete Task
+                                                Begin Focus
                                             </button>
                                         </div>
-                                    )}
+
+                                        <div className="relative" data-task-menu-root="true">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setOpenTaskMenuId((prev) => (prev === task.id ? null : task.id));
+                                                }}
+                                                className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--heading-text)] hover:border-[var(--accent-green)]"
+                                                aria-label={`Open task menu for ${task.name}`}
+                                            >
+                                                ⋯
+                                            </button>
+                                            {openTaskMenuId === task.id && (
+                                                <div className="absolute right-0 top-9 z-20 min-w-[140px] rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)] p-1.5 shadow-[0_14px_28px_rgba(8,15,26,0.2)]">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setOpenTaskMenuId(null);
+                                                            openEditTask(task);
+                                                        }}
+                                                        className="w-full rounded-lg px-3 py-2 text-left text-sm text-[var(--heading-text)] transition-colors hover:bg-[var(--bg-secondary)]"
+                                                    >
+                                                        Edit Task
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => deleteTask(task.id)}
+                                                        className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-500 transition-colors hover:bg-red-50"
+                                                    >
+                                                        Delete Task
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-3 pl-8">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-2 w-full overflow-hidden rounded-full bg-[color:color-mix(in_srgb,var(--bg-secondary)_72%,white)]">
+                                            <div
+                                                className="h-full rounded-full bg-[var(--accent-green)] transition-all duration-300"
+                                                style={{ width: `${progressPercent}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-xs font-semibold text-[var(--text-secondary)] min-w-[42px] text-right">
+                                            {progressPercent}%
+                                        </span>
+                                        <span className="text-xs font-medium text-[var(--text-secondary)] min-w-[82px] text-right">
+                                            {progressStatusText}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 {isAddTaskFormOpen && (
@@ -445,18 +842,19 @@ function NotebookRoom({
                                         {tagOptions.map((tag) => {
                                             const isActive = selectedTagId === tag.id;
                                             return (
-                                                <button
-                                                    key={tag.id}
-                                                    type="button"
-                                                    onClick={() => setSelectedTagId(tag.id)}
-                                                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${isActive
-                                                        ? "border-[color:color-mix(in_srgb,var(--accent-green)_40%,var(--border-color))] bg-[color:color-mix(in_srgb,var(--bg-secondary)_72%,white)] text-[var(--heading-text)]"
-                                                        : "border-[var(--border-color)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--heading-text)]"
-                                                        }`}
-                                                >
-                                                    {tag.emoji && <span aria-hidden="true">{tag.emoji}</span>}
-                                                    {tag.label}
-                                                </button>
+                                            <button
+                                                key={tag.id}
+                                                type="button"
+                                                onClick={() => setSelectedTagId(tag.id)}
+                                                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-150 ${isActive
+                                                    ? "border border-[rgba(34,197,94,0.5)] bg-[rgba(34,197,94,0.15)] text-[var(--heading-text)] shadow-[0_0_6px_rgba(34,197,94,0.25)]"
+                                                    : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-secondary)] opacity-90 hover:text-[var(--heading-text)] hover:border-[var(--accent-green)] hover:bg-[rgba(34,197,94,0.1)]"
+                                                    }`}
+                                            >
+                                                {isActive && <span aria-hidden="true">✓</span>}
+                                                {tag.emoji && <span aria-hidden="true">{tag.emoji}</span>}
+                                                {tag.label}
+                                            </button>
                                             );
                                         })}
                                         <button
@@ -593,11 +991,12 @@ function NotebookRoom({
                                                     key={`edit-${tag.id}`}
                                                     type="button"
                                                     onClick={() => setEditSelectedTagId(tag.id)}
-                                                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${isActive
-                                                        ? "border-[color:color-mix(in_srgb,var(--accent-green)_40%,var(--border-color))] bg-[color:color-mix(in_srgb,var(--bg-secondary)_72%,white)] text-[var(--heading-text)]"
-                                                        : "border-[var(--border-color)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--heading-text)]"
+                                                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-150 ${isActive
+                                                        ? "border border-[rgba(34,197,94,0.5)] bg-[rgba(34,197,94,0.15)] text-[var(--heading-text)] shadow-[0_0_6px_rgba(34,197,94,0.25)]"
+                                                        : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-secondary)] opacity-90 hover:text-[var(--heading-text)] hover:border-[var(--accent-green)] hover:bg-[rgba(34,197,94,0.1)]"
                                                         }`}
                                                 >
+                                                    {isActive && <span aria-hidden="true">✓</span>}
                                                     {tag.emoji && <span aria-hidden="true">{tag.emoji}</span>}
                                                     {tag.label}
                                                 </button>
@@ -650,7 +1049,6 @@ export default function FocusNotebooks() {
     const [notebooks, setNotebooks] = useState<Notebook[]>(DEFAULT_NOTEBOOKS);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [notebookName, setNotebookName] = useState("");
-    const [notebookEmoji, setNotebookEmoji] = useState("");
     const [activeNotebookId, setActiveNotebookId] = useState<string | null>(null);
 
     const activeNotebook = activeNotebookId
@@ -663,7 +1061,7 @@ export default function FocusNotebooks() {
 
         const newNotebook: Notebook = {
             id: `notebook-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-            emoji: notebookEmoji || "📒",
+            emoji: NOTEBOOK_EMOJI_POOL[Math.floor(Math.random() * NOTEBOOK_EMOJI_POOL.length)] || "📒",
             name: trimmed,
             createdLabel: "Created today",
             tasks: [],
@@ -672,7 +1070,6 @@ export default function FocusNotebooks() {
         setNotebooks((prev) => [...prev, newNotebook]);
         setIsCreateModalOpen(false);
         setNotebookName("");
-        setNotebookEmoji("");
         // Open the notebook room immediately
         setActiveNotebookId(newNotebook.id);
     };
@@ -693,6 +1090,8 @@ export default function FocusNotebooks() {
 
             const detail = customEvent.detail;
             if (!detail) return;
+            const completedMinutes = Math.max(0, Number(detail.minutes) || 0);
+            if (completedMinutes <= 0) return;
 
             setNotebooks((prev) =>
                 prev.map((notebook) => {
@@ -712,7 +1111,7 @@ export default function FocusNotebooks() {
                                 return task;
                             }
 
-                            const nextRemaining = Math.max(0, currentRemaining - detail.minutes);
+                            const nextRemaining = Math.max(0, currentRemaining - completedMinutes);
 
                             return {
                                 ...task,
@@ -782,29 +1181,6 @@ export default function FocusNotebooks() {
                         <p className="mt-2 text-sm text-[var(--paragraph-text)]">Give your notebook a name to get started.</p>
 
                         <div className="mt-5">
-                            <label className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Emoji</label>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                                {NOTEBOOK_EMOJI_OPTIONS.map((option) => {
-                                    const isActive = notebookEmoji === option.emoji;
-                                    return (
-                                        <button
-                                            key={option.emoji}
-                                            type="button"
-                                            onClick={() => setNotebookEmoji((prev) => (prev === option.emoji ? "" : option.emoji))}
-                                            title={option.label}
-                                            className={`h-10 w-10 rounded-xl text-xl flex items-center justify-center transition-all ${isActive
-                                                ? "bg-[var(--accent-green)]/20 ring-2 ring-[var(--accent-green)] scale-105"
-                                                : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 hover:scale-105"
-                                                }`}
-                                        >
-                                            {option.emoji}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        <div className="mt-5">
                             <label htmlFor="notebook-name" className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Notebook Name</label>
                             <input
                                 id="notebook-name"
@@ -828,7 +1204,6 @@ export default function FocusNotebooks() {
                                 onClick={() => {
                                     setIsCreateModalOpen(false);
                                     setNotebookName("");
-                                    setNotebookEmoji("");
                                 }}
                                 className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors"
                             >

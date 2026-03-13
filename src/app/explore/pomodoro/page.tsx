@@ -36,6 +36,15 @@ const LABEL_MAP: Record<string, string> = {
     snow_vibes: "Snow",
 };
 
+const EMOJI_MAP: Record<string, string> = {
+    none: "🔇",
+    forest_vibes: "🌲",
+    night_vibes: "🌙",
+    ocean_vibes: "🌊",
+    rainy_vibes: "🌧️",
+    snow_vibes: "❄️",
+};
+
 const ORDER_MAP: Record<string, number> = {
     forest_vibes: 1,
     night_vibes: 2,
@@ -68,6 +77,7 @@ const getMusicOptions = async () => {
             return {
                 value: baseName,
                 label: formatLabel(baseName),
+                emoji: EMOJI_MAP[baseName] ?? "🎵",
                 src: `/audio/${fileName}`,
                 sortOrder: ORDER_MAP[baseName] ?? 999,
             };
@@ -82,10 +92,11 @@ const getMusicOptions = async () => {
         .map((track) => ({
             value: track.value,
             label: track.label,
+            emoji: track.emoji,
             src: track.src,
         }));
 
-    return [{ value: "none", label: "None", src: null }, ...tracks];
+    return [{ value: "none", label: "None", emoji: EMOJI_MAP.none, src: null }, ...tracks];
 };
 
 export default async function PomodoroPage() {
