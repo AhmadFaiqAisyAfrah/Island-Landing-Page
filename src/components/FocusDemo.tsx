@@ -37,7 +37,23 @@ type MusicOption = {
     src: string | null;
 };
 
-export default function FocusDemo({ musicOptions }: { musicOptions: MusicOption[] }) {
+type ActiveFocusTask = {
+    notebookId: string;
+    taskId: string;
+    name: string;
+    tag: string;
+    emoji: string;
+};
+
+export default function FocusDemo({
+    musicOptions,
+    activeFocusTask,
+    onSessionComplete,
+}: {
+    musicOptions: MusicOption[];
+    activeFocusTask?: ActiveFocusTask | null;
+    onSessionComplete?: (focusSessionMinutes: number) => void;
+}) {
     const [isFocusing, setIsFocusing] = useState(false);
     const [selectedMinutes, setSelectedMinutes] = useState(DEFAULT_DURATION_MINUTES);
     const [sessionDurationSeconds, setSessionDurationSeconds] = useState(DEFAULT_DURATION_MINUTES * 60);
@@ -46,6 +62,7 @@ export default function FocusDemo({ musicOptions }: { musicOptions: MusicOption[
     const [isDragging, setIsDragging] = useState(false);
     const [dragProgress, setDragProgress] = useState<number | null>(null);
     const [selectedMusic, setSelectedMusic] = useState("none");
+    const [eventFocusedTask, setEventFocusedTask] = useState<ActiveFocusTask | null>(null);
 
     const endTimeRef = useRef<number | null>(null);
     const ringSvgRef = useRef<SVGSVGElement | null>(null);
@@ -53,6 +70,20 @@ export default function FocusDemo({ musicOptions }: { musicOptions: MusicOption[
     const lastAngleRef = useRef<number | null>(null);
     const accumulatedMinutesRef = useRef<number>(DEFAULT_DURATION_MINUTES);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const currentFocusTask = activeFocusTask ?? eventFocusedTask;
+
+    useEffect(() => {
+        const handleFocusTaskSelected = (event: Event) => {
+            const customEvent = event as CustomEvent<ActiveFocusTask>;
+            if (!customEvent.detail) return;
+            setEventFocusedTask(customEvent.detail);
+        };
+
+        window.addEventListener("focus-task-selected", handleFocusTaskSelected as EventListener);
+        return () => {
+            window.removeEventListener("focus-task-selected", handleFocusTaskSelected as EventListener);
+        };
+    }, []);
 
     useEffect(() => {
         return () => {
@@ -125,6 +156,18 @@ export default function FocusDemo({ musicOptions }: { musicOptions: MusicOption[
                 setIsFocusing(false);
                 setCompletionState("open");
                 endTimeRef.current = null;
+                const completedMinutes = Math.max(1, Math.round(sessionDurationSeconds / 60));
+                onSessionComplete?.(completedMinutes);
+
+                if (currentFocusTask) {
+                    window.dispatchEvent(new CustomEvent("focus-session-completed", {
+                        detail: {
+                            notebookId: currentFocusTask.notebookId,
+                            taskId: currentFocusTask.taskId,
+                            minutes: completedMinutes,
+                        },
+                    }));
+                }
                 return;
             }
 
@@ -134,7 +177,7 @@ export default function FocusDemo({ musicOptions }: { musicOptions: MusicOption[
         frame = window.requestAnimationFrame(animate);
 
         return () => window.cancelAnimationFrame(frame);
-    }, [isFocusing]);
+    }, [currentFocusTask, isFocusing, onSessionComplete, sessionDurationSeconds]);
 
     useEffect(() => {
         if (!isFocusing) {
@@ -251,7 +294,7 @@ export default function FocusDemo({ musicOptions }: { musicOptions: MusicOption[
     const isCompletionVisible = completionState !== "hidden";
 
     return (
-        <div className="py-24 bg-[var(--bg-primary)] overflow-hidden">
+        <div id="pomodoro-focus-section" className="py-24 bg-[var(--bg-primary)] overflow-hidden">
             <div className="max-w-[1200px] mx-auto px-6">
 
                 <div className="text-center mb-16">
@@ -496,6 +539,21 @@ export default function FocusDemo({ musicOptions }: { musicOptions: MusicOption[
                     {/* RIGHT SIDE: Controls */}
                     <div className="flex flex-col items-center justify-center max-w-sm mx-auto w-full">
                         <div className="text-center mb-12">
+                            {currentFocusTask && (
+                                <div className="mb-5 rounded-2xl border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--card-bg)_84%,transparent)] px-4 py-3 backdrop-blur-sm text-left">
+                                    <p className="text-[10px] font-semibold tracking-[0.14em] uppercase text-[var(--text-secondary)]">
+                                        Currently focusing on
+                                    </p>
+                                    {currentFocusTask.tag && (
+                                        <p className="mt-1.5 text-sm font-semibold text-[var(--heading-text)]">
+                                            <span aria-hidden="true">{currentFocusTask.emoji || "🏷"}</span>{" "}
+                                            {currentFocusTask.tag}
+                                        </p>
+                                    )}
+                                    <p className="mt-1 text-sm text-[var(--paragraph-text)] line-clamp-2">{currentFocusTask.name}</p>
+                                </div>
+                            )}
+
                             <span className="text-[var(--accent-green)] font-semibold tracking-wide uppercase text-xs mb-2 block">
                                 Your quiet place
                             </span>

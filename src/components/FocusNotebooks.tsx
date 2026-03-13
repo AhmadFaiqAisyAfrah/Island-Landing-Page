@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { ArrowLeft, Plus, Check } from "lucide-react";
 
@@ -13,6 +13,7 @@ type Task = {
     tag: string;
     emoji: string;
     estimatedMinutes: number | null;
+    remainingMinutes: number | null;
     completed: boolean;
 };
 
@@ -24,17 +25,13 @@ type TagOption = {
 
 type Notebook = {
     id: string;
+    emoji: string;
     name: string;
     createdLabel: string;
     tasks: Task[];
 };
 
-const DEFAULT_NOTEBOOKS: Notebook[] = [
-    { id: "ui-design", name: "UI Design Tasks", createdLabel: "Created today", tasks: [] },
-    { id: "study-biology", name: "Study Biology", createdLabel: "Created today", tasks: [] },
-    { id: "math-drills", name: "Math Drills", createdLabel: "Created today", tasks: [] },
-    { id: "reading-notes", name: "Reading Notes", createdLabel: "Created today", tasks: [] },
-];
+const DEFAULT_NOTEBOOKS: Notebook[] = [];
 
 const DEFAULT_TAG_OPTIONS: TagOption[] = [
     { id: "none", label: "None", emoji: "" },
@@ -43,6 +40,21 @@ const DEFAULT_TAG_OPTIONS: TagOption[] = [
     { id: "reading", label: "Reading", emoji: "📖" },
     { id: "writing", label: "Writing", emoji: "✍️" },
     { id: "mindfulness", label: "Mindfulness", emoji: "🌿" },
+];
+
+const NOTEBOOK_EMOJI_OPTIONS = [
+    { emoji: "📚", label: "Study" },
+    { emoji: "🧠", label: "Thinking" },
+    { emoji: "🧪", label: "Science" },
+    { emoji: "💻", label: "Coding" },
+    { emoji: "📖", label: "Reading" },
+    { emoji: "✍️", label: "Writing" },
+    { emoji: "🎯", label: "Focus" },
+    { emoji: "🏋️", label: "Fitness" },
+    { emoji: "🌱", label: "Growth" },
+    { emoji: "🎨", label: "Creative" },
+    { emoji: "📊", label: "Work" },
+    { emoji: "🚀", label: "Projects" },
 ];
 
 /* ─────────────── Notebook Room (To-Do view) ─────────────── */
@@ -56,6 +68,7 @@ function NotebookRoom({
     onBack: () => void;
     onUpdateTasks: (notebookId: string, tasks: Task[]) => void;
 }) {
+    const [isAddTaskFormOpen, setIsAddTaskFormOpen] = useState(false);
     const [newTaskName, setNewTaskName] = useState("");
     const [newTaskDate, setNewTaskDate] = useState("");
     const [newTaskEstimatedMinutes, setNewTaskEstimatedMinutes] = useState("");
@@ -65,13 +78,36 @@ function NotebookRoom({
     const [customTagName, setCustomTagName] = useState("");
     const [customTagEmoji, setCustomTagEmoji] = useState("");
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+    const [openTaskMenuId, setOpenTaskMenuId] = useState<string | null>(null);
+    const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+    const [editTaskName, setEditTaskName] = useState("");
+    const [editTaskDate, setEditTaskDate] = useState("");
+    const [editTaskEstimatedMinutes, setEditTaskEstimatedMinutes] = useState("");
+    const [editSelectedTagId, setEditSelectedTagId] = useState("none");
     const dateInputRef = useRef<HTMLInputElement | null>(null);
+    const editDateInputRef = useRef<HTMLInputElement | null>(null);
 
     const formatDateLabel = (dateValue: string) => {
         if (!dateValue) return "";
         const date = new Date(dateValue);
         if (Number.isNaN(date.getTime())) return "";
         return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(date);
+    };
+
+    const resetAddTaskForm = () => {
+        setNewTaskName("");
+        setNewTaskDate("");
+        setNewTaskEstimatedMinutes("");
+        setSelectedTagId("none");
+        setShowCustomTagForm(false);
+        setCustomTagName("");
+        setCustomTagEmoji("");
+        setIsEmojiPickerOpen(false);
+    };
+
+    const closeAddTaskModal = () => {
+        resetAddTaskForm();
+        setIsAddTaskFormOpen(false);
     };
 
     const addTask = () => {
@@ -89,14 +125,13 @@ function NotebookRoom({
             tag: selectedTag && selectedTag.id !== "none" ? selectedTag.label : "",
             emoji: selectedTag && selectedTag.id !== "none" ? selectedTag.emoji : "",
             estimatedMinutes,
+            remainingMinutes: estimatedMinutes,
             completed: false,
         };
 
         onUpdateTasks(notebook.id, [...notebook.tasks, task]);
-        setNewTaskName("");
-        setNewTaskDate("");
-        setNewTaskEstimatedMinutes("");
-        setSelectedTagId("none");
+        resetAddTaskForm();
+        setIsAddTaskFormOpen(false);
     };
 
     const addCustomTag = () => {
@@ -132,6 +167,90 @@ function NotebookRoom({
         }
     };
 
+    const openEditTask = (task: Task) => {
+        const matchedTag =
+            tagOptions.find((tag) => tag.label === task.tag && tag.emoji === task.emoji) ??
+            tagOptions.find((tag) => tag.label === task.tag) ??
+            null;
+
+        setEditTaskName(task.name);
+        setEditTaskDate(task.date);
+        setEditTaskEstimatedMinutes(task.estimatedMinutes !== null ? String(task.estimatedMinutes) : "");
+        setEditSelectedTagId(matchedTag?.id ?? "none");
+        setEditingTaskId(task.id);
+    };
+
+    const closeEditModal = () => {
+        setEditingTaskId(null);
+        setEditTaskName("");
+        setEditTaskDate("");
+        setEditTaskEstimatedMinutes("");
+        setEditSelectedTagId("none");
+    };
+
+    const saveEditedTask = () => {
+        if (!editingTaskId) return;
+
+        const trimmed = editTaskName.trim();
+        if (!trimmed) return;
+
+        const selectedTag = tagOptions.find((tag) => tag.id === editSelectedTagId);
+        const parsedMinutes = Number.parseInt(editTaskEstimatedMinutes, 10);
+        const nextEstimatedMinutes = Number.isNaN(parsedMinutes) || parsedMinutes <= 0 ? null : parsedMinutes;
+
+        const updatedTasks = notebook.tasks.map((task) => {
+            if (task.id !== editingTaskId) return task;
+
+            let nextRemainingMinutes = task.remainingMinutes;
+            if (nextEstimatedMinutes === null) {
+                nextRemainingMinutes = null;
+            } else if (task.completed) {
+                nextRemainingMinutes = 0;
+            } else if (task.estimatedMinutes !== null && task.remainingMinutes !== null) {
+                const usedMinutes = Math.max(0, task.estimatedMinutes - task.remainingMinutes);
+                nextRemainingMinutes = Math.max(0, nextEstimatedMinutes - usedMinutes);
+            } else {
+                nextRemainingMinutes = nextEstimatedMinutes;
+            }
+
+            return {
+                ...task,
+                name: trimmed,
+                date: editTaskDate,
+                tag: selectedTag && selectedTag.id !== "none" ? selectedTag.label : "",
+                emoji: selectedTag && selectedTag.id !== "none" ? selectedTag.emoji : "",
+                estimatedMinutes: nextEstimatedMinutes,
+                remainingMinutes: nextRemainingMinutes,
+                completed: task.completed || (nextRemainingMinutes !== null && nextRemainingMinutes <= 0),
+            };
+        });
+
+        onUpdateTasks(notebook.id, updatedTasks);
+        closeEditModal();
+    };
+
+    const deleteTask = (taskId: string) => {
+        const updatedTasks = notebook.tasks.filter((task) => task.id !== taskId);
+        onUpdateTasks(notebook.id, updatedTasks);
+        setOpenTaskMenuId(null);
+    };
+
+    useEffect(() => {
+        if (!openTaskMenuId) return;
+
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement | null;
+            if (!target?.closest("[data-task-menu-root='true']")) {
+                setOpenTaskMenuId(null);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [openTaskMenuId]);
+
     return (
         <section className="max-w-[1200px] mx-auto px-6 pb-12">
             <div className="rounded-[32px] border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--card-bg)_88%,transparent)] p-6 md:p-8 shadow-[0_18px_40px_rgba(8,15,26,0.12)] backdrop-blur-sm">
@@ -156,133 +275,13 @@ function NotebookRoom({
 
                 <div className="mt-6 border-t border-[var(--border-color)]" />
 
-                <p className="mt-6 text-base font-semibold text-[var(--heading-text)]">+ Add Task</p>
-
-                {/* Add Task input */}
-                <div className="mt-3 rounded-2xl border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_52%,white)] p-4 md:p-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label className="space-y-2 md:col-span-2">
-                            <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Task Name</span>
-                            <input
-                                type="text"
-                                value={newTaskName}
-                                onChange={(e) => setNewTaskName(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                placeholder="Add a new task..."
-                                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] outline-none transition-colors placeholder:text-[var(--text-secondary)] focus:border-[var(--accent-green)]"
-                            />
-                        </label>
-
-                        <label className="space-y-2">
-                            <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Date</span>
-                            <input
-                                ref={dateInputRef}
-                                type="date"
-                                value={newTaskDate}
-                                onChange={(e) => setNewTaskDate(e.target.value)}
-                                onClick={() => dateInputRef.current?.showPicker?.()}
-                                onFocus={() => dateInputRef.current?.showPicker?.()}
-                                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
-                            />
-                        </label>
-
-                        <div className="space-y-2">
-                            <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Tag</span>
-                            <div className="flex flex-wrap gap-2">
-                                {tagOptions.map((tag) => {
-                                    const isActive = selectedTagId === tag.id;
-                                    return (
-                                        <button
-                                            key={tag.id}
-                                            type="button"
-                                            onClick={() => setSelectedTagId(tag.id)}
-                                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${isActive
-                                                ? "border-[color:color-mix(in_srgb,var(--accent-green)_40%,var(--border-color))] bg-[color:color-mix(in_srgb,var(--bg-secondary)_72%,white)] text-[var(--heading-text)]"
-                                                : "border-[var(--border-color)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--heading-text)]"
-                                                }`}
-                                        >
-                                            {tag.emoji && <span aria-hidden="true">{tag.emoji}</span>}
-                                            {tag.label}
-                                        </button>
-                                    );
-                                })}
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCustomTagForm((prev) => !prev)}
-                                    className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-[var(--accent-green)]/70 bg-[var(--bg-primary)] px-3 py-1.5 text-xs font-medium text-[var(--accent-green)] transition-colors hover:bg-[color:color-mix(in_srgb,var(--accent-green)_10%,white)]"
-                                >
-                                    + Custom
-                                </button>
-                            </div>
-                            {showCustomTagForm && (
-                                <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_110px_auto] gap-2">
-                                    <input
-                                        type="text"
-                                        value={customTagName}
-                                        onChange={(e) => setCustomTagName(e.target.value)}
-                                        placeholder="Tag name"
-                                        className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--heading-text)] outline-none transition-colors placeholder:text-[var(--text-secondary)] focus:border-[var(--accent-green)]"
-                                    />
-                                    <div className="relative">
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsEmojiPickerOpen((prev) => !prev)}
-                                            className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-left text-[var(--heading-text)] outline-none transition-colors hover:border-[var(--accent-green)]"
-                                        >
-                                            {customTagEmoji || "Emoji"}
-                                        </button>
-                                        {isEmojiPickerOpen && (
-                                            <div className="absolute z-20 mt-2 right-0">
-                                                <EmojiPicker
-                                                    onEmojiClick={(emojiData) => {
-                                                        setCustomTagEmoji(emojiData.emoji);
-                                                        setIsEmojiPickerOpen(false);
-                                                    }}
-                                                    searchDisabled={false}
-                                                    previewConfig={{ showPreview: false }}
-                                                    width={280}
-                                                    height={340}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={addCustomTag}
-                                        disabled={!customTagName.trim()}
-                                        className="rounded-xl px-3 py-2 text-sm font-semibold bg-[var(--button-bg)] text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                                    >
-                                        Create
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        <label className="space-y-2 md:col-span-2">
-                            <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Estimated Time (minutes)</span>
-                            <div className="flex items-center gap-3">
-                                <input
-                                    type="number"
-                                    min={1}
-                                    max={600}
-                                    value={newTaskEstimatedMinutes}
-                                    onChange={(e) => setNewTaskEstimatedMinutes(e.target.value)}
-                                    placeholder="Enter time in minutes"
-                                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] outline-none transition-colors placeholder:text-[var(--text-secondary)] focus:border-[var(--accent-green)]"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={addTask}
-                                    disabled={!newTaskName.trim()}
-                                    className="shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl bg-[var(--button-bg)] text-[var(--button-text)] font-semibold hover:bg-[var(--button-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    Add
-                                </button>
-                            </div>
-                        </label>
-                    </div>
-                </div>
+                <button
+                    type="button"
+                    onClick={() => setIsAddTaskFormOpen(true)}
+                    className="mt-6 text-base font-semibold text-[var(--heading-text)] hover:text-[var(--accent-green)] transition-colors"
+                >
+                    + Add Task
+                </button>
 
                 {/* Divider */}
                 <div className="mt-6 border-t border-[var(--border-color)]" />
@@ -298,56 +297,347 @@ function NotebookRoom({
                     )}
 
                     {notebook.tasks.map((task) => (
-                        <button
+                        <div
                             key={task.id}
-                            type="button"
-                            onClick={() => toggleTask(task.id)}
                             className={`w-full flex items-start justify-between gap-4 rounded-xl px-4 py-3 text-left transition-all duration-200 hover:bg-[var(--bg-secondary)] ${task.completed ? "opacity-80" : ""
                                 }`}
                         >
                             <div className="flex items-start gap-3 min-w-0">
                                 {/* Checkbox */}
-                                <span
+                                <button
+                                    type="button"
+                                    onClick={() => toggleTask(task.id)}
                                     className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 ${task.completed
                                         ? "bg-[var(--accent-green)] border-[var(--accent-green)]"
                                         : "border-[var(--border-color)]"
                                         }`}
                                 >
                                     {task.completed && <Check className="w-3.5 h-3.5 text-white" />}
-                                </span>
+                                </button>
 
                                 {/* Text */}
-                                <span
+                                <button
+                                    type="button"
+                                    onClick={() => toggleTask(task.id)}
                                     className={`text-base text-[var(--heading-text)] transition-all duration-200 break-words ${task.completed ? "line-through" : ""
                                         }`}
                                 >
                                     {task.name}
-                                </span>
+                                </button>
                             </div>
 
-                            <div className="flex flex-wrap items-center justify-end gap-2 max-w-[50%]">
-                                {task.tag && (
-                                    <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_68%,white)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
-                                        <span aria-hidden="true">{task.emoji || "🏷"}</span>
-                                        {task.tag}
-                                    </span>
-                                )}
-                                {task.estimatedMinutes !== null && (
-                                    <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_68%,white)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
-                                        <span aria-hidden="true">⏱</span>
-                                        {task.estimatedMinutes}m
-                                    </span>
-                                )}
-                                {task.date && (
-                                    <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_68%,white)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
-                                        <span aria-hidden="true">📅</span>
-                                        {formatDateLabel(task.date)}
-                                    </span>
-                                )}
+                            <div className="flex items-start justify-end gap-2 max-w-[60%]">
+                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                    {task.tag && (
+                                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_68%,white)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
+                                            <span aria-hidden="true">{task.emoji || "🏷"}</span>
+                                            {task.tag}
+                                        </span>
+                                    )}
+                                    {task.remainingMinutes !== null && (
+                                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_68%,white)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
+                                            <span aria-hidden="true">⏱</span>
+                                            {task.remainingMinutes}m left
+                                        </span>
+                                    )}
+                                    {task.date && (
+                                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--bg-secondary)_68%,white)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
+                                            <span aria-hidden="true">📅</span>
+                                            {formatDateLabel(task.date)}
+                                        </span>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            window.dispatchEvent(new CustomEvent("focus-task-selected", {
+                                                detail: {
+                                                    notebookId: notebook.id,
+                                                    taskId: task.id,
+                                                    name: task.name,
+                                                    tag: task.tag,
+                                                    emoji: task.emoji,
+                                                },
+                                            }));
+
+                                            const pomodoroSection = document.getElementById("pomodoro-focus-section");
+                                            pomodoroSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                        }}
+                                        className="inline-flex items-center rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--heading-text)] transition-colors hover:border-[var(--accent-green)]"
+                                    >
+                                        Begin Focus
+                                    </button>
+                                </div>
+
+                                <div className="relative" data-task-menu-root="true">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOpenTaskMenuId((prev) => (prev === task.id ? null : task.id));
+                                        }}
+                                        className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--heading-text)] hover:border-[var(--accent-green)]"
+                                        aria-label={`Open task menu for ${task.name}`}
+                                    >
+                                        ⋯
+                                    </button>
+                                    {openTaskMenuId === task.id && (
+                                        <div className="absolute right-0 top-9 z-20 min-w-[140px] rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)] p-1.5 shadow-[0_14px_28px_rgba(8,15,26,0.2)]">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setOpenTaskMenuId(null);
+                                                    openEditTask(task);
+                                                }}
+                                                className="w-full rounded-lg px-3 py-2 text-left text-sm text-[var(--heading-text)] transition-colors hover:bg-[var(--bg-secondary)]"
+                                            >
+                                                Edit Task
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => deleteTask(task.id)}
+                                                className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-500 transition-colors hover:bg-red-50"
+                                            >
+                                                Delete Task
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </button>
+                        </div>
                     ))}
                 </div>
+
+                {isAddTaskFormOpen && (
+                    <div className="fixed inset-0 z-50 bg-[#0F172A]/45 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+                        <div className="w-full max-w-2xl rounded-3xl border border-[var(--border-color)] bg-[var(--card-bg)] p-6 shadow-[0_24px_44px_rgba(8,15,26,0.24)] animate-modal-pop">
+                            <h3 className="text-xl font-bold text-[var(--heading-text)]">Add Task</h3>
+                            <p className="mt-2 text-sm text-[var(--paragraph-text)]">Create a new task.</p>
+
+                            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <label className="space-y-2 md:col-span-2">
+                                    <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Task Name</span>
+                                    <input
+                                        type="text"
+                                        value={newTaskName}
+                                        onChange={(e) => setNewTaskName(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="Add a new task..."
+                                        className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] outline-none transition-colors placeholder:text-[var(--text-secondary)] focus:border-[var(--accent-green)]"
+                                    />
+                                </label>
+
+                                <label className="space-y-2">
+                                    <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Date</span>
+                                    <input
+                                        ref={dateInputRef}
+                                        type="date"
+                                        value={newTaskDate}
+                                        onChange={(e) => setNewTaskDate(e.target.value)}
+                                        onClick={() => dateInputRef.current?.showPicker?.()}
+                                        onFocus={() => dateInputRef.current?.showPicker?.()}
+                                        className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
+                                    />
+                                </label>
+
+                                <div className="space-y-2">
+                                    <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Tag</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {tagOptions.map((tag) => {
+                                            const isActive = selectedTagId === tag.id;
+                                            return (
+                                                <button
+                                                    key={tag.id}
+                                                    type="button"
+                                                    onClick={() => setSelectedTagId(tag.id)}
+                                                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${isActive
+                                                        ? "border-[color:color-mix(in_srgb,var(--accent-green)_40%,var(--border-color))] bg-[color:color-mix(in_srgb,var(--bg-secondary)_72%,white)] text-[var(--heading-text)]"
+                                                        : "border-[var(--border-color)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--heading-text)]"
+                                                        }`}
+                                                >
+                                                    {tag.emoji && <span aria-hidden="true">{tag.emoji}</span>}
+                                                    {tag.label}
+                                                </button>
+                                            );
+                                        })}
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCustomTagForm((prev) => !prev)}
+                                            className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-[var(--accent-green)]/70 bg-[var(--bg-primary)] px-3 py-1.5 text-xs font-medium text-[var(--accent-green)] transition-colors hover:bg-[color:color-mix(in_srgb,var(--accent-green)_10%,white)]"
+                                        >
+                                            + Custom
+                                        </button>
+                                    </div>
+                                    {showCustomTagForm && (
+                                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_110px_auto] gap-2">
+                                            <input
+                                                type="text"
+                                                value={customTagName}
+                                                onChange={(e) => setCustomTagName(e.target.value)}
+                                                placeholder="Tag name"
+                                                className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--heading-text)] outline-none transition-colors placeholder:text-[var(--text-secondary)] focus:border-[var(--accent-green)]"
+                                            />
+                                            <div className="relative">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsEmojiPickerOpen((prev) => !prev)}
+                                                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-left text-[var(--heading-text)] outline-none transition-colors hover:border-[var(--accent-green)]"
+                                                >
+                                                    {customTagEmoji || "Emoji"}
+                                                </button>
+                                                {isEmojiPickerOpen && (
+                                                    <div className="absolute z-20 mt-2 right-0">
+                                                        <EmojiPicker
+                                                            onEmojiClick={(emojiData) => {
+                                                                setCustomTagEmoji(emojiData.emoji);
+                                                                setIsEmojiPickerOpen(false);
+                                                            }}
+                                                            searchDisabled={false}
+                                                            previewConfig={{ showPreview: false }}
+                                                            width={280}
+                                                            height={340}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={addCustomTag}
+                                                disabled={!customTagName.trim()}
+                                                className="rounded-xl px-3 py-2 text-sm font-semibold bg-[var(--button-bg)] text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                            >
+                                                Create
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <label className="space-y-2 md:col-span-2">
+                                    <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Estimated Time (Minutes)</span>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={600}
+                                        value={newTaskEstimatedMinutes}
+                                        onChange={(e) => setNewTaskEstimatedMinutes(e.target.value)}
+                                        placeholder="Enter time in minutes"
+                                        className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] outline-none transition-colors placeholder:text-[var(--text-secondary)] focus:border-[var(--accent-green)]"
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="mt-6 flex items-center justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={closeAddTaskModal}
+                                    className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={addTask}
+                                    disabled={!newTaskName.trim()}
+                                    className="shrink-0 flex items-center gap-2 px-5 py-2 rounded-xl bg-[var(--button-bg)] text-[var(--button-text)] font-semibold hover:bg-[var(--button-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {editingTaskId && (
+                    <div className="fixed inset-0 z-50 bg-[#0F172A]/45 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="w-full max-w-2xl rounded-3xl border border-[var(--border-color)] bg-[var(--card-bg)] p-6 shadow-[0_24px_44px_rgba(8,15,26,0.24)]">
+                            <h3 className="text-xl font-bold text-[var(--heading-text)]">Edit Task</h3>
+                            <p className="mt-2 text-sm text-[var(--paragraph-text)]">Update task details below.</p>
+
+                            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <label className="space-y-2 md:col-span-2">
+                                    <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Task Name</span>
+                                    <input
+                                        type="text"
+                                        value={editTaskName}
+                                        onChange={(e) => setEditTaskName(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
+                                                e.preventDefault();
+                                                saveEditedTask();
+                                            }
+                                        }}
+                                        className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] outline-none transition-colors placeholder:text-[var(--text-secondary)] focus:border-[var(--accent-green)]"
+                                    />
+                                </label>
+
+                                <label className="space-y-2">
+                                    <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Date</span>
+                                    <input
+                                        ref={editDateInputRef}
+                                        type="date"
+                                        value={editTaskDate}
+                                        onChange={(e) => setEditTaskDate(e.target.value)}
+                                        onClick={() => editDateInputRef.current?.showPicker?.()}
+                                        onFocus={() => editDateInputRef.current?.showPicker?.()}
+                                        className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] outline-none transition-colors focus:border-[var(--accent-green)]"
+                                    />
+                                </label>
+
+                                <div className="space-y-2">
+                                    <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Tag</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {tagOptions.map((tag) => {
+                                            const isActive = editSelectedTagId === tag.id;
+                                            return (
+                                                <button
+                                                    key={`edit-${tag.id}`}
+                                                    type="button"
+                                                    onClick={() => setEditSelectedTagId(tag.id)}
+                                                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${isActive
+                                                        ? "border-[color:color-mix(in_srgb,var(--accent-green)_40%,var(--border-color))] bg-[color:color-mix(in_srgb,var(--bg-secondary)_72%,white)] text-[var(--heading-text)]"
+                                                        : "border-[var(--border-color)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--heading-text)]"
+                                                        }`}
+                                                >
+                                                    {tag.emoji && <span aria-hidden="true">{tag.emoji}</span>}
+                                                    {tag.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                <label className="space-y-2 md:col-span-2">
+                                    <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Estimated Time (minutes)</span>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={600}
+                                        value={editTaskEstimatedMinutes}
+                                        onChange={(e) => setEditTaskEstimatedMinutes(e.target.value)}
+                                        className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] outline-none transition-colors placeholder:text-[var(--text-secondary)] focus:border-[var(--accent-green)]"
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="mt-6 flex items-center justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={closeEditModal}
+                                    className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={saveEditedTask}
+                                    disabled={!editTaskName.trim()}
+                                    className="px-5 py-2 rounded-xl bg-[var(--button-bg)] text-[var(--button-text)] font-semibold hover:bg-[var(--button-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </section>
     );
@@ -359,6 +649,7 @@ export default function FocusNotebooks() {
     const [notebooks, setNotebooks] = useState<Notebook[]>(DEFAULT_NOTEBOOKS);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [notebookName, setNotebookName] = useState("");
+    const [notebookEmoji, setNotebookEmoji] = useState("");
     const [activeNotebookId, setActiveNotebookId] = useState<string | null>(null);
 
     const activeNotebook = activeNotebookId
@@ -371,6 +662,7 @@ export default function FocusNotebooks() {
 
         const newNotebook: Notebook = {
             id: `notebook-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            emoji: notebookEmoji || "📒",
             name: trimmed,
             createdLabel: "Created today",
             tasks: [],
@@ -379,6 +671,7 @@ export default function FocusNotebooks() {
         setNotebooks((prev) => [...prev, newNotebook]);
         setIsCreateModalOpen(false);
         setNotebookName("");
+        setNotebookEmoji("");
         // Open the notebook room immediately
         setActiveNotebookId(newNotebook.id);
     };
@@ -387,6 +680,54 @@ export default function FocusNotebooks() {
         setNotebooks((prev) =>
             prev.map((n) => (n.id === notebookId ? { ...n, tasks } : n))
         );
+    }, []);
+
+    useEffect(() => {
+        const handleFocusSessionCompleted = (event: Event) => {
+            const customEvent = event as CustomEvent<{
+                notebookId: string;
+                taskId: string;
+                minutes: number;
+            }>;
+
+            const detail = customEvent.detail;
+            if (!detail) return;
+
+            setNotebooks((prev) =>
+                prev.map((notebook) => {
+                    if (notebook.id !== detail.notebookId) {
+                        return notebook;
+                    }
+
+                    return {
+                        ...notebook,
+                        tasks: notebook.tasks.map((task) => {
+                            if (task.id !== detail.taskId) {
+                                return task;
+                            }
+
+                            const currentRemaining = task.remainingMinutes ?? task.estimatedMinutes;
+                            if (currentRemaining === null) {
+                                return task;
+                            }
+
+                            const nextRemaining = Math.max(0, currentRemaining - detail.minutes);
+
+                            return {
+                                ...task,
+                                remainingMinutes: nextRemaining,
+                                completed: task.completed || nextRemaining <= 0,
+                            };
+                        }),
+                    };
+                })
+            );
+        };
+
+        window.addEventListener("focus-session-completed", handleFocusSessionCompleted as EventListener);
+        return () => {
+            window.removeEventListener("focus-session-completed", handleFocusSessionCompleted as EventListener);
+        };
     }, []);
 
     /* ── Room view ── */
@@ -425,7 +766,7 @@ export default function FocusNotebooks() {
                             onClick={() => setActiveNotebookId(notebook.id)}
                             className="min-h-[150px] rounded-2xl border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--card-bg)_88%,transparent)] p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_24px_rgba(8,15,26,0.12)]"
                         >
-                            <span className="text-lg" aria-hidden="true">📒</span>
+                            <span className="text-lg" aria-hidden="true">{notebook.emoji || "📒"}</span>
                             <p className="mt-3 text-base font-semibold text-[var(--heading-text)] line-clamp-2">{notebook.name}</p>
                             <p className="mt-2 text-xs text-[var(--text-secondary)]">{notebook.createdLabel} · {notebook.tasks.length} tasks</p>
                         </button>
@@ -438,6 +779,29 @@ export default function FocusNotebooks() {
                     <div className="w-full max-w-md rounded-3xl border border-[var(--border-color)] bg-[var(--card-bg)] p-6 shadow-[0_24px_44px_rgba(8,15,26,0.24)]">
                         <h3 className="text-xl font-bold text-[var(--heading-text)]">Create Focus Notebook</h3>
                         <p className="mt-2 text-sm text-[var(--paragraph-text)]">Give your notebook a name to get started.</p>
+
+                        <div className="mt-5">
+                            <label className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Emoji</label>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {NOTEBOOK_EMOJI_OPTIONS.map((option) => {
+                                    const isActive = notebookEmoji === option.emoji;
+                                    return (
+                                        <button
+                                            key={option.emoji}
+                                            type="button"
+                                            onClick={() => setNotebookEmoji((prev) => (prev === option.emoji ? "" : option.emoji))}
+                                            title={option.label}
+                                            className={`h-10 w-10 rounded-xl text-xl flex items-center justify-center transition-all ${isActive
+                                                ? "bg-[var(--accent-green)]/20 ring-2 ring-[var(--accent-green)] scale-105"
+                                                : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 hover:scale-105"
+                                                }`}
+                                        >
+                                            {option.emoji}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
 
                         <div className="mt-5">
                             <label htmlFor="notebook-name" className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">Notebook Name</label>
@@ -463,6 +827,7 @@ export default function FocusNotebooks() {
                                 onClick={() => {
                                     setIsCreateModalOpen(false);
                                     setNotebookName("");
+                                    setNotebookEmoji("");
                                 }}
                                 className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--heading-text)] hover:bg-[var(--bg-secondary)] transition-colors"
                             >
