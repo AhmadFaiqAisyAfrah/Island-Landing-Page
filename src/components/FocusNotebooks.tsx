@@ -270,6 +270,7 @@ function NotebookRoom({
 
                 {/* Title */}
                 <h2 className="text-2xl md:text-3xl font-bold text-[var(--heading-text)]">
+                    <span aria-hidden="true" className="mr-2">{notebook.emoji || "📒"}</span>
                     {notebook.name}
                 </h2>
 
