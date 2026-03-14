@@ -43,7 +43,7 @@ export default function Navbar() {
     const navLinks = isDashboard ? dashboardLinks : marketingLinks;
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--nav-bg)] backdrop-blur-md border-b border-[var(--border-color)]">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--nav-bg)] backdrop-blur-md border-b-[var(--nav-border)]">
             <div className="mx-auto max-w-6xl flex items-center justify-between px-6 py-4">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 text-xl font-bold text-[var(--heading-text)]">

@@ -14,16 +14,16 @@ export default function HeroSection() {
             />
 
             {/* Animated clouds — multiple layers for depth */}
-            <div className="absolute top-12 left-0 w-44 opacity-50 animate-drift-right">
+            <div className="absolute top-12 left-0 w-44 animate-drift-right" style={{ opacity: "var(--cloud-opacity)" }}>
                 <CloudSVG variant="soft" />
             </div>
-            <div className="absolute top-28 right-0 w-56 opacity-35 animate-drift-left delay-2000">
+            <div className="absolute top-28 right-0 w-56 animate-drift-left delay-2000" style={{ opacity: "var(--cloud-opacity)" }}>
                 <CloudSVG />
             </div>
-            <div className="absolute top-44 left-1/4 w-32 opacity-25 animate-drift-right delay-3000">
+            <div className="absolute top-44 left-1/4 w-32 animate-drift-right delay-3000" style={{ opacity: "var(--cloud-opacity)" }}>
                 <CloudSVG variant="small" />
             </div>
-            <div className="absolute top-20 right-1/4 w-28 opacity-20 animate-drift-left delay-1000">
+            <div className="absolute top-20 right-1/4 w-28 animate-drift-left delay-1000" style={{ opacity: "var(--cloud-opacity)" }}>
                 <CloudSVG variant="small" />
             </div>
 

@@ -28,45 +28,7 @@ export default function DataDeletionPage() {
                         Island gives you full control over your data. Because the app stores most productivity data locally on your device and only limited onboarding data in secure cloud services, you can manage or delete your information at any time.
                     </p>
 
-                    {/* ===== Types of Data Stored ===== */}
-                    <section className="space-y-4">
-                        <h2 className="text-xl font-semibold text-text-dark">
-                            Types of Data Stored
-                        </h2>
-
-                        <h3 className="text-base font-semibold text-text-dark">
-                            1. Local Device Data
-                        </h3>
-                        <p className="text-text-muted">
-                            The following data is created and stored exclusively on your device. It is never transmitted to our servers:
-                        </p>
-                        <ul className="list-disc pl-6 space-y-1.5 text-text-muted">
-                            <li>Focus session history and duration records</li>
-                            <li>Island progress, decorations, and unlocked content</li>
-                            <li>Island Coin balance</li>
-                            <li>Timer settings and preferences</li>
-                            <li>White noise and ambient sound preferences</li>
-                            <li>Visual calendar data and streak records</li>
-                        </ul>
-
-                        <h3 className="text-base font-semibold text-text-dark">
-                            2. Cloud-Based Data (Firebase)
-                        </h3>
-                        <p className="text-text-muted">
-                            If you sign in with Google, the following limited data may be stored securely using Google Firebase services:
-                        </p>
-                        <ul className="list-disc pl-6 space-y-1.5 text-text-muted">
-                            <li>Your chosen display name</li>
-                            <li>Self-reported focus difficulty related to screen time</li>
-                            <li>Average daily screen time (as entered during onboarding)</li>
-                            <li>Anonymous technical identifiers (Firebase UID)</li>
-                        </ul>
-                        <p className="text-text-muted">
-                            This data is used solely to personalize your experience and improve Island&apos;s features.
-                        </p>
-                    </section>
-
-                    {/* ===== Option 1: Clear App Data (Local Data Only) ===== */}
+                    {/* ===== Option 1: Clear App Data ===== */}
                     <section className="space-y-4">
                         <h2 className="text-xl font-semibold text-text-dark">
                             Option 1: Clear App Data (Local Data Only)
@@ -162,39 +124,19 @@ export default function DataDeletionPage() {
                         </p>
                     </section>
 
-                    {/* ===== Legal Compliance ===== */}
-                    <section className="space-y-4 border-t border-pastel-green/10 pt-8">
-                        <p className="text-text-muted">
-                            Island does not sell personal data. We process onboarding data
-                            solely for improving user experience, research insights, and
-                            future feature development.
-                        </p>
-                        <p className="text-text-muted">
-                            For additional information, please review our{" "}
-                            <Link
-                                href="/privacy"
-                                className="text-pastel-green-deep hover:underline"
-                            >
-                                Privacy Policy
-                            </Link>
-                            .
-                        </p>
-                    </section>
-
-                    {/* ===== Need Help? ===== */}
+                    {/* ===== Questions? ===== */}
                     <section className="space-y-4">
                         <h2 className="text-xl font-semibold text-text-dark">
-                            Need Help?
+                            Questions?
                         </h2>
-                        <p>
-                            If you need further assistance, visit our{" "}
-                            <Link
-                                href="/contact"
+                        <p className="text-text-muted">
+                            If you have any questions or need assistance with data deletion, please contact us at{" "}
+                            <a
+                                href="mailto:help.island.app@gmail.com"
                                 className="text-pastel-green-deep hover:underline"
                             >
-                                Contact page
-                            </Link>
-                            .
+                                help.island.app@gmail.com
+                            </a>
                         </p>
                     </section>
                 </div>

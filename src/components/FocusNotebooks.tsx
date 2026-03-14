@@ -1351,34 +1351,36 @@ export default function FocusNotebooks() {
 
     /* ── Grid view ── */
     return (
-        <section className="max-w-[1200px] mx-auto px-6 pb-12">
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12 pt-4">
             <div className="rounded-[32px] border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--card-bg)_88%,transparent)] p-6 md:p-8 shadow-[0_18px_40px_rgba(8,15,26,0.12)] backdrop-blur-sm">
-                <h2 className="text-2xl md:text-3xl font-bold text-[var(--heading-text)]">Focus Notebooks</h2>
-                <p className="mt-2 text-sm md:text-base text-[var(--paragraph-text)]">Organize tasks for each focus session</p>
+                <div className="text-center mb-8">
+                    <h2 className="text-2xl md:text-3xl font-bold text-[var(--heading-text)]">Focus Notebooks</h2>
+                    <p className="mt-2 text-sm md:text-base text-[var(--paragraph-text)]">Organize tasks for each focus session</p>
+                </div>
 
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 justify-items-center">
                     <button
                         type="button"
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="group min-h-[150px] cursor-pointer rounded-2xl border border-dashed border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-green)] hover:bg-[color:color-mix(in_srgb,var(--bg-secondary)_82%,var(--card-bg))] hover:shadow-[0_14px_24px_rgba(8,15,26,0.12)]"
+                        className="group min-h-[160px] w-full max-w-[280px] cursor-pointer rounded-2xl border border-dashed border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 text-center transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-green)] hover:bg-[color:color-mix(in_srgb,var(--bg-secondary)_82%,var(--card-bg))] hover:shadow-[0_14px_24px_rgba(8,15,26,0.12)] flex flex-col items-center justify-center"
                     >
-                        <span className="text-3xl leading-none text-[var(--accent-green)] block">+</span>
-                        <p className="mt-4 text-base font-semibold text-[var(--heading-text)]">Create Focus Notebook</p>
+                        <span className="text-4xl leading-none text-[var(--accent-green)] block">+</span>
+                        <p className="mt-3 text-base font-semibold text-[var(--heading-text)]">Create Focus Notebook</p>
                         <p className="mt-1 text-xs text-[var(--text-secondary)]">Start a fresh workspace</p>
                     </button>
 
                     {notebooks.map((notebook) => (
                         <div
                             key={notebook.id}
-                            className="group relative min-h-[150px] rounded-2xl border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--card-bg)_88%,transparent)] p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_24px_rgba(8,15,26,0.12)]"
+                            className="group relative min-h-[160px] w-full max-w-[280px] rounded-2xl border border-[var(--border-color)] bg-[color:color-mix(in_srgb,var(--card-bg)_88%,transparent)] p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_24px_rgba(8,15,26,0.12)]"
                         >
                             <button
                                 type="button"
                                 onClick={() => setActiveNotebookId(notebook.id)}
-                                className="block w-full text-left"
+                                className="block w-full h-full text-left"
                                 aria-label={`Open notebook ${notebook.name}`}
                             >
-                                <span className="text-lg" aria-hidden="true">{notebook.emoji || "📒"}</span>
+                                <span className="text-2xl" aria-hidden="true">{notebook.emoji || "📒"}</span>
                                 <p className="mt-3 text-base font-semibold text-[var(--heading-text)] line-clamp-2">{notebook.name}</p>
                                 <p className="mt-2 text-xs text-[var(--text-secondary)]">{notebook.createdLabel} · {notebook.tasks.length} tasks</p>
                             </button>

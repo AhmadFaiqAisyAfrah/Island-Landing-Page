@@ -476,7 +476,7 @@ export default function FlashcardViewer({
                                         <div className="relative rounded-lg overflow-hidden">
                                             <img src={modalQuestionImage} alt="Question" className="w-full h-32 object-cover rounded-lg" loading="lazy" />
                                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 hover:opacity-100 transition-opacity">
-                                                <label className="cursor-pointer px-3 py-1.5 bg-white/90 rounded-lg text-xs font-medium text-gray-900 hover:bg-white">
+                                                <label className="cursor-pointer px-3 py-1.5 bg-[var(--card-bg)] rounded-lg text-xs font-medium text-[var(--heading-text)] hover:bg-[var(--bg-secondary)]">
                                                     Replace
                                                     <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], "question")} />
                                                 </label>
