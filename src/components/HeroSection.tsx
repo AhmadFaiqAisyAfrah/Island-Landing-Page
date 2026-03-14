@@ -50,22 +50,16 @@ export default function HeroSection() {
                         one session at a time.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start pt-2">
-                        <a
-                            href="https://play.google.com/store"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group rounded-full bg-[var(--button-bg)] px-8 py-3.5 text-base font-semibold text-[var(--button-text)] shadow-[0_14px_28px_rgba(8,15,26,0.28)] hover:shadow-[0_18px_32px_rgba(8,15,26,0.34)] hover:bg-[var(--button-hover)] hover:scale-105 transition-all duration-300"
-                        >
-                            Download Free
-                            <span className="inline-block ml-1.5 group-hover:translate-x-0.5 transition-transform">→</span>
-                        </a>
+                    <div className="flex flex-col items-center gap-4 justify-center lg:justify-start pt-2">
                         <a
                             href="#features"
-                            className="rounded-full border-2 border-[var(--border-color)] px-8 py-3.5 text-base font-semibold text-[var(--accent-green)] hover:bg-[var(--bg-secondary)] hover:border-[var(--accent-green)] transition-all duration-300"
+                            className="rounded-full border-2 border-[var(--accent-green)] px-8 py-3.5 text-base font-semibold text-[var(--accent-green)] hover:bg-[var(--bg-secondary)] hover:border-[var(--accent-green)] transition-all duration-300"
                         >
                             Learn More
                         </a>
+                        <p className="text-sm text-[var(--paragraph-text)] opacity-60">
+                            Island mobile app is coming soon to Google Play
+                        </p>
                     </div>
                 </div>
 
