@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import MonetagInPagePush from "@/components/MonetagInPagePush";
-import { Timer, BookOpen } from "lucide-react";
+import IslandSVG from "@/components/IslandSVG";
 
 export const metadata: Metadata = {
     title: "Study Tools – Pomodoro Timer & Flashcards | Island",
@@ -29,18 +29,32 @@ const tools = [
         description: "Focus deeply with calm timed sessions.",
         href: "/explore/pomodoro",
         button: "Start Pomodoro",
-        icon: Timer,
-        gradient: "from-emerald-500/10 to-teal-500/10",
-        iconColor: "text-emerald-600 dark:text-emerald-400",
+        emoji: "🍅",
     },
     {
         title: "Flashcards",
         description: "Memorize concepts faster using spaced repetition flashcards.",
         href: "/explore/flashcards",
         button: "Open Flashcards",
-        icon: BookOpen,
-        gradient: "from-blue-500/10 to-indigo-500/10",
-        iconColor: "text-blue-600 dark:text-blue-400",
+        emoji: "🧠",
+    },
+];
+
+const highlights = [
+    {
+        emoji: "🎯",
+        title: "Focus Better",
+        desc: "Build deep focus sessions using Pomodoro.",
+    },
+    {
+        emoji: "🧠",
+        title: "Remember More",
+        desc: "Strengthen memory with spaced repetition flashcards.",
+    },
+    {
+        emoji: "🌱",
+        title: "Grow Your Island",
+        desc: "Stay consistent and watch your island flourish.",
     },
 ];
 
@@ -50,6 +64,59 @@ export default function ExplorePage() {
             <MonetagInPagePush />
 
             <div className="max-w-[900px] mx-auto px-6 py-24">
+                {/* Hero Section */}
+                <section className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16 mb-24">
+                    {/* Left: Text */}
+                    <div className="flex-1 text-center lg:text-left space-y-6">
+                        <div className="inline-block rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-1.5 text-xs font-medium text-[var(--accent-green)] tracking-wide">
+                            🌿 Explore Island
+                        </div>
+
+                        <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold leading-[1.15] tracking-tight text-[var(--heading-text)]">
+                            Explore new ways
+                            <br />
+                            to <span className="text-[var(--accent-green)]">focus</span>.
+                            <br />
+                            <span className="text-[var(--heading-text)]">
+                                Discover tools
+                            </span>
+                            <br />
+                            that help you learn.
+                        </h1>
+
+                        <p className="text-lg text-[var(--paragraph-text)] max-w-md mx-auto lg:mx-0 leading-relaxed">
+                            Discover simple tools designed to help you focus deeper, remember more, and grow your island.
+                        </p>
+                    </div>
+
+                    {/* Right: Island Illustration */}
+                    <div className="flex-1 flex justify-center">
+                        <div className="animate-float w-72 sm:w-80 lg:w-[22rem]">
+                            <IslandSVG className="w-full h-auto drop-shadow-[0_20px_40px_rgba(107,191,138,0.22)]" />
+                        </div>
+                    </div>
+                </section>
+
+                {/* How Island Helps You */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+                    {highlights.map((item) => (
+                        <div
+                            key={item.title}
+                            className="rounded-2xl bg-[var(--card-bg)] border border-[var(--border-color)] p-6 text-center"
+                        >
+                            <div className="text-4xl mb-4">
+                                {item.emoji}
+                            </div>
+                            <h3 className="text-lg font-semibold text-[var(--heading-text)] mb-2">
+                                {item.title}
+                            </h3>
+                            <p className="text-sm text-[var(--paragraph-text)] leading-relaxed">
+                                {item.desc}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+
                 {/* Header */}
                 <div className="text-center mb-16">
                     <span className="text-[var(--accent-green)] font-bold tracking-wider uppercase text-sm mb-4 block">
@@ -66,18 +133,17 @@ export default function ExplorePage() {
                 {/* Tool Cards */}
                 <div className="grid md:grid-cols-2 gap-6">
                     {tools.map((tool) => {
-                        const Icon = tool.icon;
                         return (
                             <Link
                                 key={tool.href}
                                 href={tool.href}
-                                className="group block bg-[var(--card-bg)] rounded-3xl p-8 md:p-10 border border-[var(--border-color)] shadow-[0_8px_30px_rgba(8,15,26,0.08)] hover:shadow-[0_16px_44px_rgba(8,15,26,0.16)] transition-all duration-300 hover:-translate-y-1"
+                                className="group block bg-[var(--card-bg)] rounded-3xl p-8 md:p-10 border border-[var(--border-color)] shadow-[0_8px_30px_rgba(8,15,26,0.08)] hover:shadow-[0_16px_44px_rgba(8,15,26,0.16)] transition-all duration-300 hover:-translate-y-1 text-center"
                             >
-                                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center mb-6`}>
-                                    <Icon className={`w-7 h-7 ${tool.iconColor}`} />
+                                <div className="text-6xl mb-6">
+                                    {tool.emoji}
                                 </div>
 
-                                <h2 className="text-2xl font-bold text-[var(--heading-text)] mb-3">
+                                <h2 className="text-xl font-semibold mb-2">
                                     {tool.title}
                                 </h2>
                                 <p className="text-[var(--paragraph-text)] leading-relaxed mb-8">
