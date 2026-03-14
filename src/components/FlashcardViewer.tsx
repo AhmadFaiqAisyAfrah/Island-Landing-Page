@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { ChevronLeft, ChevronRight, RotateCcw, Plus, Pencil, Trash2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, X } from "lucide-react";
 import TinderCard from "react-tinder-card";
 import StudyCompletedModal from "@/components/StudyCompletedModal";
 
@@ -9,11 +9,14 @@ interface Flashcard {
     id?: string;
     question: string;
     answer: string;
+    // questionImage?: string; // TODO: Enable for future image support
+    // answerImage?: string;
 }
 
 interface FlashcardViewerProps {
     title: string;
-    deckId: string;
+    deckId?: string;
+    deckTitle?: string;
     cards: Flashcard[];
     studyMode?: boolean;
     onAddCard?: (question: string, answer: string) => void;
@@ -23,19 +26,28 @@ interface FlashcardViewerProps {
 
 type ModalType = "add" | "edit" | null;
 
+// TODO: Enable image upload with Firebase Storage (requires paid plan)
+// async function uploadImage(file: File): Promise<string | null> { ... }
+
 export default function FlashcardViewer({
     title,
     deckId,
+    deckTitle,
     cards,
     studyMode = false,
     onAddCard,
     onEditCard,
     onDeleteCard,
 }: FlashcardViewerProps) {
+    const getCardKey = useCallback((cardItem: Flashcard, fallbackIndex: number) => {
+        return cardItem.id ?? `${cardItem.question}-${fallbackIndex}`;
+    }, []);
+
+    const [studyCards, setStudyCards] = useState<Flashcard[]>(cards);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
     const [studyCompleted, setStudyCompleted] = useState(false);
-    const [cardStatus, setCardStatus] = useState<Record<number, "review" | "mastered" | null>>({});
+    const [cardStatus, setCardStatus] = useState<Record<string, "review" | "mastered" | null>>({});
     const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
 
     // Modal state
@@ -43,19 +55,36 @@ export default function FlashcardViewer({
     const [modalQuestion, setModalQuestion] = useState("");
     const [modalAnswer, setModalAnswer] = useState("");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    // TODO: Add image support when Firebase Storage is enabled
+    // const [modalQuestionImage, setModalQuestionImage] = useState<string | undefined>(undefined);
+    // const [modalAnswerImage, setModalAnswerImage] = useState<string | undefined>(undefined);
+    // const [isUploadingImage, setIsUploadingImage] = useState(false);
 
-    const card = cards[currentIndex];
+    const activeCards = studyMode ? studyCards : cards;
+    const card = activeCards[currentIndex];
+
+    React.useEffect(() => {
+        if (!studyMode) {
+            return;
+        }
+
+        setStudyCards(cards);
+        setCurrentIndex(0);
+        setIsFlipped(false);
+        setStudyCompleted(false);
+        setCardStatus({});
+    }, [cards, studyMode]);
 
     const handleFlip = useCallback(() => setIsFlipped((prev) => !prev), []);
 
     function handlePrevious() {
         setIsFlipped(false);
-        setCurrentIndex((prev) => (prev === 0 ? cards.length - 1 : prev - 1));
+        setCurrentIndex((prev) => (prev === 0 ? activeCards.length - 1 : prev - 1));
     }
 
     function handleNext() {
         setIsFlipped(false);
-        if (currentIndex === cards.length - 1) {
+        if (currentIndex === activeCards.length - 1) {
             setStudyCompleted(true);
         } else {
             setCurrentIndex((prev) => prev + 1);
@@ -63,6 +92,7 @@ export default function FlashcardViewer({
     }
 
     function handleStudyAgain() {
+        setStudyCards(cards);
         setCurrentIndex(0);
         setIsFlipped(false);
         setStudyCompleted(false);
@@ -70,17 +100,21 @@ export default function FlashcardViewer({
     }
 
     const markCard = useCallback((status: "review" | "mastered") => {
+        if (!card) return;
+        const cardKey = getCardKey(card, currentIndex);
         setCardStatus((prev) => {
-            if (prev[currentIndex] === status) return prev;
+            if (prev[cardKey] === status) return prev;
             return {
                 ...prev,
-                [currentIndex]: status,
+                [cardKey]: status,
             };
         });
-    }, [currentIndex]);
+    }, [card, currentIndex, getCardKey]);
 
     const masteredCount = Object.values(cardStatus).filter((value) => value === "mastered").length;
     const reviewCount = Object.values(cardStatus).filter((value) => value === "review").length;
+    const reviewOnlyCards = activeCards.filter((studyCard, index) => cardStatus[getCardKey(studyCard, index)] === "review");
+
     function handleSwipe(direction: string) {
         if (!studyMode) return;
 
@@ -94,7 +128,7 @@ export default function FlashcardViewer({
             markCard("mastered");
         }
 
-        if (currentIndex < cards.length - 1) {
+        if (currentIndex < activeCards.length - 1) {
             setCurrentIndex(currentIndex + 1);
         } else {
             setStudyCompleted(true);
@@ -108,13 +142,16 @@ export default function FlashcardViewer({
     function openAddModal() {
         setModalQuestion("");
         setModalAnswer("");
+        // TODO: Reset image states when enabled
+        // setModalQuestionImage(undefined);
+        // setModalAnswerImage(undefined);
         setModalType("add");
     }
 
     function handleAdd() {
         if (!modalQuestion.trim() || !modalAnswer.trim()) return;
         onAddCard?.(modalQuestion.trim(), modalAnswer.trim());
-        setCurrentIndex(cards.length); // will point to new last card
+        setCurrentIndex(activeCards.length); // will point to new last card
         setIsFlipped(false);
         setModalType(null);
     }
@@ -123,6 +160,9 @@ export default function FlashcardViewer({
     function openEditModal() {
         setModalQuestion(card.question);
         setModalAnswer(card.answer);
+        // TODO: Set image states when enabled
+        // setModalQuestionImage(card.questionImage);
+        // setModalAnswerImage(card.answerImage);
         setModalType("edit");
     }
 
@@ -136,12 +176,21 @@ export default function FlashcardViewer({
     // --- Delete ---
     function handleDelete() {
         onDeleteCard?.(currentIndex);
-        setCurrentIndex((prev) => Math.max(0, Math.min(prev, cards.length - 2)));
+        setCurrentIndex((prev) => Math.max(0, Math.min(prev, activeCards.length - 2)));
         setIsFlipped(false);
         setShowDeleteConfirm(false);
     }
 
-    const isEmpty = cards.length === 0;
+    function handleStudyReviewCards() {
+        if (reviewOnlyCards.length === 0) return;
+        setStudyCards(reviewOnlyCards);
+        setCurrentIndex(0);
+        setIsFlipped(false);
+        setStudyCompleted(false);
+        setCardStatus({});
+    }
+
+    const isEmpty = activeCards.length === 0;
 
     return (
         <div className={`${studyMode ? "w-full flex flex-col items-center justify-center min-h-[75vh]" : "w-full max-w-[600px] mx-auto"}`}>
@@ -152,7 +201,7 @@ export default function FlashcardViewer({
                 </h2>
                 {!isEmpty && (
                     <span className="text-sm font-medium text-[var(--paragraph-text)] bg-[var(--bg-secondary)] px-3 py-1 rounded-full border border-[var(--border-color)]">
-                        {currentIndex + 1} / {cards.length}
+                        {currentIndex + 1} / {activeCards.length}
                     </span>
                 )}
             </div>
@@ -218,6 +267,19 @@ export default function FlashcardViewer({
                                                 {isFlipped ? "Answer" : "Question"}
                                             </span>
 
+                                            {/* TODO: Add image support when enabled
+                                            {(isFlipped ? card.answerImage : card.questionImage) && (
+                                                <div className="mb-4 w-full">
+                                                    <img 
+                                                        src={isFlipped ? card.answerImage : card.questionImage} 
+                                                        alt={isFlipped ? "Answer image" : "Question image"}
+                                                        className="max-h-40 mx-auto rounded-lg object-contain"
+                                                        loading="lazy"
+                                                    />
+                                                </div>
+                                            )}
+                                            */}
+
                                             {/* Text wrapper */}
                                             <div className="max-w-2xl">
                                                 <p className="text-xl md:text-2xl font-semibold text-[var(--heading-text)] leading-relaxed break-words">
@@ -242,6 +304,19 @@ export default function FlashcardViewer({
                             <span className="absolute top-4 left-5 text-xs font-semibold tracking-wider uppercase text-[var(--paragraph-text)] opacity-40">
                                 {isFlipped ? "Answer" : "Question"}
                             </span>
+
+                            {/* TODO: Add image support when enabled
+                            {(isFlipped ? card.answerImage : card.questionImage) && (
+                                <div className="mb-4 w-full">
+                                    <img 
+                                        src={isFlipped ? card.answerImage : card.questionImage} 
+                                        alt={isFlipped ? "Answer image" : "Question image"}
+                                        className="max-h-40 mx-auto rounded-lg object-contain"
+                                        loading="lazy"
+                                    />
+                                </div>
+                            )}
+                            */}
 
                             <p className="text-lg md:text-xl font-semibold text-[var(--heading-text)] leading-relaxed max-w-[90%]">
                                 {isFlipped ? card.answer : card.question}
@@ -316,7 +391,7 @@ export default function FlashcardViewer({
                         </div>
                     )}
 
-                    {/* Edit / Delete / Reset row - hidden in study mode */}
+                    {/* Edit / Delete row - hidden in study mode */}
                     {!studyMode && (
                     <div className="flex items-center justify-center gap-3 mt-4">
                         {onEditCard && (
@@ -337,13 +412,6 @@ export default function FlashcardViewer({
                                 Delete
                             </button>
                         )}
-                        <button
-                            onClick={() => { setIsFlipped(false); setCurrentIndex(0); }}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] text-sm text-[var(--paragraph-text)] hover:bg-[var(--bg-secondary)] transition-colors"
-                        >
-                            <RotateCcw className="w-3.5 h-3.5" />
-                            Reset
-                        </button>
                     </div>
                     )}
                 </>
@@ -389,6 +457,7 @@ export default function FlashcardViewer({
                         </h3>
 
                         <div className="space-y-4">
+                            {/* Question Section */}
                             <div>
                                 <label className="block text-sm font-medium text-[var(--paragraph-text)] mb-1.5">
                                     Question
@@ -401,7 +470,33 @@ export default function FlashcardViewer({
                                     placeholder="Enter your question..."
                                     autoFocus
                                 />
+                                {/* TODO: Add image support when Firebase Storage is enabled
+                                <div className="mt-2">
+                                    {modalQuestionImage ? (
+                                        <div className="relative rounded-lg overflow-hidden">
+                                            <img src={modalQuestionImage} alt="Question" className="w-full h-32 object-cover rounded-lg" loading="lazy" />
+                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 hover:opacity-100 transition-opacity">
+                                                <label className="cursor-pointer px-3 py-1.5 bg-white/90 rounded-lg text-xs font-medium text-gray-900 hover:bg-white">
+                                                    Replace
+                                                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], "question")} />
+                                                </label>
+                                                <button onClick={() => removeImage("question")} className="px-3 py-1.5 bg-red-500/90 rounded-lg text-xs font-medium text-white hover:bg-red-600">
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[var(--border-color)] text-sm text-[var(--paragraph-text)] hover:border-[var(--accent-green)] cursor-pointer transition-colors">
+                                            <ImageIcon className="w-4 h-4" />
+                                            Add Image (optional)
+                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], "question")} disabled={isUploadingImage} />
+                                        </label>
+                                    )}
+                                </div>
+                                */}
                             </div>
+
+                            {/* Answer Section */}
                             <div>
                                 <label className="block text-sm font-medium text-[var(--paragraph-text)] mb-1.5">
                                     Answer
@@ -413,6 +508,30 @@ export default function FlashcardViewer({
                                     className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--heading-text)] text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-green)] focus:border-transparent transition-shadow"
                                     placeholder="Enter the answer..."
                                 />
+                                {/* TODO: Add image support when Firebase Storage is enabled
+                                <div className="mt-2">
+                                    {modalAnswerImage ? (
+                                        <div className="relative rounded-lg overflow-hidden">
+                                            <img src={modalAnswerImage} alt="Answer" className="w-full h-32 object-cover rounded-lg" loading="lazy" />
+                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 hover:opacity-100 transition-opacity">
+                                                <label className="cursor-pointer px-3 py-1.5 bg-white/90 rounded-lg text-xs font-medium text-gray-900 hover:bg-white">
+                                                    Replace
+                                                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], "answer")} />
+                                                </label>
+                                                <button onClick={() => removeImage("answer")} className="px-3 py-1.5 bg-red-500/90 rounded-lg text-xs font-medium text-white hover:bg-red-600">
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[var(--border-color)] text-sm text-[var(--paragraph-text)] hover:border-[var(--accent-green)] cursor-pointer transition-colors">
+                                            <ImageIcon className="w-4 h-4" />
+                                            Add Image (optional)
+                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], "answer")} disabled={isUploadingImage} />
+                                        </label>
+                                    )}
+                                </div>
+                                */}
                             </div>
                         </div>
 
@@ -471,6 +590,10 @@ export default function FlashcardViewer({
             {studyCompleted && (
                 <StudyCompletedModal
                     deckId={deckId}
+                    deckTitle={deckTitle}
+                    masteredCount={masteredCount}
+                    reviewCount={reviewCount}
+                    onStudyReviewCards={handleStudyReviewCards}
                     onStudyAgain={handleStudyAgain}
                     onClose={() => setStudyCompleted(false)}
                 />

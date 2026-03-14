@@ -41,7 +41,6 @@ export function getClientAnalytics(): Analytics | null {
     return _analytics;
 }
 
-// Convenience export for components that only run client-side
-export const auth = typeof window !== "undefined" ? getAuth(app) : (null as unknown as Auth);
+// Convenience export - only use getClientAuth() in components
 
 export default app;
