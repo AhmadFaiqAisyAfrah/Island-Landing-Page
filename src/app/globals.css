@@ -145,6 +145,18 @@
   }
 }
 
+@keyframes cloud-move {
+  0% {
+    transform: translateX(-40px);
+  }
+  50% {
+    transform: translateX(40px);
+  }
+  100% {
+    transform: translateX(-40px);
+  }
+}
+
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -231,6 +243,10 @@
 
 .animate-drift-left {
   animation: drift-left 30s linear infinite;
+}
+
+.animate-cloud-move {
+  animation: cloud-move 18s ease-in-out infinite;
 }
 
 .animate-fade-in-up {

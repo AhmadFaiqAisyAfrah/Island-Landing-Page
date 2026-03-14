@@ -16,6 +16,32 @@ export default function Navbar() {
     const pathname = usePathname();
     const { user, loading } = useAuth();
 
+    const isMarketingPage =
+        pathname.startsWith("/explore") ||
+        pathname.startsWith("/articles") ||
+        pathname.startsWith("/privacy") ||
+        pathname.startsWith("/terms") ||
+        pathname.startsWith("/contact") ||
+        pathname.startsWith("/about") ||
+        pathname.startsWith("/data-deletion");
+
+    const isDashboard = !isMarketingPage;
+
+    const marketingLinks = [
+        { label: "Explore", href: "/explore" },
+        { label: "Articles", href: "/articles" },
+    ];
+
+    const dashboardLinks = [
+        { label: "Features", href: "/#features" },
+        { label: "Trust", href: "/#transparency" },
+        { label: "FAQ", href: "/#faq" },
+        { label: "Explore", href: "/explore" },
+        { label: "Articles", href: "/articles" },
+    ];
+
+    const navLinks = isDashboard ? dashboardLinks : marketingLinks;
+
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--nav-bg)] backdrop-blur-md border-b border-[var(--border-color)]">
             <div className="mx-auto max-w-6xl flex items-center justify-between px-6 py-4">
@@ -27,24 +53,21 @@ export default function Navbar() {
 
                 {/* Desktop Links */}
                 <div className="hidden md:flex items-center gap-8">
-                    <Link href="/#features" className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
-                        Features
-                    </Link>
-                    <Link href="/#transparency" className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
-                        Trust
-                    </Link>
-                    <Link href="/#faq" className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
-                        FAQ
-                    </Link>
-                    <Link href="/articles" className={`text-sm transition-colors ${pathname.startsWith("/articles") ? "text-[var(--accent-green)] font-semibold" : "text-[var(--paragraph-text)] hover:text-[var(--accent-green)]"}`}>
-                        Articles
-                    </Link>
-                    <Link href="/about" className={`text-sm transition-colors ${pathname === "/about" ? "text-[var(--accent-green)] font-semibold" : "text-[var(--paragraph-text)] hover:text-[var(--accent-green)]"}`}>
-                        About
-                    </Link>
-                    <Link href="/explore" className={`text-sm transition-colors ${pathname === "/explore" ? "text-[var(--accent-green)] font-semibold" : "text-[var(--paragraph-text)] hover:text-[var(--accent-green)]"}`}>
-                        Explore
-                    </Link>
+                    {isMarketingPage && (
+                        <Link href="/" className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
+                            Island App
+                        </Link>
+                    )}
+
+                    {navLinks.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={`text-sm transition-colors ${pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href)) ? "text-[var(--accent-green)] font-semibold" : "text-[var(--paragraph-text)] hover:text-[var(--accent-green)]"}`}
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
 
                     <div className="flex items-center gap-3 border-l border-[var(--border-color)] pl-4 ml-2">
                         <ThemeToggle />
@@ -93,24 +116,22 @@ export default function Navbar() {
             {/* Mobile Menu */}
             {open && (
                 <div className="md:hidden bg-[var(--nav-bg)] backdrop-blur-md border-t border-[var(--border-color)] px-6 pb-6 pt-2 space-y-4 animate-fade-in-up">
-                    <Link href="/#features" onClick={() => setOpen(false)} className="block text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
-                        Features
-                    </Link>
-                    <Link href="/#transparency" onClick={() => setOpen(false)} className="block text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
-                        Trust
-                    </Link>
-                    <Link href="/#faq" onClick={() => setOpen(false)} className="block text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
-                        FAQ
-                    </Link>
-                    <Link href="/articles" onClick={() => setOpen(false)} className={`block text-sm transition-colors ${pathname.startsWith("/articles") ? "text-[var(--accent-green)] font-semibold" : "text-[var(--paragraph-text)] hover:text-[var(--accent-green)]"}`}>
-                        Articles
-                    </Link>
-                    <Link href="/about" onClick={() => setOpen(false)} className={`block text-sm transition-colors ${pathname === "/about" ? "text-[var(--accent-green)] font-semibold" : "text-[var(--paragraph-text)] hover:text-[var(--accent-green)]"}`}>
-                        About
-                    </Link>
-                    <Link href="/explore" onClick={() => setOpen(false)} className={`block text-sm transition-colors ${pathname === "/explore" ? "text-[var(--accent-green)] font-semibold" : "text-[var(--paragraph-text)] hover:text-[var(--accent-green)]"}`}>
-                        Explore
-                    </Link>
+                    {isMarketingPage && (
+                        <Link href="/" onClick={() => setOpen(false)} className="block text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
+                            Island App
+                        </Link>
+                    )}
+
+                    {navLinks.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            onClick={() => setOpen(false)}
+                            className={`block text-sm transition-colors ${pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href)) ? "text-[var(--accent-green)] font-semibold" : "text-[var(--paragraph-text)] hover:text-[var(--accent-green)]"}`}
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
 
                     <div className="flex flex-col gap-3 pt-2 border-t border-[var(--border-color)]">
                         <div className="flex items-center gap-3">

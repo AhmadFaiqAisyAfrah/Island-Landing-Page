@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import MonetagInPagePush from "@/components/MonetagInPagePush";
 import IslandSVG from "@/components/IslandSVG";
+import CloudSVG from "@/components/CloudSVG";
 
 export const metadata: Metadata = {
     title: "Study Tools – Pomodoro Timer & Flashcards | Island",
@@ -33,28 +34,10 @@ const tools = [
     },
     {
         title: "Flashcards",
-        description: "Memorize concepts faster using spaced repetition flashcards.",
+        description: "Memorize concepts faster using flashcards.",
         href: "/explore/flashcards",
         button: "Open Flashcards",
         emoji: "🧠",
-    },
-];
-
-const highlights = [
-    {
-        emoji: "🎯",
-        title: "Focus Better",
-        desc: "Build deep focus sessions using Pomodoro.",
-    },
-    {
-        emoji: "🧠",
-        title: "Remember More",
-        desc: "Strengthen memory with spaced repetition flashcards.",
-    },
-    {
-        emoji: "🌱",
-        title: "Grow Your Island",
-        desc: "Stay consistent and watch your island flourish.",
     },
 ];
 
@@ -65,7 +48,18 @@ export default function ExplorePage() {
 
             <div className="max-w-[900px] mx-auto px-6 py-24">
                 {/* Hero Section */}
-                <section className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16 mb-24">
+                <section className="relative flex flex-col lg:flex-row items-center gap-12 lg:gap-16 mb-24">
+                    {/* Animated clouds */}
+                    <div className="absolute top-12 left-0 w-44 opacity-40 animate-cloud-move">
+                        <CloudSVG variant="soft" />
+                    </div>
+                    <div className="absolute top-28 right-0 w-56 opacity-35 animate-cloud-move" style={{ animationDelay: "2s" }}>
+                        <CloudSVG />
+                    </div>
+                    <div className="absolute top-44 left-1/4 w-32 opacity-25 animate-cloud-move" style={{ animationDelay: "3s" }}>
+                        <CloudSVG variant="small" />
+                    </div>
+
                     {/* Left: Text */}
                     <div className="flex-1 text-center lg:text-left space-y-6">
                         <div className="inline-block rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-1.5 text-xs font-medium text-[var(--accent-green)] tracking-wide">
@@ -85,7 +79,7 @@ export default function ExplorePage() {
                         </h1>
 
                         <p className="text-lg text-[var(--paragraph-text)] max-w-md mx-auto lg:mx-0 leading-relaxed">
-                            Discover simple tools designed to help you focus deeper, remember more, and grow your island.
+                            Discover simple tools designed to help you focus deeper, remember more, then grow.
                         </p>
                     </div>
 
@@ -97,37 +91,11 @@ export default function ExplorePage() {
                     </div>
                 </section>
 
-                {/* How Island Helps You */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-                    {highlights.map((item) => (
-                        <div
-                            key={item.title}
-                            className="rounded-2xl bg-[var(--card-bg)] border border-[var(--border-color)] p-6 text-center"
-                        >
-                            <div className="text-4xl mb-4">
-                                {item.emoji}
-                            </div>
-                            <h3 className="text-lg font-semibold text-[var(--heading-text)] mb-2">
-                                {item.title}
-                            </h3>
-                            <p className="text-sm text-[var(--paragraph-text)] leading-relaxed">
-                                {item.desc}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-
                 {/* Header */}
                 <div className="text-center mb-16">
-                    <span className="text-[var(--accent-green)] font-bold tracking-wider uppercase text-sm mb-4 block">
-                        Island Study Tools
-                    </span>
                     <h1 className="text-4xl md:text-5xl font-bold text-[var(--heading-text)] mb-6 tracking-tight">
                         Choose your study tool
                     </h1>
-                    <p className="text-xl text-[var(--paragraph-text)] max-w-2xl mx-auto leading-relaxed">
-                        Select the tool that helps you focus and learn better.
-                    </p>
                 </div>
 
                 {/* Tool Cards */}
