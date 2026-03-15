@@ -58,7 +58,7 @@ export default function ContactPage() {
                             Leave a review or report an issue on the Play Store.
                         </p>
                         <a
-                            href="https://play.google.com/store"
+                            href="https://islandapp.id/"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-block text-sm font-medium text-pastel-blue-deep hover:underline"

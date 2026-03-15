@@ -91,7 +91,7 @@ export default function Navbar() {
                                     Sign Up
                                 </button>
                                 <a
-                                    href="https://play.google.com/store"
+                                    href="https://islandapp.id/"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="rounded-full bg-[var(--button-bg)] px-5 py-2 text-sm font-semibold text-[var(--button-text)] shadow-[0_10px_20px_rgba(8,15,26,0.25)] hover:shadow-[0_14px_26px_rgba(8,15,26,0.32)] hover:bg-[var(--button-hover)] transition-all"
@@ -160,7 +160,7 @@ export default function Navbar() {
                         </div>
                         {!user && (
                             <a
-                                href="https://play.google.com/store"
+                                href="https://islandapp.id/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-block rounded-full bg-[var(--button-bg)] px-5 py-2 text-sm font-semibold text-[var(--button-text)] shadow-[0_10px_20px_rgba(8,15,26,0.25)] hover:bg-[var(--button-hover)] text-center"

@@ -522,7 +522,7 @@ export default function FocusDemo({
                                     <p className="text-[var(--paragraph-text)] mb-6">Imagine growing your island every day.</p>
 
                                     <Link
-                                        href="https://play.google.com/store/apps/details?id=com.ahmadfaiq.island"
+                                        href="https://islandapp.id/"
                                         target="_blank"
                                         className="flex items-center justify-center gap-2 w-full py-4 bg-[var(--button-bg)] text-[var(--button-text)] rounded-2xl font-medium hover:bg-[var(--button-hover)] transition-colors"
                                     >

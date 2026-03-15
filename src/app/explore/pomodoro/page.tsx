@@ -133,7 +133,7 @@ export default async function PomodoroPage() {
                             Unlock the full island experience in the Island app. Focus sessions, tree variety, daily journals, and more.
                         </p>
                         <Link
-                            href="https://play.google.com/store/apps/details?id=com.ahmadfaiq.island"
+                            href="https://islandapp.id/"
                             target="_blank"
                             className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--button-bg)] text-[var(--button-text)] rounded-full font-medium hover:bg-[var(--button-hover)] transition-all hover:scale-105"
                         >
