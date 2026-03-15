@@ -50,7 +50,9 @@ export default function RootLayout({
     try {
         var theme = localStorage.getItem("theme");
         if (theme === "dark") {
-            document.documentElement.classList.add("dark-mode");
+            document.documentElement.classList.add("dark");
+        } else if (theme === "light") {
+            document.documentElement.classList.remove("dark");
         }
     } catch(e) {}
 })();

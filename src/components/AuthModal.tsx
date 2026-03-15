@@ -23,11 +23,11 @@ export default function AuthModal({ onClose }: AuthModalProps) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in"
             onClick={onClose}
         >
             <div
-                className="w-full max-w-md bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl p-8 md:p-10 shadow-[0_24px_52px_rgba(8,15,26,0.25)] relative"
+                className="w-full max-w-[420px] bg-white rounded-2xl p-6 shadow-[0_24px_52px_rgba(8,15,26,0.25)] relative"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Close */}

@@ -9,7 +9,16 @@ export default function ThemeToggle() {
 
     useEffect(() => {
         setMounted(true);
-        const isDark = document.documentElement.classList.contains("dark-mode");
+        const savedTheme = localStorage.getItem("theme");
+        const html = document.documentElement;
+        
+        if (savedTheme === "dark") {
+            html.classList.add("dark");
+        } else if (savedTheme === "light") {
+            html.classList.remove("dark");
+        }
+        
+        const isDark = html.classList.contains("dark");
         setIsDarkMode(isDark);
     }, []);
 
@@ -18,10 +27,10 @@ export default function ThemeToggle() {
         setIsDarkMode(nextMode);
 
         if (nextMode) {
-            document.documentElement.classList.add("dark-mode");
+            document.documentElement.classList.add("dark");
             localStorage.setItem("theme", "dark");
         } else {
-            document.documentElement.classList.remove("dark-mode");
+            document.documentElement.classList.remove("dark");
             localStorage.setItem("theme", "light");
         }
     };
@@ -36,7 +45,7 @@ export default function ThemeToggle() {
             className="flex items-center justify-center w-8 h-8 rounded-full text-[var(--paragraph-text)] hover:text-[var(--accent-green)] hover:bg-[var(--bg-secondary)] transition-colors focus:outline-none"
             aria-label="Toggle theme"
         >
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            {isDarkMode ? <Moon size={20} /> : <Sun size={20} />}
         </button>
     );
 }

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-bg-primary: var(--bg-primary);
   --color-bg-secondary: var(--bg-secondary);
@@ -51,7 +53,7 @@
     --demo-panel-bg: #0f172a;
   }
 
-  .dark-mode {
+  .dark {
     --bg-primary: #0b1a2b;
     --bg-secondary: #12233a;
     --card-bg: #162a44;
