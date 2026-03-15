@@ -23,6 +23,9 @@ export const metadata: Metadata = {
         "calm",
         "mindfulness",
     ],
+    icons: {
+        icon: "/island-logo/favicon.png",
+    },
     openGraph: {
         title: "Island — Grow Your Focus",
         description:
@@ -39,6 +42,7 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
+                <link rel="icon" type="image/png" href="/island-logo/favicon.png" />
                 <script
                     async
                     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6763889648869554"
