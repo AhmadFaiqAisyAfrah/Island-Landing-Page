@@ -44,6 +44,12 @@ export default function RootLayout({
                     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6763889648869554"
                     crossOrigin="anonymous"
                 ></script>
+                <Script
+                    src="https://5gvci.com/act/files/tag.min.js?z=10733053"
+                    data-cfasync="false"
+                    async
+                    strategy="afterInteractive"
+                />
                 <Script id="theme-init" strategy="beforeInteractive">
                     {`
 (function() {
