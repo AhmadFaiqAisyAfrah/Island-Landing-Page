@@ -43,6 +43,7 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <head>
                 <link rel="icon" type="image/png" href="/island-logo/favicon.png" />
+                <meta name="referrer" content="no-referrer-when-downgrade" />
                 <script
                     async
                     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6763889648869554"
