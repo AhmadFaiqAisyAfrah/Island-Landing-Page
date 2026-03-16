@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import FlashcardDeckList from "@/components/FlashcardDeckList";
-import MonetagInPagePush from "@/components/MonetagInPagePush";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -52,8 +51,6 @@ export default function FlashcardsPage() {
                         Create flashcard decks to improve memory retention through active recall and spaced repetition.
                     </p>
                 </div>
-
-                <MonetagInPagePush />
 
                 {/* Deck List (auth-gated) */}
                 <div className="pb-24">

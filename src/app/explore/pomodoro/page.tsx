@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import Link from "next/link";
 import FocusDemo from "@/components/FocusDemo";
 import FocusNotebooks from "@/components/FocusNotebooks";
-import MonetagInPagePush from "@/components/MonetagInPagePush";
 import { ArrowLeft } from "lucide-react";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
@@ -121,7 +120,6 @@ export default async function PomodoroPage() {
                 </Link>
             </div>
 
-            <MonetagInPagePush />
             <FocusDemo musicOptions={musicOptions} />
             <FocusNotebooks />
 

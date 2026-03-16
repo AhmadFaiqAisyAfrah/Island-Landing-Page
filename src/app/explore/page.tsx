@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import MonetagInPagePush from "@/components/MonetagInPagePush";
 import IslandSVG from "@/components/IslandSVG";
 import CloudSVG from "@/components/CloudSVG";
 
@@ -58,8 +57,6 @@ export default function ExplorePage() {
                 <div className="absolute top-36 left-20 w-1 h-1 bg-white rounded-full animate-twinkle opacity-50" style={{ animationDelay: "1.8s" }}></div>
             </div>
             
-            <MonetagInPagePush />
-
             <div className="max-w-[900px] mx-auto px-6 py-24 relative z-10">
                 {/* Hero Section */}
                 <section className="relative flex flex-col lg:flex-row items-center gap-12 lg:gap-16 mb-24">

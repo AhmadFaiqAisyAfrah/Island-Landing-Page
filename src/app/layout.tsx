@@ -49,12 +49,6 @@ export default function RootLayout({
                     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6763889648869554"
                     crossOrigin="anonymous"
                 ></script>
-                <Script
-                    src="https://5gvci.com/act/files/tag.min.js?z=10733053"
-                    data-cfasync="false"
-                    async
-                    strategy="afterInteractive"
-                />
                 <Script id="theme-init" strategy="beforeInteractive">
                     {`
 (function() {
@@ -76,6 +70,20 @@ export default function RootLayout({
                     <main>{children}</main>
                     <Footer />
                 </AuthProvider>
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `(function(wphh){
+var d = document,
+    s = d.createElement('script'),
+    l = d.scripts[d.scripts.length - 1];
+s.settings = wphh || {};
+s.src = "//conventionalresponse.com/bMXQVGs.dsGOlu0/YIWFcV/seYmt9FueZIUwlRkiPGT/YZ4_NizdMUwMNDTLcqtbN/jxg/3uMUzkAt2CMkQd";
+s.async = true;
+s.referrerPolicy = 'no-referrer-when-downgrade';
+l.parentNode.insertBefore(s, l);
+})({})`,
+                    }}
+                />
             </body>
         </html>
     );
