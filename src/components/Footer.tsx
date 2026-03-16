@@ -1,7 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 
-const footerSections = [
+const footerSections: { title: string; social?: boolean; links: { label: string; href: string; icon?: string }[] }[] = [
+    {
+        title: "Social Media",
+        social: true,
+        links: [
+            { label: "Instagram", href: "https://www.instagram.com/islandapp.id/", icon: "/island-logo/instagram.png" },
+        ],
+    },
     {
         title: "Study Tools",
         links: [
@@ -38,7 +45,7 @@ export default function Footer() {
                     <Image src="/island-logo.png" alt="Island" width={100} height={100} className="h-[100px] w-auto object-contain mb-4" />
 
                     {/* Navigation columns */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 w-full max-w-3xl mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-10 w-full max-w-4xl mb-8">
                         {footerSections.map((section) => (
                             <div key={section.title} className="text-center md:text-left">
                                 <h4 className="text-sm font-semibold text-[var(--heading-text)] mb-4 uppercase tracking-wider">
@@ -47,12 +54,26 @@ export default function Footer() {
                                 <ul className="space-y-3">
                                     {section.links.map((link) => (
                                         <li key={link.href}>
-                                            <Link
-                                                href={link.href}
-                                                className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors"
-                                            >
-                                                {link.label}
-                                            </Link>
+                                            {section.social ? (
+                                                <a
+                                                    href={link.href}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-2 text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors"
+                                                >
+                                                    {link.icon && (
+                                                        <Image src={link.icon} alt="" width={18} height={18} className="w-[18px] h-[18px]" />
+                                                    )}
+                                                    {link.label}
+                                                </a>
+                                            ) : (
+                                                <Link
+                                                    href={link.href}
+                                                    className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors"
+                                                >
+                                                    {link.label}
+                                                </Link>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
