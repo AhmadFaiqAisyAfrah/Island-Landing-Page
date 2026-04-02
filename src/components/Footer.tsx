@@ -19,6 +19,18 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
         ],
     },
     {
+        title: "Learning Games",
+        links: [
+            { label: "View All Games", href: "/games" },
+            { label: "Math Speed Challenge", href: "/math-game" },
+            { label: "Typing Speed Challenge", href: "/typing-game" },
+            { label: "Reaction Speed Test", href: "/reaction-test" },
+            { label: "Memory Card Game", href: "/memory-game" },
+            { label: "Number Pattern Test", href: "/pattern-game" },
+            { label: "Focus Test", href: "/focus-test" },
+        ],
+    },
+    {
         title: "Articles",
         links: [
             { label: "Articles", href: "/articles" },

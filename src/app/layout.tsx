@@ -68,36 +68,8 @@ export default function RootLayout({
                 <AuthProvider>
                     <Navbar />
                     <main>{children}</main>
-                    <script
-                        dangerouslySetInnerHTML={{
-                            __html: `(function(cfvz){
-var d = document,
-    s = d.createElement('script'),
-    l = d.scripts[d.scripts.length - 1];
-s.settings = cfvz || {};
-s.src = "//conventionalresponse.com/b.XcVmsAdjGLln0/YoWQcJ/beamJ9lu/ZqU-lvkQPxToYc4/NszeMkxsNOTgcytKNPjcgO3MMjzdEO2RMjQF";
-s.async = true;
-s.referrerPolicy = 'no-referrer-when-downgrade';
-l.parentNode.insertBefore(s, l);
-})({})`,
-                        }}
-                    />
                     <Footer />
                 </AuthProvider>
-                <script
-                    dangerouslySetInnerHTML={{
-                        __html: `(function(wphh){
-var d = document,
-    s = d.createElement('script'),
-    l = d.scripts[d.scripts.length - 1];
-s.settings = wphh || {};
-s.src = "//conventionalresponse.com/bMXQVGs.dsGOlu0/YIWFcV/seYmt9FueZIUwlRkiPGT/YZ4_NizdMUwMNDTLcqtbN/jxg/3uMUzkAt2CMkQd";
-s.async = true;
-s.referrerPolicy = 'no-referrer-when-downgrade';
-l.parentNode.insertBefore(s, l);
-})({})`,
-                    }}
-                />
             </body>
         </html>
     );

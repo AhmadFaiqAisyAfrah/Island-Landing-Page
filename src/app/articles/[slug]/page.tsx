@@ -2,11 +2,12 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getPostBySlug, getPostRecordMap, getPublishedPosts } from '@/lib/notion';
-import NotionRenderer from '@/components/NotionRenderer';
+import { getPostBySlug, getPublishedPosts } from '@/lib/notion';
 import { ArrowLeft } from 'lucide-react';
+import { Client } from '@notionhq/client';
 
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export async function generateMetadata(
     { params }: { params: Promise<{ slug: string }> }
@@ -17,29 +18,31 @@ export async function generateMetadata(
     if (!post) {
         return {
             title: 'Post Not Found | Island',
+            description: 'This article could not be found.',
         };
     }
 
-    const title = post.metaTitle || `${post.title} | Island Articles`;
-    const description = post.metaDescription || `Read ${post.title} on the Island Articles.`;
+    const title = post.metaTitle || post.title;
+    const description = post.metaDescription || `Read ${post.title} on Island.`;
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://islandapp.id';
 
     return {
-        title,
+        title: `${title} | Island`,
         description,
         openGraph: {
-            title,
+            title: `${title} | Island`,
             description,
             type: 'article',
             url: `${baseUrl}/articles/${post.slug}`,
             publishedTime: post.publishDate,
+            modifiedTime: post.lastUpdated || post.publishDate,
             authors: post.author ? [post.author] : [],
-            images: post.coverImage ? [post.coverImage] : [],
+            images: post.coverImage ? [{ url: post.coverImage }] : [],
         },
         twitter: {
             card: 'summary_large_image',
-            title,
+            title: `${title} | Island`,
             description,
             images: post.coverImage ? [post.coverImage] : [],
         },
@@ -51,157 +54,536 @@ export async function generateMetadata(
 
 export async function generateStaticParams() {
     const posts = await getPublishedPosts();
-    return posts.map((post) => ({
+    const safePosts = posts || [];
+    return safePosts.map((post) => ({
         slug: String(post.slug),
     }));
 }
+
+async function getBlocks(blockId: string) {
+    const notion = new Client({
+        auth: process.env.NOTION_TOKEN || '',
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let blocks: any[] = [];
+    let cursor: string | undefined = undefined;
+
+    try {
+        do {
+            const response = await notion.blocks.children.list({
+                block_id: blockId,
+                start_cursor: cursor,
+            });
+
+            blocks = [...blocks, ...response.results];
+            cursor = response.has_more ? response.next_cursor || undefined : undefined;
+        } while (cursor);
+
+        return blocks;
+    } catch (error) {
+        console.error('[Notion] Error fetching blocks:', error);
+        return [];
+    }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function renderBlock(block: any, index: number) {
+    if (!block || !block.type) return null;
+
+    const blockType = block.type;
+    const blockContent = block[blockType];
+    
+    if (!blockContent) return null;
+
+    const richText = blockContent.rich_text || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const text = richText.map((t: any) => t?.plain_text || '').join('');
+
+    switch (blockType) {
+        case 'heading_1':
+            return (
+                <h1 key={block.id || index} style={styles.h1}>
+                    {text}
+                </h1>
+            );
+        case 'heading_2':
+            return (
+                <h2 key={block.id || index} style={styles.h2}>
+                    {text}
+                </h2>
+            );
+        case 'heading_3':
+            return (
+                <h3 key={block.id || index} style={styles.h3}>
+                    {text}
+                </h3>
+            );
+        case 'paragraph':
+            if (!text.trim()) return <div key={block.id || index} style={styles.paragraphSpacing} />;
+            return (
+                <p key={block.id || index} style={styles.paragraph}>
+                    {text}
+                </p>
+            );
+        case 'bulleted_list_item':
+            return (
+                <li key={block.id || index} style={styles.listItem}>
+                    {text}
+                </li>
+            );
+        case 'numbered_list_item':
+            return (
+                <li key={block.id || index} style={styles.listItem}>
+                    {text}
+                </li>
+            );
+        case 'quote':
+            return (
+                <blockquote key={block.id || index} style={styles.blockquote}>
+                    {text}
+                </blockquote>
+            );
+        case 'code':
+            return (
+                <pre key={block.id || index} style={styles.codeBlock}>
+                    <code>{text}</code>
+                </pre>
+            );
+        case 'divider':
+            return (
+                <hr key={block.id || index} style={styles.divider} />
+            );
+        case 'image': {
+            const imageUrl = blockContent?.external?.url || blockContent?.file?.url || '';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const caption = richText.map((t: any) => t?.plain_text || '').join('') || '';
+            if (!imageUrl) return null;
+            return (
+                <figure key={block.id || index} style={styles.figure}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imageUrl} alt={caption || 'Article image'} style={styles.image} />
+                    {caption && <figcaption style={styles.caption}>{caption}</figcaption>}
+                </figure>
+            );
+        }
+        case 'callout':
+            return (
+                <div key={block.id || index} style={styles.callout}>
+                    <p style={styles.calloutText}>{text}</p>
+                </div>
+            );
+        case 'to_do': {
+            const checked = blockContent.checked || false;
+            return (
+                <div key={block.id || index} style={styles.todoItem}>
+                    <input type="checkbox" checked={checked} readOnly style={styles.checkbox} />
+                    <span style={checked ? styles.todoChecked : styles.todoText}>{text}</span>
+                </div>
+            );
+        }
+        default:
+            if (text.trim()) {
+                return (
+                    <p key={block.id || index} style={styles.paragraph}>
+                        {text}
+                    </p>
+                );
+            }
+            return null;
+    }
+}
+
+const styles = {
+    container: {
+        maxWidth: '720px',
+        margin: '0 auto',
+        padding: '40px 20px 80px',
+    } as React.CSSProperties,
+    backLink: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        color: '#666',
+        fontSize: '14px',
+        marginBottom: '48px',
+        textDecoration: 'none',
+        transition: 'color 0.2s ease',
+    } as React.CSSProperties,
+    categoryLabel: {
+        fontSize: '13px',
+        fontWeight: 700,
+        textTransform: 'uppercase' as const,
+        letterSpacing: '1.5px',
+        color: '#e63946',
+        marginBottom: '12px',
+    } as React.CSSProperties,
+    featuredBadge: {
+        display: 'inline-block',
+        backgroundColor: '#111',
+        color: '#fff',
+        fontSize: '10px',
+        fontWeight: 700,
+        letterSpacing: '0.5px',
+        padding: '4px 10px',
+        textTransform: 'uppercase' as const,
+        marginBottom: '12px',
+    } as React.CSSProperties,
+    title: {
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '44px',
+        fontWeight: 700,
+        lineHeight: 1.15,
+        color: '#111',
+        marginBottom: '16px',
+        letterSpacing: '-0.5px',
+    } as React.CSSProperties,
+    meta: {
+        fontSize: '14px',
+        color: '#666',
+        marginBottom: '32px',
+        display: 'flex',
+        flexWrap: 'wrap' as const,
+        alignItems: 'center',
+        gap: '8px',
+    } as React.CSSProperties,
+    metaAuthor: {
+        fontWeight: 500,
+        color: '#333',
+    } as React.CSSProperties,
+    cover: {
+        width: '100%',
+        borderRadius: '8px',
+        marginBottom: '48px',
+    } as React.CSSProperties,
+    content: {
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '20px',
+        lineHeight: 1.8,
+        color: '#111',
+    } as React.CSSProperties,
+    paragraph: {
+        marginBottom: '24px',
+    } as React.CSSProperties,
+    paragraphSpacing: {
+        height: '24px',
+    } as React.CSSProperties,
+    h1: {
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '32px',
+        fontWeight: 700,
+        lineHeight: 1.3,
+        color: '#111',
+        marginTop: '48px',
+        marginBottom: '16px',
+    } as React.CSSProperties,
+    h2: {
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '26px',
+        fontWeight: 700,
+        lineHeight: 1.3,
+        color: '#111',
+        marginTop: '40px',
+        marginBottom: '12px',
+    } as React.CSSProperties,
+    h3: {
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '22px',
+        fontWeight: 700,
+        lineHeight: 1.3,
+        color: '#111',
+        marginTop: '32px',
+        marginBottom: '8px',
+    } as React.CSSProperties,
+    listItem: {
+        marginLeft: '24px',
+        marginBottom: '12px',
+        lineHeight: 1.7,
+    } as React.CSSProperties,
+    blockquote: {
+        borderLeft: '3px solid #ccc',
+        paddingLeft: '24px',
+        marginLeft: 0,
+        marginTop: '32px',
+        marginBottom: '32px',
+        fontStyle: 'italic',
+        color: '#555',
+        fontSize: '22px',
+        lineHeight: 1.6,
+    } as React.CSSProperties,
+    codeBlock: {
+        backgroundColor: '#1a1a1a',
+        color: '#e0e0e0',
+        padding: '20px',
+        borderRadius: '8px',
+        overflowX: 'auto' as const,
+        marginTop: '24px',
+        marginBottom: '24px',
+        fontSize: '15px',
+        lineHeight: 1.5,
+    } as React.CSSProperties,
+    divider: {
+        border: 'none',
+        borderTop: '1px solid #eee',
+        margin: '40px 0',
+    } as React.CSSProperties,
+    figure: {
+        marginTop: '32px',
+        marginBottom: '32px',
+    } as React.CSSProperties,
+    image: {
+        width: '100%',
+        borderRadius: '8px',
+    } as React.CSSProperties,
+    caption: {
+        fontSize: '14px',
+        color: '#888',
+        marginTop: '12px',
+        textAlign: 'center' as const,
+        fontStyle: 'italic' as const,
+    } as React.CSSProperties,
+    callout: {
+        backgroundColor: '#f8f8f8',
+        borderLeft: '4px solid #333',
+        padding: '20px 24px',
+        marginTop: '24px',
+        marginBottom: '24px',
+        borderRadius: '0 8px 8px 0',
+    } as React.CSSProperties,
+    calloutText: {
+        margin: 0,
+        fontSize: '18px',
+        lineHeight: 1.7,
+    } as React.CSSProperties,
+    todoItem: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '12px',
+        marginBottom: '12px',
+    } as React.CSSProperties,
+    checkbox: {
+        marginTop: '6px',
+        accentColor: '#333',
+    } as React.CSSProperties,
+    todoText: {
+        lineHeight: 1.7,
+    } as React.CSSProperties,
+    todoChecked: {
+        lineHeight: 1.7,
+        textDecoration: 'line-through',
+        color: '#999',
+    } as React.CSSProperties,
+    errorBox: {
+        padding: '24px',
+        backgroundColor: '#fef9e7',
+        borderRadius: '8px',
+        textAlign: 'center' as const,
+        marginTop: '32px',
+    } as React.CSSProperties,
+    cta: {
+        marginTop: '64px',
+        paddingTop: '40px',
+        borderTop: '1px solid #eee',
+        textAlign: 'center' as const,
+    } as React.CSSProperties,
+    ctaTitle: {
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '28px',
+        fontWeight: 700,
+        color: '#111',
+        marginBottom: '12px',
+    } as React.CSSProperties,
+    ctaText: {
+        color: '#666',
+        marginBottom: '24px',
+        fontSize: '16px',
+    } as React.CSSProperties,
+    ctaButtons: {
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '16px',
+        flexWrap: 'wrap' as const,
+    } as React.CSSProperties,
+    ctaPrimary: {
+        padding: '14px 28px',
+        backgroundColor: '#1a1a1a',
+        color: '#fff',
+        borderRadius: '100px',
+        textDecoration: 'none',
+        fontSize: '15px',
+        fontWeight: 500,
+        transition: 'background-color 0.2s ease',
+    } as React.CSSProperties,
+    ctaSecondary: {
+        padding: '14px 28px',
+        backgroundColor: 'transparent',
+        color: '#333',
+        border: '1px solid #ddd',
+        borderRadius: '100px',
+        textDecoration: 'none',
+        fontSize: '15px',
+        fontWeight: 500,
+        transition: 'all 0.2s ease',
+    } as React.CSSProperties,
+};
 
 export default async function BlogPostPage(
     { params }: { params: Promise<{ slug: string }> }
 ) {
     const { slug } = await params;
+    
     const post = await getPostBySlug(slug);
 
     if (!post) {
         notFound();
     }
 
-    const recordMap = await getPostRecordMap(post.id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let blocks: any[] = [];
+    let contentError = false;
 
-    // Process Dates
+    try {
+        blocks = await getBlocks(post.id);
+    } catch (error) {
+        console.error('[Notion] Failed to fetch blocks:', error);
+        contentError = true;
+    }
+
     const publishedIso = new Date(post.publishDate).toISOString();
-    const modifiedIso = new Date(post.publishDate).toISOString(); // Fallback if no specific modified date
+    const lastUpdatedIso = post.lastUpdated ? new Date(post.lastUpdated).toISOString() : publishedIso;
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://islandapp.id';
 
-    // Generate Article JSON-LD
     const jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Article',
         headline: post.title,
-        description: post.metaDescription || `Read ${post.title} on the Island Articles.`,
+        description: post.metaDescription || `Read ${post.title} on Island.`,
         ...(post.coverImage && { image: post.coverImage }),
         author: {
             '@type': 'Person',
-            name: post.author || 'Ahmad Faiq', // Using requested default author if not exists
+            name: post.author || 'Island Team',
         },
         publisher: {
             '@type': 'Organization',
             name: 'Island',
-            logo: {
-                '@type': 'ImageObject',
-                url: 'https://islandapp.id/island-logo.png', // Assuming logo path based on standard deployment
-            },
         },
         datePublished: publishedIso,
-        dateModified: modifiedIso,
+        dateModified: lastUpdatedIso,
         mainEntityOfPage: {
             '@type': 'WebPage',
             '@id': `${baseUrl}/articles/${post.slug}`,
         },
     };
 
-    // Generate Breadcrumb JSON-LD
     const breadcrumbLd = {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         itemListElement: [
-            {
-                '@type': 'ListItem',
-                position: 1,
-                name: 'Home',
-                item: baseUrl,
-            },
-            {
-                '@type': 'ListItem',
-                position: 2,
-                name: 'Articles',
-                item: `${baseUrl}/articles`,
-            },
-            {
-                '@type': 'ListItem',
-                position: 3,
-                name: post.title,
-                item: `${baseUrl}/articles/${post.slug}`,
-            },
+            { '@type': 'ListItem', position: 1, name: 'Home', item: baseUrl },
+            { '@type': 'ListItem', position: 2, name: 'Articles', item: `${baseUrl}/articles` },
+            { '@type': 'ListItem', position: 3, name: post.title, item: `${baseUrl}/articles/${post.slug}` },
         ],
     };
 
+    const formatDate = (dateStr: string) => {
+        try {
+            return new Date(dateStr).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            });
+        } catch {
+            return dateStr;
+        }
+    };
+
     return (
-        <div className="min-h-screen flex flex-col pt-32 pb-16 bg-[var(--color-cream)]">
+        <div style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }}
             />
 
-            <article className="flex-1 w-full max-w-[800px] mx-auto px-6 md:px-0 relative animate-fade-in-up">
+            <article style={styles.container}>
+                <Link href="/articles" style={styles.backLink}>
+                    <ArrowLeft style={{ width: '16px', height: '16px' }} />
+                    Back to Articles
+                </Link>
 
-                {/* Back navigation */}
-                <div className="mb-8">
-                    <Link href="/articles" className="inline-flex items-center text-[var(--color-text-muted)] hover:text-[var(--color-pastel-green-deep)] transition-colors">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to Articles
-                    </Link>
+                {post.featured && (
+                    <div style={styles.featuredBadge}>Featured</div>
+                )}
+
+                <p style={styles.categoryLabel}>
+                    {post.category || 'General'}
+                </p>
+
+                <h1 style={styles.title}>
+                    {post.title || 'Untitled'}
+                </h1>
+
+                <div style={styles.meta}>
+                    {post.author && (
+                        <span style={styles.metaAuthor}>{post.author}</span>
+                    )}
+                    {post.author && <span>·</span>}
+                    <span>Published {formatDate(post.publishDate)}</span>
+                    {post.lastUpdated && post.lastUpdated !== post.publishDate && (
+                        <>
+                            <span>·</span>
+                            <span>Updated {formatDate(post.lastUpdated)}</span>
+                        </>
+                    )}
                 </div>
 
-                {/* Cover Image */}
-                {post.coverImage && (
-                    <div className="relative w-full aspect-[21/9] rounded-[24px] overflow-hidden mb-12 shadow-md">
+                {post.coverImage ? (
+                    <div style={{ marginBottom: '48px' }}>
                         <Image
                             src={post.coverImage}
-                            alt={post.title}
-                            fill
-                            className="object-cover"
+                            alt={post.title || 'Article cover'}
+                            width={720}
+                            height={400}
+                            style={styles.cover}
                             priority
                         />
                     </div>
-                )}
+                ) : null}
 
-                {/* Post Header */}
-                <header className="mb-10 text-center">
-                    <h1 className="text-3xl md:text-5xl font-bold font-sans text-[var(--color-text-dark)] leading-tight mb-6">
-                        {post.title}
-                    </h1>
-
-                    <div className="flex items-center justify-center gap-4 text-[var(--color-text-muted)]">
-                        {post.author && (
-                            <span className="font-medium text-[var(--color-text-dark)]">{post.author}</span>
-                        )}
-                        {post.author && <span>•</span>}
-                        <time dateTime={post.publishDate}>
-                            {new Date(post.publishDate).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                            })}
-                        </time>
-                    </div>
-                </header>
-
-                <hr className="border-[var(--color-pastel-sand)] mb-12" />
-
-                {/* Notion Content */}
-                <div className="prose prose-lg max-w-none">
-                    <NotionRenderer recordMap={recordMap} rootPageId={post.id} />
+                <div style={styles.content}>
+                    {contentError ? (
+                        <div style={styles.errorBox}>
+                            <p style={{ fontWeight: 500, marginBottom: '8px', color: '#856404' }}>
+                                Content temporarily unavailable
+                            </p>
+                            <p style={{ fontSize: '14px', color: '#856404' }}>
+                                This article content could not be loaded. Please try again later.
+                            </p>
+                        </div>
+                    ) : blocks.length === 0 ? (
+                        <div style={styles.errorBox}>
+                            <p style={{ color: '#666' }}>This article has no content yet.</p>
+                        </div>
+                    ) : (
+                        <div>
+                            {blocks.map((block, index) => renderBlock(block, index))}
+                        </div>
+                    )}
                 </div>
 
-                {/* Bottom CTA */}
-                <div className="mt-24 pt-12 border-t border-[var(--color-pastel-sand)] text-center">
-                    <h3 className="text-2xl font-semibold text-[var(--color-text-dark)] mb-4">
-                        Find your focus with Island
-                    </h3>
-                    <p className="text-[var(--color-text-muted)] mb-8 max-w-md mx-auto">
+                <div style={styles.cta}>
+                    <h3 style={styles.ctaTitle}>Find your focus with Island</h3>
+                    <p style={styles.ctaText}>
                         Try our free pomodoro timer and start building sustainable productivity habits today.
                     </p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link href="/explore/pomodoro" className="w-full sm:w-auto px-8 py-4 bg-[var(--color-pastel-green-deep)] text-white font-medium rounded-full hover:bg-[#5FBF8F] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center">
+                    <div style={styles.ctaButtons}>
+                        <Link href="/explore/pomodoro" style={styles.ctaPrimary}>
                             Start Focus Session
                         </Link>
-                        <Link href="/explore" className="w-full sm:w-auto px-8 py-4 bg-white text-[var(--color-text-dark)] font-medium rounded-full border border-[var(--color-pastel-sand)] hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md text-center">
-                            Explore Study Tools
+                        <Link href="/explore" style={styles.ctaSecondary}>
+                            Explore Tools
                         </Link>
                     </div>
                 </div>
-
             </article>
         </div>
     );
