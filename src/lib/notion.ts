@@ -83,13 +83,18 @@ function extractPropertyValue(property: NotionPropertyValue | null | undefined):
 }
 
 function getPageCoverUrl(page: PageObjectResponse | undefined): string | undefined {
-    if (!page?.cover) return undefined;
+    if (!page?.cover) {
+        console.log('[Notion] ⚠️ No page cover found');
+        return undefined;
+    }
     
     try {
         if (page.cover.type === 'file' && page.cover.file?.url) {
+            console.log('[Notion] ✅ Cover URL (file):', page.cover.file.url.substring(0, 80));
             return page.cover.file.url;
         }
         if (page.cover.type === 'external' && page.cover.external?.url) {
+            console.log('[Notion] ✅ Cover URL (external):', page.cover.external.url.substring(0, 80));
             return page.cover.external.url;
         }
     } catch (err) {
@@ -138,24 +143,36 @@ function getLastUpdated(page: PageObjectResponse | undefined): string | null {
     
     const props = page.properties;
     
+    // Try multiple property names (Indonesian + English)
+    // Priority: DIperbaharui (all caps, as found in database)
     const lastUpdatedProp = 
         props['DIperbaharui'] ||
         props['Diperbaharui'] ||
         props['Last Updated'] ||
         props['lastUpdated'] ||
         props['Updated'] ||
+        props['Updated Date'] ||
         undefined;
     
     if (!lastUpdatedProp) {
+        console.log('[Notion] ⚠️ No "Diperbaharui" property found on page:', page?.id);
+        console.log('[Notion] Available props:', Object.keys(props).join(', '));
         return null;
     }
     
+    console.log('[Notion] ✅ Found "Diperbaharui" property, type:', lastUpdatedProp.type);
+    console.log('[Notion] Property raw value:', JSON.stringify(lastUpdatedProp));
+    
     if (lastUpdatedProp.type === 'date') {
-        return lastUpdatedProp.date?.start || null;
+        const date = lastUpdatedProp.date?.start || null;
+        console.log('[Notion] ✅ Diperbaharui (date):', date);
+        return date;
     }
     
     if (lastUpdatedProp.type === 'rich_text') {
-        return lastUpdatedProp.rich_text?.[0]?.plain_text || null;
+        const text = lastUpdatedProp.rich_text?.map(t => t.plain_text).join('') || null;
+        console.log('[Notion] ✅ Diperbaharui (text):', text);
+        return text;
     }
     
     return null;
@@ -166,6 +183,7 @@ function getImageCaption(page: PageObjectResponse | undefined): string | undefin
     
     const props = page.properties;
     
+    // Try multiple property names
     const captionProp = 
         props['Informasi gambar'] ||
         props['Informasi Gambar'] ||
@@ -175,11 +193,19 @@ function getImageCaption(page: PageObjectResponse | undefined): string | undefin
         undefined;
     
     if (!captionProp) {
+        console.log('[Notion] ⚠️ No "Informasi gambar" property found');
         return undefined;
     }
     
+    console.log('[Notion] ✅ Found "Informasi gambar" property, type:', captionProp.type);
+    
     if (captionProp.type === 'rich_text') {
-        return captionProp.rich_text?.[0]?.plain_text || undefined;
+        // Join all rich_text items to preserve line breaks
+        const caption = captionProp.rich_text
+            ?.map(t => t.plain_text)
+            .join('') || undefined;
+        console.log('[Notion] ✅ Image Caption:', caption?.substring(0, 100));
+        return caption;
     }
     
     return undefined;
@@ -194,6 +220,17 @@ function mapNotionPageToBlogPost(page: PageObjectResponse | undefined): BlogPost
         const category = getCategoryFromPage(page);
         const lastUpdated = getLastUpdated(page);
         const imageCaption = getImageCaption(page);
+
+        // Debug: Log all property names
+        const propNames = Object.keys(page.properties || {});
+        console.log('[Notion] 📋 Page properties:', propNames.join(', '));
+        console.log('[Notion] 📋 Mapping result:');
+        console.log('    - id:', page.id);
+        console.log('    - coverUrl:', coverUrl ? '✅ found' : '❌ not found');
+        console.log('    - coverImageFromProperty:', coverImageFromProperty ? '✅ found' : '❌ not found');
+        console.log('    - category:', category);
+        console.log('    - lastUpdated:', lastUpdated);
+        console.log('    - imageCaption:', imageCaption ? '✅ found' : '❌ not found');
 
         return {
             id: page.id || '',

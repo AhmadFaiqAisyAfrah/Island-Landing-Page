@@ -16,11 +16,13 @@ interface ParsedCaption {
 
 function parseCaption(rawCaption: string): ParsedCaption {
     // Common patterns for credits:
+    // - "Description\nCredit Name / Agency"
     // - "Description. Credit Name / Agency"
     // - "Description (Credit Name)"
-    // - "Description - Credit Name"
     
     const patterns = [
+        // Pattern: "Description\nName / Agency" (newline separated)
+        /^([^\n]+)\n([A-Z][A-Za-z\s]+?\s*\/\s*[A-Z][A-Za-z\s]+)$/,
         // Pattern: "Description. Name / Agency"
         /^([^. ]+.*?)\.\s*([A-Z][A-Za-z\s]+?\s*\/\s*[A-Z][A-Za-z\s]+)$/,
         // Pattern: "Description (Name)"
@@ -95,15 +97,18 @@ export function ImageWithCaption({
                 style={{
                     marginTop: '12px',
                     fontSize: '14px',
-                    lineHeight: 1.5,
-                    color: '#666',
+                    lineHeight: 1.6,
+                    color: '#555',
+                    whiteSpace: 'pre-line',
                 }}
             >
                 {parsed.description}
                 {parsed.credit && (
                     <>
-                        {'. '}
-                        <span style={{ fontStyle: 'italic' }}>{parsed.credit}</span>
+                        {'\n'}
+                        <span style={{ fontStyle: 'italic', color: '#888' }}>
+                            {parsed.credit}
+                        </span>
                     </>
                 )}
             </figcaption>

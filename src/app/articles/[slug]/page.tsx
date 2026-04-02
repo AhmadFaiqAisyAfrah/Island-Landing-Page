@@ -488,7 +488,7 @@ export default async function BlogPostPage(
 
     const formatDate = (dateStr: string) => {
         try {
-            return new Date(dateStr).toLocaleDateString('en-US', {
+            return new Date(dateStr).toLocaleDateString('id-ID', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
@@ -527,12 +527,12 @@ export default async function BlogPostPage(
                     {post.author && (
                         <span style={styles.metaAuthor}>{post.author}</span>
                     )}
-                    {post.author && <span>·</span>}
-                    <span>Published {formatDate(post.publishDate)}</span>
-                    {post.lastUpdated && post.lastUpdated !== post.publishDate && (
+                    {post.author && <span> · </span>}
+                    <span>Dipublikasikan {formatDate(post.publishDate)}</span>
+                    {post.lastUpdated && (
                         <>
-                            <span>·</span>
-                            <span>Updated {formatDate(post.lastUpdated)}</span>
+                            <span> · </span>
+                            <span>Diperbarui {formatDate(post.lastUpdated)}</span>
                         </>
                     )}
                 </div>
