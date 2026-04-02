@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getPostBySlug, getPublishedPosts } from '@/lib/notion';
 import { ArrowLeft } from 'lucide-react';
 import { Client } from '@notionhq/client';
+import { ArticleCoverImage } from '@/components/ImageWithCaption';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -537,16 +538,11 @@ export default async function BlogPostPage(
                 </div>
 
                 {post.coverImage ? (
-                    <div style={{ marginBottom: '48px' }}>
-                        <Image
-                            src={post.coverImage}
-                            alt={post.title || 'Article cover'}
-                            width={720}
-                            height={400}
-                            style={styles.cover}
-                            priority
-                        />
-                    </div>
+                    <ArticleCoverImage
+                        src={post.coverImage}
+                        alt={post.title || 'Article cover'}
+                        caption={post.imageCaption}
+                    />
                 ) : null}
 
                 <div style={styles.content}>

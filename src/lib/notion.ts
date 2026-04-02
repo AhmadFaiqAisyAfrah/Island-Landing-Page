@@ -37,6 +37,7 @@ export interface BlogPost {
     metaTitle?: string;
     metaDescription?: string;
     coverImage?: string;
+    imageCaption?: string;
     publishDate: string;
     lastUpdated?: string | null;
     author?: string;
@@ -132,6 +133,58 @@ function getCategoryFromPage(page: PageObjectResponse | undefined): string {
     return category;
 }
 
+function getLastUpdated(page: PageObjectResponse | undefined): string | null {
+    if (!page?.properties) return null;
+    
+    const props = page.properties;
+    
+    const lastUpdatedProp = 
+        props['DIperbaharui'] ||
+        props['Diperbaharui'] ||
+        props['Last Updated'] ||
+        props['lastUpdated'] ||
+        props['Updated'] ||
+        undefined;
+    
+    if (!lastUpdatedProp) {
+        return null;
+    }
+    
+    if (lastUpdatedProp.type === 'date') {
+        return lastUpdatedProp.date?.start || null;
+    }
+    
+    if (lastUpdatedProp.type === 'rich_text') {
+        return lastUpdatedProp.rich_text?.[0]?.plain_text || null;
+    }
+    
+    return null;
+}
+
+function getImageCaption(page: PageObjectResponse | undefined): string | undefined {
+    if (!page?.properties) return undefined;
+    
+    const props = page.properties;
+    
+    const captionProp = 
+        props['Informasi gambar'] ||
+        props['Informasi Gambar'] ||
+        props['Image Caption'] ||
+        props['Caption'] ||
+        props.imageCaption ||
+        undefined;
+    
+    if (!captionProp) {
+        return undefined;
+    }
+    
+    if (captionProp.type === 'rich_text') {
+        return captionProp.rich_text?.[0]?.plain_text || undefined;
+    }
+    
+    return undefined;
+}
+
 function mapNotionPageToBlogPost(page: PageObjectResponse | undefined): BlogPost | null {
     if (!page) return null;
 
@@ -139,6 +192,8 @@ function mapNotionPageToBlogPost(page: PageObjectResponse | undefined): BlogPost
         const coverUrl = getPageCoverUrl(page);
         const coverImageFromProperty = extractPropertyValue(page.properties?.['Cover Image']) as string | undefined;
         const category = getCategoryFromPage(page);
+        const lastUpdated = getLastUpdated(page);
+        const imageCaption = getImageCaption(page);
 
         return {
             id: page.id || '',
@@ -149,8 +204,9 @@ function mapNotionPageToBlogPost(page: PageObjectResponse | undefined): BlogPost
             metaTitle: (extractPropertyValue(page.properties?.['Meta Title']) as string) || undefined,
             metaDescription: (extractPropertyValue(page.properties?.['Meta Description']) as string) || undefined,
             coverImage: coverImageFromProperty || coverUrl || undefined,
+            imageCaption,
             publishDate: (extractPropertyValue(page.properties?.['Publish Date']) as string) || page.created_time || new Date().toISOString(),
-            lastUpdated: (extractPropertyValue(page.properties?.['Last Updated']) as string) || null,
+            lastUpdated,
             author: (extractPropertyValue(page.properties?.['Author']) as string) || undefined,
             featured: (extractPropertyValue(page.properties?.['Featured']) as boolean) || false,
         };
