@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/context/AuthContext";
-import Script from "next/script";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -24,7 +24,12 @@ export const metadata: Metadata = {
         "mindfulness",
     ],
     icons: {
-        icon: "/island-logo/favicon.png",
+        icon: [
+            { url: "https://ik.imagekit.io/kv42h83lq/Salinan%20dari%20Secarik%20Semangat.%20(4).png" },
+            { url: "https://ik.imagekit.io/kv42h83lq/Salinan%20dari%20Secarik%20Semangat.%20(4).png", sizes: "32x32", type: "image/png" },
+            { url: "https://ik.imagekit.io/kv42h83lq/Salinan%20dari%20Secarik%20Semangat.%20(4).png", sizes: "180x180", type: "image/png" },
+        ],
+        apple: "https://ik.imagekit.io/kv42h83lq/Salinan%20dari%20Secarik%20Semangat.%20(4).png",
     },
     openGraph: {
         title: "Island — Grow Your Focus",
@@ -42,34 +47,24 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
-                <link rel="icon" type="image/png" href="/island-logo/favicon.png" />
+                <link rel="icon" type="image/png" sizes="32x32" href="https://ik.imagekit.io/kv42h83lq/Salinan%20dari%20Secarik%20Semangat.%20(4).png" />
+                <link rel="icon" type="image/png" sizes="180x180" href="https://ik.imagekit.io/kv42h83lq/Salinan%20dari%20Secarik%20Semangat.%20(4).png" />
+                <link rel="apple-touch-icon" href="https://ik.imagekit.io/kv42h83lq/Salinan%20dari%20Secarik%20Semangat.%20(4).png" />
                 <meta name="referrer" content="no-referrer-when-downgrade" />
                 <script
                     async
                     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6763889648869554"
                     crossOrigin="anonymous"
                 ></script>
-                <Script id="theme-init" strategy="beforeInteractive">
-                    {`
-(function() {
-    try {
-        var theme = localStorage.getItem("theme");
-        if (theme === "dark") {
-            document.documentElement.classList.add("dark");
-        } else if (theme === "light") {
-            document.documentElement.classList.remove("dark");
-        }
-    } catch(e) {}
-})();
-`}
-                </Script>
             </head>
             <body className={`${inter.variable} font-sans antialiased`}>
-                <AuthProvider>
-                    <Navbar />
-                    <main>{children}</main>
-                    <Footer />
-                </AuthProvider>
+                <ThemeProvider>
+                    <AuthProvider>
+                        <Navbar />
+                        <main>{children}</main>
+                        <Footer />
+                    </AuthProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

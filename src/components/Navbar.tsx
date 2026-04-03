@@ -9,6 +9,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import UserMenu from "@/components/UserMenu";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
+import ThemeAwareLogo from "@/components/ThemeAwareLogo";
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
@@ -47,7 +48,7 @@ export default function Navbar() {
             <div className="mx-auto max-w-6xl flex items-center justify-between px-6 py-4">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 text-xl font-bold text-[var(--heading-text)]">
-                    <Image src="/island-logo.png" alt="Island" width={58} height={58} className="h-[58px] w-auto object-contain" />
+                    <ThemeAwareLogo className="h-14 md:h-16 w-auto object-contain bg-transparent" priority />
                     <span>Island</span>
                 </Link>
 

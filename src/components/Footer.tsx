@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import ThemeAwareLogo from "./ThemeAwareLogo";
 
 const footerSections: { title: string; social?: boolean; links: { label: string; href: string; icon?: string }[] }[] = [
     {
@@ -54,7 +55,7 @@ export default function Footer() {
             <div className="mx-auto max-w-6xl px-6 py-12">
                 <div className="flex flex-col items-center">
                     {/* Logo badge */}
-                    <Image src="/island-logo.png" alt="Island" width={100} height={100} className="h-[100px] w-auto object-contain mb-4" />
+                    <ThemeAwareLogo className="h-16 md:h-20 w-auto mx-auto mb-4 object-contain bg-transparent" />
 
                     {/* Navigation columns */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-10 w-full max-w-4xl mb-8">
