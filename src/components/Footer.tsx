@@ -22,6 +22,18 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
         ],
     },
     {
+        title: "Learning Games",
+        links: [
+            { label: "View All Games", href: "/games" },
+            { label: "Math Speed Challenge", href: "/games/math-speed" },
+            { label: "Typing Speed Challenge", href: "/games/typing-speed" },
+            { label: "Reaction Speed Test", href: "/games/reaction" },
+            { label: "Memory Card Game", href: "/games/memory" },
+            { label: "Number Pattern Test", href: "/games/number-pattern" },
+            { label: "Focus Test", href: "/games/focus" },
+        ],
+    },
+    {
         title: "Articles",
         links: [
             { label: "All Articles", href: "/articles" },
@@ -58,7 +70,7 @@ export default function Footer() {
                     <ThemeAwareLogo className="h-16 md:h-20 w-auto mx-auto mb-4 object-contain bg-transparent" />
 
                     {/* Navigation columns */}
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-8 w-full mb-8">
+                    <div className="grid grid-cols-2 md:grid-cols-6 gap-8 w-full mb-8">
                         {footerSections.map((section) => (
                             <div key={section.title} className="text-center md:text-left">
                                 <h4 className="text-sm font-semibold text-[var(--heading-text)] mb-4 uppercase tracking-wider">

@@ -33,7 +33,7 @@ const games = [
         title: "Math Speed Challenge",
         description: "Solve math problems as fast as you can. Test your mental calculation speed with addition, subtraction, multiplication, and division.",
         icon: Calculator,
-        href: "/math-game",
+        href: "/games/math-speed",
         color: "var(--accent-green)",
         bgColor: "bg-[var(--accent-green)]/10",
         stats: [
@@ -46,7 +46,7 @@ const games = [
         title: "Typing Speed Challenge",
         description: "Test and improve your typing speed. Track your WPM and accuracy with timed challenges or full text modes.",
         icon: Keyboard,
-        href: "/typing-game",
+        href: "/games/typing-speed",
         color: "#3b82f6",
         bgColor: "bg-blue-500/10",
         stats: [
@@ -59,7 +59,7 @@ const games = [
         title: "Reaction Speed Test",
         description: "Test how fast your reflexes are. Click as fast as possible when the screen turns green and measure your reaction time.",
         icon: Zap,
-        href: "/reaction-test",
+        href: "/games/reaction",
         color: "#f59e0b",
         bgColor: "bg-yellow-500/10",
         stats: [
@@ -72,7 +72,7 @@ const games = [
         title: "Memory Card Game",
         description: "Test and improve your memory skills. Match pairs of cards in this classic brain training game with multiple difficulty levels.",
         icon: Layers,
-        href: "/memory-game",
+        href: "/games/memory",
         color: "#8b5cf6",
         bgColor: "bg-purple-500/10",
         stats: [
@@ -85,7 +85,7 @@ const games = [
         title: "Number Pattern Test",
         description: "Challenge your logic and IQ with number patterns. Find the next number in the sequence and test your brain!",
         icon: Lightbulb,
-        href: "/pattern-game",
+        href: "/games/number-pattern",
         color: "#ec4899",
         bgColor: "bg-pink-500/10",
         stats: [
@@ -98,7 +98,7 @@ const games = [
         title: "Focus Test",
         description: "Train your focus by clicking only green circles. Avoid all other shapes and test your concentration!",
         icon: Eye,
-        href: "/focus-test",
+        href: "/games/focus",
         color: "#06b6d4",
         bgColor: "bg-cyan-500/10",
         stats: [
