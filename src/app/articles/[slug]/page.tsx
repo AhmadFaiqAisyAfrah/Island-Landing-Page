@@ -6,6 +6,7 @@ import { getPostBySlug, getPublishedPosts } from '@/lib/notion';
 import { ArrowLeft } from 'lucide-react';
 import { Client } from '@notionhq/client';
 import { ArticleCoverImage } from '@/components/ImageWithCaption';
+import { TagsDisplay } from '@/components/TagsDisplay';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -536,6 +537,12 @@ export default async function BlogPostPage(
                         </>
                     )}
                 </div>
+
+                {post.tags && post.tags.length > 0 && (
+                    <div style={{ marginTop: '16px' }}>
+                        <TagsDisplay tags={post.tags} />
+                    </div>
+                )}
 
                 {post.coverImage ? (
                     <ArticleCoverImage

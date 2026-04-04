@@ -7,7 +7,9 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
         title: "Social Media",
         social: true,
         links: [
-            { label: "Instagram", href: "https://www.instagram.com/islandapp.id/", icon: "/island-logo/instagram.png" },
+            { label: "Instagram", href: "https://www.instagram.com/islandapp.id?igsh=dDFtb3AyNHBmM3g2", icon: "https://ik.imagekit.io/kv42h83lq/Download_Instagram_Logo_On_Circle_Style_With_Transparent_Background-removebg-preview.png" },
+            { label: "TikTok", href: "https://www.tiktok.com/@islandapp.id?_r=1&_t=ZS-95FNUeTD3Ar", icon: "https://ik.imagekit.io/kv42h83lq/TikTok_Logo_tik_tok_Download_png-removebg-preview.png" },
+            { label: "Pinterest", href: "https://pin.it/7xYj0AyJX", icon: "https://ik.imagekit.io/kv42h83lq/Follow_Us_on_Pinterest__-_Threads-removebg-preview.png" },
         ],
     },
     {
@@ -20,21 +22,19 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
         ],
     },
     {
-        title: "Learning Games",
+        title: "Articles",
         links: [
-            { label: "View All Games", href: "/games" },
-            { label: "Math Speed Challenge", href: "/math-game" },
-            { label: "Typing Speed Challenge", href: "/typing-game" },
-            { label: "Reaction Speed Test", href: "/reaction-test" },
-            { label: "Memory Card Game", href: "/memory-game" },
-            { label: "Number Pattern Test", href: "/pattern-game" },
-            { label: "Focus Test", href: "/focus-test" },
+            { label: "All Articles", href: "/articles" },
+            { label: "Browse by Tag", href: "/tags" },
         ],
     },
     {
-        title: "Articles",
+        title: "Charity",
         links: [
-            { label: "Articles", href: "/articles" },
+            { label: "Island Charity", href: "/charity" },
+            { label: "Air Bersih", href: "/charity" },
+            { label: "Nutrisi & Pangan", href: "/charity" },
+            { label: "Program Donasi", href: "/charity" },
         ],
     },
     {
@@ -58,7 +58,7 @@ export default function Footer() {
                     <ThemeAwareLogo className="h-16 md:h-20 w-auto mx-auto mb-4 object-contain bg-transparent" />
 
                     {/* Navigation columns */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-10 w-full max-w-4xl mb-8">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-8 w-full mb-8">
                         {footerSections.map((section) => (
                             <div key={section.title} className="text-center md:text-left">
                                 <h4 className="text-sm font-semibold text-[var(--heading-text)] mb-4 uppercase tracking-wider">
@@ -72,12 +72,18 @@ export default function Footer() {
                                                     href={link.href}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex items-center gap-2 text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors"
+                                                    className="flex items-center gap-2 text-sm text-[var(--paragraph-text)] hover:opacity-70 transition-opacity"
                                                 >
                                                     {link.icon && (
-                                                        <Image src={link.icon} alt="" width={18} height={18} className="w-[18px] h-[18px]" />
+                                                        <Image 
+                                                            src={link.icon} 
+                                                            alt={`${link.label} Island`} 
+                                                            width={20} 
+                                                            height={20} 
+                                                            className="w-[20px] h-[20px] object-contain" 
+                                                        />
                                                     )}
-                                                    {link.label}
+                                                    <span>{link.label}</span>
                                                 </a>
                                             ) : (
                                                 <Link

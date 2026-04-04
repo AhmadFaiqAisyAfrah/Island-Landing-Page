@@ -34,6 +34,7 @@ export interface BlogPost {
     title: string;
     slug: string;
     category: string;
+    tags: string[];
     metaTitle?: string;
     metaDescription?: string;
     coverImage?: string;
@@ -211,6 +212,30 @@ function getImageCaption(page: PageObjectResponse | undefined): string | undefin
     return undefined;
 }
 
+function getTagsFromPage(page: PageObjectResponse | undefined): string[] {
+    if (!page?.properties) return [];
+    
+    const props = page.properties;
+    
+    // Try multiple property names
+    const tagsProp = 
+        props['Tags'] ||
+        props['tags'] ||
+        props['Tag'] ||
+        undefined;
+    
+    if (!tagsProp) {
+        return [];
+    }
+    
+    if (tagsProp.type === 'multi_select') {
+        const tags = tagsProp.multi_select?.map(t => t.name) || [];
+        return tags;
+    }
+    
+    return [];
+}
+
 function mapNotionPageToBlogPost(page: PageObjectResponse | undefined): BlogPost | null {
     if (!page) return null;
 
@@ -220,6 +245,7 @@ function mapNotionPageToBlogPost(page: PageObjectResponse | undefined): BlogPost
         const category = getCategoryFromPage(page);
         const lastUpdated = getLastUpdated(page);
         const imageCaption = getImageCaption(page);
+        const tags = getTagsFromPage(page);
 
         // Debug: Log all property names
         const propNames = Object.keys(page.properties || {});
@@ -231,6 +257,7 @@ function mapNotionPageToBlogPost(page: PageObjectResponse | undefined): BlogPost
         console.log('    - category:', category);
         console.log('    - lastUpdated:', lastUpdated);
         console.log('    - imageCaption:', imageCaption ? '✅ found' : '❌ not found');
+        console.log('    - tags:', tags.length > 0 ? tags.join(', ') : 'none');
 
         return {
             id: page.id || '',
@@ -238,6 +265,7 @@ function mapNotionPageToBlogPost(page: PageObjectResponse | undefined): BlogPost
             slug: (extractPropertyValue(page.properties?.['slug']) as string) || 'no-slug',
             status: (extractPropertyValue(page.properties?.['Status']) as BlogPost['status']) || 'Draft',
             category,
+            tags,
             metaTitle: (extractPropertyValue(page.properties?.['Meta Title']) as string) || undefined,
             metaDescription: (extractPropertyValue(page.properties?.['Meta Description']) as string) || undefined,
             coverImage: coverImageFromProperty || coverUrl || undefined,

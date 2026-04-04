@@ -61,7 +61,7 @@ function CategoryNav({
     return (
         <nav style={{
             borderBottom: '1px solid #e5e5e5',
-            marginBottom: '40px',
+            marginBottom: '24px',
             overflowX: 'auto',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none'
@@ -122,6 +122,91 @@ function CategoryNav({
     );
 }
 
+function TagNav({ 
+    tags, 
+    selected, 
+    onSelect 
+}: { 
+    tags: { name: string; count: number }[]; 
+    selected: string | null;
+    onSelect: (tag: string | null) => void;
+}) {
+    if (tags.length === 0) return null;
+
+    return (
+        <nav style={{
+            marginBottom: '32px',
+            padding: '16px 0',
+            borderBottom: '1px solid #eee'
+        }}>
+            <div style={{
+                display: 'flex',
+                gap: '8px',
+                overflowX: 'auto',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                flexWrap: 'wrap'
+            }}>
+                <style>{`
+                    .tag-nav::-webkit-scrollbar { display: none; }
+                `}</style>
+                <button
+                    onClick={() => onSelect(null)}
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: selected === null ? '8px 16px' : '6px 14px',
+                        fontSize: '12px',
+                        fontWeight: selected === null ? 600 : 500,
+                        color: selected === null ? '#fff' : '#666',
+                        backgroundColor: selected === null ? '#111' : '#f5f5f5',
+                        border: selected === null ? '1px solid #111' : '1px solid #e0e0e0',
+                        borderRadius: '100px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        whiteSpace: 'nowrap',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.3px'
+                    }}
+                >
+                    Semua
+                </button>
+                {tags.map(({ name, count }) => (
+                    <button
+                        key={name}
+                        onClick={() => onSelect(name)}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: selected === name ? '8px 16px' : '6px 14px',
+                            fontSize: '12px',
+                            fontWeight: selected === name ? 600 : 500,
+                            color: selected === name ? '#fff' : '#555',
+                            backgroundColor: selected === name ? '#111' : '#f5f5f5',
+                            border: selected === name ? '1px solid #111' : '1px solid #e0e0e0',
+                            borderRadius: '100px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        {name}
+                        <span style={{
+                            fontSize: '10px',
+                            opacity: 0.7,
+                            fontWeight: 400
+                        }}>
+                            ({count})
+                        </span>
+                    </button>
+                ))}
+            </div>
+        </nav>
+    );
+}
+
 function NYTimesArticlesList({ posts }: { posts: BlogPost[] }) {
     const safePosts = posts || [];
     const featuredPost = safePosts.find((p) => p.featured) || safePosts[0];
@@ -131,7 +216,7 @@ function NYTimesArticlesList({ posts }: { posts: BlogPost[] }) {
         return (
             <div style={{ textAlign: 'center', padding: '80px 0' }}>
                 <p style={{ fontFamily: 'Georgia, serif', fontSize: '18px', color: '#666' }}>
-                    No articles published yet.
+                    No articles found.
                 </p>
             </div>
         );
@@ -273,6 +358,7 @@ function NYTimesArticlesList({ posts }: { posts: BlogPost[] }) {
 export function ArticlesPageClient({ posts }: ArticlesPageClientProps) {
     const { layoutMode, changeLayout, mounted } = useLayoutMode();
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [selectedTag, setSelectedTag] = useState<string | null>(null);
     
     const safePosts = posts || [];
     
@@ -281,10 +367,40 @@ export function ArticlesPageClient({ posts }: ArticlesPageClientProps) {
         return Array.from(cats).sort();
     }, [safePosts]);
 
-    const filteredPosts = useMemo(() => {
+    // Filter posts by selected category first
+    const postsByCategory = useMemo(() => {
         if (!selectedCategory) return safePosts;
         return safePosts.filter((p) => (p.category || 'General') === selectedCategory);
     }, [safePosts, selectedCategory]);
+
+    // Extract tags from filtered posts (based on selected category)
+    const tagsWithCounts = useMemo(() => {
+        const tagMap = new Map<string, number>();
+        postsByCategory.forEach((post) => {
+            if (post.tags && post.tags.length > 0) {
+                post.tags.forEach((tag) => {
+                    // Count only from posts matching the selected category
+                    tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
+                });
+            }
+        });
+        return Array.from(tagMap.entries())
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count);
+    }, [postsByCategory, selectedCategory]);
+
+    // Apply tag filter to posts
+    const filteredPosts = useMemo(() => {
+        let result = postsByCategory;
+        
+        if (selectedTag) {
+            result = result.filter((p) => 
+                p.tags && p.tags.includes(selectedTag)
+            );
+        }
+        
+        return result;
+    }, [postsByCategory, selectedTag]);
 
     const showNYTimesLayout = mounted && layoutMode === 'modern';
 
@@ -324,7 +440,23 @@ export function ArticlesPageClient({ posts }: ArticlesPageClientProps) {
                 <CategoryNav 
                     categories={categories} 
                     selected={selectedCategory}
-                    onSelect={setSelectedCategory}
+                    onSelect={(cat) => {
+                        setSelectedCategory(cat);
+                        setSelectedTag(null);
+                    }}
+                />
+
+                <TagNav 
+                    tags={tagsWithCounts} 
+                    selected={selectedTag}
+                    onSelect={(tag) => {
+                        // Auto-reset if selected tag doesn't exist in new category
+                        if (tag && !tagsWithCounts.some(t => t.name === tag)) {
+                            setSelectedTag(null);
+                        } else {
+                            setSelectedTag(tag);
+                        }
+                    }}
                 />
 
                 {mounted && (
