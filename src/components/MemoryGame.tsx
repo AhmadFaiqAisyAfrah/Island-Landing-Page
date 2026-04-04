@@ -205,9 +205,9 @@ export default function MemoryGame() {
     const { cols } = DIFFICULTY_CONFIG[difficulty];
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
-            <div className="max-w-4xl mx-auto px-4 py-8">
-                <AdBanner className="mb-6" />
+        <div className="bg-[var(--bg-primary)]">
+            <div className="max-w-4xl mx-auto px-4 py-4">
+                {/* <AdBanner className="mb-6" /> */}
 
                 {gameState === "menu" && (
                     <div className="bg-[var(--bg-secondary)] rounded-2xl p-6 md:p-8 shadow-lg max-w-md mx-auto">
@@ -351,7 +351,7 @@ export default function MemoryGame() {
                                 You matched all the pairs!
                             </p>
 
-                            <AdBanner className="mb-6" />
+                            {/* <AdBanner className="mb-6" /> */}
 
                             <div className="bg-[var(--bg-primary)] rounded-xl p-4 mb-6">
                                 <div className="grid grid-cols-2 gap-4">

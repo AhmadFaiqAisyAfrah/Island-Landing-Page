@@ -10,6 +10,7 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
             { label: "Instagram", href: "https://www.instagram.com/islandapp.id?igsh=dDFtb3AyNHBmM3g2", icon: "https://ik.imagekit.io/kv42h83lq/Download_Instagram_Logo_On_Circle_Style_With_Transparent_Background-removebg-preview.png" },
             { label: "TikTok", href: "https://www.tiktok.com/@islandapp.id?_r=1&_t=ZS-95FNUeTD3Ar", icon: "https://ik.imagekit.io/kv42h83lq/TikTok_Logo_tik_tok_Download_png-removebg-preview.png" },
             { label: "Pinterest", href: "https://pin.it/7xYj0AyJX", icon: "https://ik.imagekit.io/kv42h83lq/Follow_Us_on_Pinterest__-_Threads-removebg-preview.png" },
+            { label: "YouTube", href: "https://youtube.com/@island.learning?si=8QcjV9f_9x-2Xrsq", icon: "https://ik.imagekit.io/kv42h83lq/Download_Youtube_logo_png__Youtube_logo_transparent_png__Youtube_icon_transparent_free_png-removebg-preview.png" },
         ],
     },
     {

@@ -39,7 +39,7 @@ export default function AdBanner({
             <ins
                 ref={insRef}
                 className="adsbygoogle"
-                style={{ display: "block", width: "100%", minHeight: "90px" }}
+                style={{ display: "none", width: "100%", minHeight: "0px" }}
                 data-ad-client="ca-pub-6763889648869554"
                 data-ad-slot={slot || "AUTO"}
                 data-ad-format={format}

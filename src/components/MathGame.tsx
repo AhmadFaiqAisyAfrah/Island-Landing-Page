@@ -318,11 +318,11 @@ export default function MathGame() {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] py-12 px-4">
+        <div className="bg-[var(--bg-primary)] py-4 px-4">
             <div className="max-w-lg mx-auto">
-                <div id="ad-banner-top" className="mb-8">
+                {/* <div id="ad-banner-top" className="mb-8">
                     <AdBanner className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4" />
-                </div>
+                </div> */}
 
                 <div className={`bg-[var(--bg-secondary)] rounded-2xl p-8 shadow-lg transition-all duration-300 ${
                     feedback === "correct" ? "ring-4 ring-green-500/50 bg-green-500/10" :
@@ -435,7 +435,7 @@ export default function MathGame() {
                                 Great effort! Keep practicing to improve your score.
                             </p>
 
-                            <AdBanner className="mb-8" />
+                            {/* <AdBanner className="mb-8" /> */}
 
                             <div className="bg-[var(--bg-primary)] rounded-xl p-6 mb-8">
                                 <div className="mb-4">

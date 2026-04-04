@@ -253,9 +253,9 @@ export default function FocusGame() {
     const accuracy = totalClicks > 0 ? Math.round((correctClicks / totalClicks) * 100) : 0;
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] py-8 px-4">
+        <div className="bg-[var(--bg-primary)] py-4 px-4">
             <div className="max-w-2xl mx-auto">
-                <AdBanner className="mb-6" />
+                {/* <AdBanner className="mb-6" /> */}
 
                 <div className="bg-[var(--bg-secondary)] rounded-2xl shadow-lg overflow-hidden">
                     {gameState === "menu" && (
@@ -440,7 +440,7 @@ export default function FocusGame() {
                                 {gameMode === "lives" ? "You ran out of lives!" : "Great focus! Here's your result:"}
                             </p>
 
-                            <AdBanner className="mb-6" />
+                            {/* <AdBanner className="mb-6" /> */}
 
                             <div className="bg-[var(--bg-primary)] rounded-xl p-4 mb-6">
                                 <p className="text-sm text-[var(--text-secondary)] mb-1">Final Score</p>

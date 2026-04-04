@@ -301,9 +301,9 @@ export default function PatternGame() {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] py-8 px-4">
+        <div className="bg-[var(--bg-primary)] py-4 px-4">
             <div className="max-w-lg mx-auto">
-                <AdBanner className="mb-6" />
+                {/* <AdBanner className="mb-6" /> */}
 
                 <div className="bg-[var(--bg-secondary)] rounded-2xl p-6 shadow-lg">
                     {gameState === "menu" && (
@@ -454,7 +454,7 @@ export default function PatternGame() {
                                     : "Great effort! Here's how you did:"}
                             </p>
 
-                            <AdBanner className="mb-6" />
+                            {/* <AdBanner className="mb-6" /> */}
 
                             <div className="bg-[var(--bg-primary)] rounded-xl p-4 mb-6">
                                 <p className="text-sm text-[var(--text-secondary)] mb-1">Final Score</p>

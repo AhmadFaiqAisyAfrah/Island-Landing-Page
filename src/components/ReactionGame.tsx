@@ -255,7 +255,7 @@ export default function ReactionGame() {
             } ${keyPressed ? "scale-[0.99]" : ""}`}
             onClick={handleUserAction}
         >
-            <AdBanner className="absolute top-4 left-4 right-4 z-10" />
+            {/* <AdBanner className="absolute top-4 left-4 right-4 z-10" /> */}
 
             <div className="flex-1 flex items-center justify-center p-4">
                 <div className="w-full max-w-lg">
@@ -410,7 +410,7 @@ export default function ReactionGame() {
                                         {perf.label}
                                     </p>
 
-                                    <AdBanner className="mb-8" />
+                                    {/* <AdBanner className="mb-8" /> */}
 
                                     {bestScore > 0 && reactionTime <= bestScore && (
                                         <p className="text-[var(--accent-green)] font-semibold mb-6">

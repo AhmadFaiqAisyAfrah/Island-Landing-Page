@@ -1001,9 +1001,9 @@ export default function TypingGame() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] py-12 px-4">
+        <div className="bg-[var(--bg-primary)] py-4 px-4">
             <div className="max-w-3xl mx-auto">
-                <AdBanner className="mb-8" />
+                {/* <AdBanner className="mb-8" /> */}
 
                 <div className="bg-[var(--bg-secondary)] rounded-2xl p-8 shadow-lg">
                     {gameState === "menu" && (
@@ -1193,7 +1193,7 @@ export default function TypingGame() {
                                 Here&apos;s how you performed:
                             </p>
 
-                            <AdBanner className="mb-8" />
+                            {/* <AdBanner className="mb-8" /> */}
 
                             <div className="bg-[var(--bg-primary)] rounded-xl p-6 mb-8">
                                 <div className="grid grid-cols-3 gap-4">
