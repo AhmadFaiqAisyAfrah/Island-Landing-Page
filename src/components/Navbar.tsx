@@ -24,11 +24,13 @@ export default function Navbar() {
         pathname.startsWith("/terms") ||
         pathname.startsWith("/contact") ||
         pathname.startsWith("/about") ||
-        pathname.startsWith("/data-deletion");
+        pathname.startsWith("/data-deletion") ||
+        pathname.startsWith("/island-app");
 
     const isDashboard = !isMarketingPage;
 
     const marketingLinks = [
+        { label: "Island App", href: "/island-app" },
         { label: "Explore", href: "/explore" },
         { label: "Articles", href: "/articles" },
     ];
@@ -54,12 +56,6 @@ export default function Navbar() {
 
                 {/* Desktop Links */}
                 <div className="hidden md:flex items-center gap-8">
-                    {isMarketingPage && (
-                        <Link href="/" className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
-                            Island App
-                        </Link>
-                    )}
-
                     {navLinks.map((link) => (
                         <Link
                             key={link.href}
@@ -117,12 +113,6 @@ export default function Navbar() {
             {/* Mobile Menu */}
             {open && (
                 <div className="md:hidden bg-[var(--nav-bg)] backdrop-blur-md border-t border-[var(--border-color)] px-6 pb-6 pt-2 space-y-4 animate-fade-in-up">
-                    {isMarketingPage && (
-                        <Link href="/" onClick={() => setOpen(false)} className="block text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors">
-                            Island App
-                        </Link>
-                    )}
-
                     {navLinks.map((link) => (
                         <Link
                             key={link.href}

@@ -1,343 +1,31 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* ===== CSS Variables for Theme ===== */
 
-@theme {
-  --color-bg-primary: var(--bg-primary);
-  --color-bg-secondary: var(--bg-secondary);
-  --color-card-bg: var(--card-bg);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-heading-text: var(--heading-text);
-  --color-paragraph-text: var(--paragraph-text);
-  --color-border-color: var(--border-color);
-  --color-accent-green: var(--accent-green);
-  --color-button-bg: var(--button-bg);
-  --color-button-hover: var(--button-hover);
-  --color-button-text: var(--button-text);
-
-  --color-cream: #FDFAF3;
-  --color-cream-dark: #F7F0E0;
-  --color-pastel-green: #A8D5BA;
-  --color-pastel-green-deep: #6BBF8A;
-  --color-pastel-blue: #B8DFF0;
-  --color-pastel-blue-deep: #7EC8E3;
-  --color-pastel-sand: #F5E6C8;
-  --color-pastel-sand-deep: #EDD9A3;
-  --color-text-dark: #3A3A3A;
-  --color-text-muted: #7A7A7A;
-  --color-white: #FFFFFF;
-
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+:root {
+  --nav-bg: rgba(248, 250, 252, 0.9);
+  --border-color: #e5e7eb;
+  --heading-text: #111827;
+  --paragraph-text: #4b5563;
+  --accent-green: #10b981;
+  --button-bg: #10b981;
+  --button-hover: #059669;
+  --button-text: #ffffff;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
 }
 
-@layer base {
-  :root {
-    --bg-primary: #f8fafc;
-    --bg-secondary: #edf2f7;
-    --card-bg: #ffffff;
-    --text-primary: #1f2937;
-    --text-secondary: #4b5563;
-    --heading-text: #1f2937;
-    --paragraph-text: #4b5563;
-    --border-color: #d3deea;
-    --accent-green: #6bbf8a;
-    --button-bg: #6bbf8a;
-    --button-hover: #77ca96;
-    --button-text: #ffffff;
-    --nav-bg: rgba(248, 250, 252, 0.84);
-    --hero-from: #d4eefa;
-    --hero-via: #e8f4f0;
-    --hero-to: #f8fafc;
-    --demo-ring-track: #334155;
-    --demo-panel-bg: #0f172a;
-  }
-
-  .dark {
-    --bg-primary: #0b1a2b;
-    --bg-secondary: #12233a;
-    --card-bg: #162a44;
-    --text-primary: #ffffff;
-    --text-secondary: #b8c4d6;
-    --heading-text: #e6edf7;
-    --paragraph-text: #aab6c8;
-    --border-color: #223a55;
-    --accent-green: #6cc48e;
-    --button-bg: #6cc48e;
-    --button-hover: #79d09b;
-    --button-text: #ffffff;
-    --nav-bg: rgba(11, 26, 43, 0.86);
-    --hero-from: #10253b;
-    --hero-via: #0f2236;
-    --hero-to: #0b1a2b;
-    --demo-ring-track: #4f6783;
-    --demo-panel-bg: #0a1626;
-  }
-
-  body {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out;
-  }
-
-  *,
-  *::before,
-  *::after {
-    transition-property: background-color, color, border-color, fill, stroke, box-shadow;
-    transition-duration: 250ms;
-    transition-timing-function: ease;
-  }
-}
-
-/* ===== Animation Keyframes ===== */
-
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-18px);
-  }
-}
-
-@keyframes float-slow {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes drift-right {
-  0% {
-    transform: translateX(-10%);
-    opacity: 0.7;
-  }
-
-  50% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateX(110vw);
-    opacity: 0.5;
-  }
-}
-
-@keyframes drift-left {
-  0% {
-    transform: translateX(110vw);
-    opacity: 0.5;
-  }
-
-  50% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateX(-10%);
-    opacity: 0.7;
-  }
-}
-
-@keyframes cloud-move {
-  0% {
-    transform: translateX(-40px);
-  }
-  50% {
-    transform: translateX(40px);
-  }
-  100% {
-    transform: translateX(-40px);
-  }
-}
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes modal-pop {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes pulse-soft {
-
-  0%,
-  100% {
-    opacity: 0.6;
-  }
-
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes breathe {
-
-  0%,
-  100% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.03);
-  }
-}
-
-@keyframes twinkle {
-
-  0%,
-  100% {
-    opacity: 0.8;
-  }
-
-  50% {
-    opacity: 0.2;
-  }
-}
-
-/* ===== Utility Classes ===== */
-
-.animate-float {
-  animation: float 4s ease-in-out infinite;
-}
-
-.animate-float-slow {
-  animation: float-slow 5s ease-in-out infinite;
-}
-
-.animate-drift-right {
-  animation: drift-right 25s linear infinite;
-}
-
-.animate-drift-left {
-  animation: drift-left 30s linear infinite;
-}
-
-.animate-cloud-move {
-  animation: cloud-move 18s ease-in-out infinite;
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.7s ease-out both;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out both;
-}
-
-.animate-modal-pop {
-  animation: modal-pop 0.24s ease-out both;
-}
-
-.island-date-input::-webkit-calendar-picker-indicator {
-  display: none;
-  -webkit-appearance: none;
-}
-
-.island-date-input::-webkit-clear-button,
-.island-date-input::-webkit-inner-spin-button {
-  display: none;
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 3s ease-in-out infinite;
-}
-
-.animate-breathe {
-  animation: breathe 5s ease-in-out infinite;
-}
-
-.animate-twinkle {
-  animation: twinkle 4s ease-in-out infinite;
-}
-
-/* Staggered delays */
-.delay-100 {
-  animation-delay: 0.1s;
-}
-
-.delay-200 {
-  animation-delay: 0.2s;
-}
-
-.delay-300 {
-  animation-delay: 0.3s;
-}
-
-.delay-500 {
-  animation-delay: 0.5s;
-}
-
-.delay-700 {
-  animation-delay: 0.7s;
-}
-
-.delay-1000 {
-  animation-delay: 1s;
-}
-
-.delay-2000 {
-  animation-delay: 2s;
-}
-
-.delay-3000 {
-  animation-delay: 3s;
-}
-
-/* ===== Base Styles ===== */
-
-html,
-body {
-  overflow-x: hidden;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  touch-action: pan-y;
-}
-
-::selection {
-  background-color: var(--accent-green);
-  color: var(--text-primary);
+.dark {
+  --nav-bg: rgba(11, 30, 45, 0.95);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --heading-text: #f8fafc;
+  --paragraph-text: #94a3b8;
+  --accent-green: #34d399;
+  --button-bg: #059669;
+  --button-hover: #047857;
+  --button-text: #ffffff;
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
 }
 
 /* ===== Launchpad Slider ===== */
@@ -371,20 +59,20 @@ body {
 
 .launchpad-slide {
   flex: 0 0 auto;
-  width: 340px;
+  width: 280px;
   scroll-snap-align: start;
-  border-radius: 32px;
+  border-radius: 24px;
   overflow: hidden;
   box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.08),
-    0 0 40px rgba(95, 191, 143, 0.08);
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 0 40px rgba(16, 185, 129, 0.1);
 }
 
 .launchpad-slide-img {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 32px;
+  border-radius: 24px;
   object-fit: contain;
 }
 
@@ -402,44 +90,18 @@ body {
   border: none;
   padding: 0;
   cursor: pointer;
-  background-color: color-mix(in srgb, var(--text-secondary) 40%, transparent);
+  background-color: rgba(156, 163, 175, 0.4);
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .launchpad-dot.active {
-  background-color: var(--accent-green);
+  background-color: #10b981;
   transform: scale(1.25);
 }
 
-/* Mobile: smaller slides, slight peek */
-
-.launchpad-dots {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.launchpad-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  background-color: color-mix(in srgb, var(--text-secondary) 40%, transparent);
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.launchpad-dot.active {
-  background-color: var(--accent-green);
-  transform: scale(1.25);
-}
-
-/* Mobile: smaller slides, slight peek */
 @media (max-width: 639px) {
   .launchpad-slide {
-    width: 280px;
+    width: 240px;
   }
 
   .launchpad-slider {
@@ -448,62 +110,376 @@ body {
   }
 }
 
-/* ===== React Notion X Overrides ===== */
+/* ===== Island App Premium Theme Override ===== */
+/* This uses Tailwind's dark: variant with the html.dark class from next-themes */
 
-.notion-island-wrapper {
-  --notion-font: var(--font-sans);
-  --notion-max-width: 760px;
+/* ===== BASE STYLES ===== */
+
+.island-app-page {
+  background: linear-gradient(to bottom, #f8fafc, #ffffff);
+  min-height: 100vh;
 }
 
-.notion-island-wrapper .notion {
-  font-family: var(--notion-font);
-  color: var(--color-text-dark);
-  font-size: 17px;
-  line-height: 1.6;
+/* Dark Mode - matches html.dark */
+.dark .island-app-page,
+.island-app-page:where(.dark *) {
+  background: linear-gradient(to bottom, #0B1E2D, #0a1520);
 }
 
-.notion-island-wrapper .notion-title {
-  color: var(--color-pastel-green-deep);
+/* ===== SECTION STYLES ===== */
+
+.island-app-page section {
+  background: transparent;
 }
 
-.notion-island-wrapper .notion-h1,
-.notion-island-wrapper .notion-h2,
-.notion-island-wrapper .notion-h3 {
-  color: var(--color-text-dark);
-  font-family: var(--font-sans);
+/* Hero Section */
+.island-app-page > section:first-child {
+  background: linear-gradient(to bottom, #dbeafe, #eff6ff, #ffffff) !important;
+}
+
+.dark .island-app-page > section:first-child,
+.island-app-page:where(.dark *) > section:first-child {
+  background: linear-gradient(to bottom, #0B1E2D, #0f1f2e, #0a1520) !important;
+}
+
+/* ===== NAVBAR FIX ===== */
+/* Override the main navbar when inside island-app-page */
+
+.island-app-page ~ * nav,
+.island-app-page nav,
+.island-app-page header.fixed,
+.island-app-page + div nav {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Dark navbar when inside dark mode */
+.dark .island-app-page ~ * nav,
+.dark .island-app-page nav,
+.dark .island-app-page header.fixed,
+.island-app-page:where(.dark *) nav {
+  background: rgba(11, 30, 45, 0.98) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ===== BUTTON STYLES ===== */
+
+/* Primary Button - Gradient Glowing */
+.island-app-page a.bg-pastel-green-deep,
+.island-app-page button.bg-pastel-green-deep,
+.island-app-page .bg-pastel-green-deep {
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #0d9488 100%) !important;
+  color: #ffffff !important;
   font-weight: 600;
-  margin-top: 2em;
-  margin-bottom: 0.75em;
+  border: none;
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4), 0 8px 10px -6px rgba(16, 185, 129, 0.3) !important;
+  transition: all 0.3s ease;
 }
 
-.notion-island-wrapper .notion-quote {
-  border-left-color: var(--color-pastel-green-deep);
-  background-color: var(--color-cream-dark);
-  padding: 1rem 1.5rem;
-  border-radius: 4px;
-  border-left-width: 4px;
+.dark .island-app-page a.bg-pastel-green-deep,
+.dark .island-app-page button.bg-pastel-green-deep,
+.dark .island-app-page .bg-pastel-green-deep,
+.island-app-page:where(.dark *) a.bg-pastel-green-deep {
+  background: linear-gradient(135deg, #059669 0%, #047857 50%, #0f766e 100%) !important;
+  box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.5), 0 8px 10px -6px rgba(5, 150, 105, 0.4) !important;
 }
 
-.notion-island-wrapper .notion-code {
-  border-radius: 12px;
-  background-color: var(--color-text-dark);
+.island-app-page a.bg-pastel-green-deep:hover,
+.island-app-page button.bg-pastel-green-deep:hover {
+  transform: scale(1.05);
+  box-shadow: 0 20px 35px -5px rgba(16, 185, 129, 0.5), 0 10px 15px -5px rgba(16, 185, 129, 0.4) !important;
 }
 
-.notion-island-wrapper .notion-bookmark {
-  border-radius: 16px;
-  border: 1px solid #EBE4D5;
+/* Secondary Button - Outline */
+.island-app-page a[class*="border-2"],
+.island-app-page button[class*="border-2"],
+.island-app-page .rounded-full.border-2 {
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  color: #059669 !important;
+  background: transparent;
 }
 
-.notion-island-wrapper .notion-bookmark:hover {
-  background-color: var(--color-cream-dark);
+.dark .island-app-page a[class*="border-2"],
+.dark .island-app-page button[class*="border-2"],
+.dark .island-app-page .rounded-full.border-2 {
+  border-color: rgba(52, 211, 153, 0.5) !important;
+  color: #34d399 !important;
 }
 
-.notion-island-wrapper .notion-asset-wrapper {
-  margin: 2rem 0;
-  border-radius: 16px;
-  overflow: hidden;
+.island-app-page a[class*="border-2"]:hover {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-color: #10b981 !important;
 }
 
-.notion-island-wrapper .notion-text {
-  padding: 0.25rem 0;
+.dark .island-app-page a[class*="border-2"]:hover {
+  background: rgba(52, 211, 153, 0.15) !important;
+  border-color: #34d399 !important;
+}
+
+/* ===== CARD STYLES ===== */
+
+.island-app-page .bg-white {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.3s ease;
+}
+
+.dark .island-app-page .bg-white,
+.island-app-page:where(.dark *) .bg-white {
+  background-color: #132A3E !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+}
+
+.island-app-page .bg-white:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.dark .island-app-page .bg-white:hover {
+  box-shadow: 0 20px 25px -5px rgba(52, 211, 153, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+
+/* ===== TEXT COLORS ===== */
+
+/* Headings */
+.island-app-page h1,
+.island-app-page h2,
+.island-app-page h3,
+.island-app-page h4 {
+  color: #111827;
+}
+
+.dark .island-app-page h1,
+.dark .island-app-page h2,
+.dark .island-app-page h3,
+.dark .island-app-page h4,
+.island-app-page:where(.dark *) h1,
+.island-app-page:where(.dark *) h2,
+.island-app-page:where(.dark *) h3,
+.island-app-page:where(.dark *) h4 {
+  color: #f8fafc;
+}
+
+/* Body text */
+.island-app-page p {
+  color: #4b5563;
+}
+
+.dark .island-app-page p,
+.island-app-page:where(.dark *) p {
+  color: #94a3b8;
+}
+
+/* Text utilities */
+.island-app-page .text-text-dark {
+  color: #111827;
+}
+
+.dark .island-app-page .text-text-dark {
+  color: #f8fafc;
+}
+
+.island-app-page .text-text-muted {
+  color: #6b7280;
+}
+
+.dark .island-app-page .text-text-muted {
+  color: #94a3b8;
+}
+
+/* Accent text colors */
+.island-app-page .text-pastel-green-deep {
+  color: #10b981;
+}
+
+.dark .island-app-page .text-pastel-green-deep {
+  color: #34d399;
+}
+
+.island-app-page .text-pastel-blue-deep {
+  color: #0ea5e9;
+}
+
+.dark .island-app-page .text-pastel-blue-deep {
+  color: #38bdf8;
+}
+
+/* ===== BACKGROUND OVERRIDES ===== */
+
+.island-app-page .bg-cream {
+  background-color: #ffffff;
+}
+
+.dark .island-app-page .bg-cream {
+  background-color: #0B1E2D;
+}
+
+.island-app-page .bg-cream-dark {
+  background-color: #f9fafb;
+}
+
+.dark .island-app-page .bg-cream-dark {
+  background-color: #0a1520;
+}
+
+/* ===== FAQ SECTION ===== */
+
+.island-app-page #faq,
+.island-app-page section[id="faq"],
+.island-app-page [id="faq"] {
+  background: #f9fafb;
+}
+
+.dark .island-app-page #faq,
+.dark .island-app-page section[id="faq"],
+.dark .island-app-page [id="faq"],
+.island-app-page:where(.dark *) #faq {
+  background: #0B1E2D;
+}
+
+/* FAQ Accordion Items */
+.island-app-page .rounded-xl,
+.island-app-page .rounded-lg {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.dark .island-app-page .rounded-xl,
+.dark .island-app-page .rounded-lg,
+.island-app-page:where(.dark *) .rounded-xl,
+.island-app-page:where(.dark *) .rounded-lg {
+  background-color: #132A3E !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.island-app-page .rounded-xl:hover,
+.island-app-page .rounded-lg:hover {
+  background-color: #f9fafb;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.dark .island-app-page .rounded-xl:hover,
+.dark .island-app-page .rounded-lg:hover,
+.island-app-page:where(.dark *) .rounded-xl:hover,
+.island-app-page:where(.dark *) .rounded-lg:hover {
+  background-color: #1a3a52;
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+/* FAQ text colors */
+.island-app-page .text-gray-800 {
+  color: #1f2937;
+}
+
+.dark .island-app-page .text-gray-800,
+.island-app-page:where(.dark *) .text-gray-800 {
+  color: #f3f4f6;
+}
+
+.island-app-page .text-gray-400 {
+  color: #9ca3af;
+}
+
+.dark .island-app-page .text-gray-400,
+.island-app-page:where(.dark *) .text-gray-400 {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ===== GRADIENT TEXT ===== */
+
+.island-app-page .bg-gradient-to-r {
+  background: linear-gradient(to right, #10b981, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .island-app-page .bg-gradient-to-r,
+.island-app-page:where(.dark *) .bg-gradient-to-r {
+  background: linear-gradient(to right, #34d399, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== SHADOW EFFECTS ===== */
+
+.island-app-page .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.dark .island-app-page .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ===== WAVE SVG ===== */
+
+.island-app-page svg path[fill="#FDFAF3"],
+.island-app-page svg path[fill="#ffffff"] {
+  fill: #ffffff;
+}
+
+.dark .island-app-page svg path[fill="#FDFAF3"],
+.dark .island-app-page svg path[fill="#ffffff"] {
+  fill: #0a1520;
+}
+
+/* ===== PASTEL BACKGROUNDS ===== */
+
+.island-app-page .bg-pastel-green\/20,
+.island-app-page .bg-pastel-green\/10 {
+  background-color: rgba(16, 185, 129, 0.12);
+}
+
+.dark .island-app-page .bg-pastel-green\/20,
+.dark .island-app-page .bg-pastel-green\/10 {
+  background-color: rgba(52, 211, 153, 0.1);
+}
+
+.island-app-page .bg-pastel-blue\/20,
+.island-app-page .bg-pastel-blue\/15 {
+  background-color: rgba(14, 165, 233, 0.12);
+}
+
+.dark .island-app-page .bg-pastel-blue\/20,
+.dark .island-app-page .bg-pastel-blue\/15 {
+  background-color: rgba(56, 189, 248, 0.08);
+}
+
+.island-app-page .bg-pastel-green-deep\/25 {
+  background-color: rgba(16, 185, 129, 0.15);
+}
+
+.dark .island-app-page .bg-pastel-green-deep\/25 {
+  background-color: rgba(52, 211, 153, 0.12);
+}
+
+/* ===== TRANSITIONS ===== */
+
+.island-app-page * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.island-app-page .transition-all,
+.island-app-page button,
+.island-app-page a {
+  transition: all 0.3s ease;
+}
+
+/* ===== BORDER OVERRIDES ===== */
+
+.island-app-page .border-gray-200,
+.island-app-page .border-gray-300 {
+  border-color: #e5e7eb;
+}
+
+.dark .island-app-page .border-gray-200,
+.dark .island-app-page .border-gray-300,
+.island-app-page:where(.dark *) .border-gray-200,
+.island-app-page:where(.dark *) .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.1);
 }

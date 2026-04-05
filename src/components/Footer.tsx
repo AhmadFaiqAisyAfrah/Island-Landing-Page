@@ -16,7 +16,7 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
     {
         title: "Study Tools",
         links: [
-            { label: "Island App", href: "/" },
+            { label: "Island App", href: "/island-app" },
             { label: "Explore", href: "/explore" },
             { label: "Pomodoro Timer", href: "/explore/pomodoro" },
             { label: "Flashcards", href: "/explore/flashcards" },
@@ -78,8 +78,8 @@ export default function Footer() {
                                     {section.title}
                                 </h4>
                                 <ul className="space-y-3">
-                                    {section.links.map((link) => (
-                                        <li key={link.href}>
+                                    {section.links.map((link, index) => (
+                                        <li key={`${link.href}-${index}`}>
                                             {section.social ? (
                                                 <a
                                                     href={link.href}

@@ -1,90 +1,60 @@
-import IslandSVG from "./IslandSVG";
-import CloudSVG from "./CloudSVG";
-import LaunchpadSlider from "./LaunchpadSlider";
+import Link from "next/link";
+import { BookOpen, Gamepad2, Heart, Sparkles } from "lucide-react";
 
 export default function HeroSection() {
     return (
-        <section className="relative flex flex-col items-center pt-20 bg-[var(--bg-primary)]">
-            {/* Sky gradient background — softer, dreamier */}
-            <div
-                className="absolute inset-0"
-                style={{
-                    background: "linear-gradient(to bottom, var(--hero-from), var(--hero-via), var(--hero-to))",
-                }}
-            />
-
-            {/* Animated clouds — multiple layers for depth */}
-            <div className="absolute top-12 left-0 w-44 opacity-50 animate-drift-right">
-                <CloudSVG variant="soft" />
-            </div>
-            <div className="absolute top-28 right-0 w-56 opacity-35 animate-drift-left delay-2000">
-                <CloudSVG />
-            </div>
-            <div className="absolute top-44 left-1/4 w-32 opacity-25 animate-drift-right delay-3000">
-                <CloudSVG variant="small" />
-            </div>
-            <div className="absolute top-20 right-1/4 w-28 opacity-20 animate-drift-left delay-1000">
-                <CloudSVG variant="small" />
-            </div>
-
-            {/* Content */}
-            <div className="relative z-10 mx-auto max-w-6xl px-6 py-20 flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-                {/* Text */}
-                <div className="flex-1 text-center lg:text-left space-y-6 animate-fade-in-up">
-                    <div className="inline-block rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-1.5 text-xs font-medium text-[var(--accent-green)] tracking-wide">
-                        🌿 Focus · Grow · Relax
+        <section className="relative min-h-screen flex items-center bg-[var(--bg-primary)] overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--bg-primary)] via-[var(--bg-primary)] to-[var(--accent-green)]/5" />
+            
+            <div className="relative z-10 mx-auto max-w-6xl px-6 py-24 lg:py-32">
+                <div className="text-center max-w-4xl mx-auto">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-green)]/10 rounded-full mb-8">
+                        <Sparkles className="w-4 h-4 text-[var(--accent-green)]" />
+                        <span className="text-sm font-medium text-[var(--accent-green)]">Education • Information • Impact</span>
                     </div>
 
-                    <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold leading-[1.15] tracking-tight text-[var(--heading-text)]">
-                        Grow your focus.
-                        <br />
-                        <span className="bg-gradient-to-r from-pastel-green-deep to-[#4DAFB8] bg-clip-text text-transparent">
-                            Build your own
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--heading-text)] mb-6 leading-tight">
+                        Island — A Platform for
+                        <span className="block bg-gradient-to-r from-[var(--accent-green)] to-[#4DAFB8] bg-clip-text text-transparent">
+                            Knowledge, Growth, and Impact
                         </span>
-                        <br />
-                        peaceful island.
                     </h1>
 
-                    <p className="text-lg text-[var(--paragraph-text)] max-w-md mx-auto lg:mx-0 leading-relaxed">
-                        Stay focused, earn coins, and watch your personal island flourish —
-                        one session at a time.
+                    <p className="text-lg sm:text-xl text-[var(--paragraph-text)] max-w-2xl mx-auto mb-10 leading-relaxed">
+                        Explore insights, train your brain, and support meaningful change across Indonesia&apos;s islands.
                     </p>
 
-                    <div className="flex flex-col items-center gap-4 justify-center lg:justify-start pt-2">
-                        <a
-                            href="#features"
-                            className="rounded-full border-2 border-[var(--accent-green)] px-8 py-3.5 text-base font-semibold text-[var(--accent-green)] hover:bg-[var(--bg-secondary)] hover:border-[var(--accent-green)] transition-all duration-300"
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <Link
+                            href="/articles"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--accent-green)] text-white rounded-full font-semibold hover:opacity-90 transition-opacity"
                         >
-                            Learn More
-                        </a>
-                        <p className="text-sm text-[var(--paragraph-text)] opacity-60">
-                            Island mobile app is coming soon to Google Play
-                        </p>
-                    </div>
-                </div>
-
-                {/* Island Illustration */}
-                <div className="flex-1 flex justify-center animate-fade-in-up delay-300">
-                    <div className="animate-float w-80 sm:w-[22rem] lg:w-[26rem]">
-                        <IslandSVG className="w-full h-auto drop-shadow-[0_20px_40px_rgba(107,191,138,0.22)]" />
+                            <BookOpen className="w-5 h-5" />
+                            Explore Articles
+                        </Link>
+                        <Link
+                            href="/games"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--bg-secondary)] text-[var(--heading-text)] rounded-full font-semibold hover:bg-[var(--border-color)] transition-colors border border-[var(--border-color)]"
+                        >
+                            <Gamepad2 className="w-5 h-5" />
+                            Try Learning Games
+                        </Link>
+                        <Link
+                            href="/charity"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--bg-secondary)] text-[var(--heading-text)] rounded-full font-semibold hover:bg-[var(--border-color)] transition-colors border border-[var(--border-color)]"
+                        >
+                            <Heart className="w-5 h-5 text-red-500" />
+                            Support Charity
+                        </Link>
                     </div>
                 </div>
             </div>
 
-            {/* Launchpad Slider — product preview carousel */}
-            <LaunchpadSlider />
-
-            {/* Bottom wave — smoother */}
-            <div className="relative w-full mt-auto">
+            <div className="absolute bottom-0 left-0 right-0">
                 <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full block">
                     <path
                         d="M0 80 C240 40 480 95 720 65 C960 35 1200 85 1440 70 L1440 120 L0 120Z"
-                        fill="var(--bg-primary)"
-                    />
-                    <path
-                        d="M0 90 C300 60 600 100 900 75 C1100 55 1300 90 1440 80 L1440 120 L0 120Z"
-                        fill="var(--bg-primary)"
-                        opacity="0.5"
+                        fill="var(--bg-secondary)"
                     />
                 </svg>
             </div>

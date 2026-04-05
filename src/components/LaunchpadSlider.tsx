@@ -46,12 +46,12 @@ export default function LaunchpadSlider() {
             {/* Scrollable track */}
             <div ref={scrollRef} className="launchpad-slider">
                 {slides.map((slide, i) => (
-                    <div key={i} className="launchpad-slide">
+                    <div key={i} className="launchpad-slide min-w-[240px] md:min-w-[280px] flex-shrink-0">
                         <Image
                             src={slide.src}
                             alt={slide.alt}
-                            width={340}
-                            height={680}
+                            width={280}
+                            height={560}
                             loading="lazy"
                             className="launchpad-slide-img"
                         />
