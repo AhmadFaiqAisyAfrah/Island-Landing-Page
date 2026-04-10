@@ -281,6 +281,35 @@ function mapNotionPageToBlogPost(page: PageObjectResponse | undefined): BlogPost
     }
 }
 
+export async function getAllPosts(): Promise<BlogPost[]> {
+    if (!NOTION_TOKEN || !DATABASE_ID) {
+        console.warn('[Notion] Not configured - returning empty posts.');
+        return [];
+    }
+
+    try {
+        console.log('[Notion] getAllPosts() - Fetching ALL posts without filter...');
+        
+        const response = await notion.databases.query({
+            database_id: DATABASE_ID,
+        });
+
+        console.log('[Notion] Total pages found:', response.results.length);
+
+        const posts = (response.results as (PageObjectResponse | undefined)[])
+            .map((page) => mapNotionPageToBlogPost(page))
+            .filter((post): post is BlogPost => post !== null);
+
+        console.log('[Notion] getAllPosts() - Final posts:', posts.length);
+        console.log('[Notion] Posts:', posts.map(p => ({ id: p.id, title: p.title, status: p.status })));
+
+        return posts;
+    } catch (error) {
+        console.error('[Notion] Error in getAllPosts():', error);
+        return [];
+    }
+}
+
 export async function getPublishedPosts(): Promise<BlogPost[]> {
     // Check if Notion is properly configured
     if (!NOTION_TOKEN || !DATABASE_ID) {

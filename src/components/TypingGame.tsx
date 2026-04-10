@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Keyboard, Trophy, Play, RotateCcw, Clock, Target, Zap, ChevronLeft, BookOpen } from "lucide-react";
-import AdBanner from "./AdBanner";
+import GameResultLayout from "./GameResultLayout";
 
 type GameMode = "timed" | "fulltext";
 type GameState = "menu" | "playing" | "gameover";
@@ -1182,71 +1182,59 @@ export default function TypingGame() {
                     )}
 
                     {gameState === "gameover" && (
-                        <div className="text-center">
-                            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[var(--accent-green)]/20 flex items-center justify-center">
-                                <Trophy className="w-10 h-10 text-yellow-500" />
-                            </div>
-                            <h2 className="text-3xl font-bold text-[var(--heading-text)] mb-2">
-                                Time&apos;s Up!
-                            </h2>
-                            <p className="text-[var(--paragraph-text)] mb-6">
-                                Here&apos;s how you performed:
-                            </p>
+                        <GameResultLayout
+                            score={getFinalStats().wpm}
+                            highScore={highScores.wpm}
+                            onRestart={() => startGame(gameMode, timeLimit)}
+                            title="Time's Up!"
+                            subtitle="Here's how you performed:"
+                            icon={<Trophy className="w-10 h-10 text-yellow-500" />}
+                            iconBgColor="bg-[var(--accent-green)]/20"
+                            customContent={
+                                <div className="bg-[var(--bg-primary)] rounded-xl p-4 mb-4">
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div>
+                                            <p className="text-xs text-[var(--text-secondary)] mb-1">Speed</p>
+                                            <p className="text-2xl font-bold text-[var(--accent-green)] flex items-center justify-center gap-1">
+                                                <Zap className="w-4 h-4" />
+                                                {getFinalStats().wpm}
+                                            </p>
+                                            <p className="text-xs text-[var(--text-secondary)]">WPM</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-[var(--text-secondary)] mb-1">Accuracy</p>
+                                            <p className="text-2xl font-bold text-blue-500 flex items-center justify-center gap-1">
+                                                <Target className="w-4 h-4" />
+                                                {getFinalStats().accuracy}
+                                            </p>
+                                            <p className="text-xs text-[var(--text-secondary)]">%</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-[var(--text-secondary)] mb-1">Characters</p>
+                                            <p className="text-2xl font-bold text-purple-500 flex items-center justify-center gap-1">
+                                                <BookOpen className="w-4 h-4" />
+                                                {getFinalStats().totalChars}
+                                            </p>
+                                            <p className="text-xs text-[var(--text-secondary)]">typed</p>
+                                        </div>
+                                    </div>
 
-                            {/* <AdBanner className="mb-8" /> */}
-
-                            <div className="bg-[var(--bg-primary)] rounded-xl p-6 mb-8">
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div>
-                                        <p className="text-sm text-[var(--text-secondary)] mb-1">Speed</p>
-                                        <p className="text-3xl font-bold text-[var(--accent-green)] flex items-center justify-center gap-1">
-                                            <Zap className="w-5 h-5" />
-                                            {getFinalStats().wpm}
+                                    {(getFinalStats().wpm >= highScores.wpm && getFinalStats().wpm > 0) && (
+                                        <p className="mt-3 text-sm text-[var(--accent-green)] font-semibold">
+                                            New High Score!
                                         </p>
-                                        <p className="text-xs text-[var(--text-secondary)]">WPM</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-[var(--text-secondary)] mb-1">Accuracy</p>
-                                        <p className="text-3xl font-bold text-blue-500 flex items-center justify-center gap-1">
-                                            <Target className="w-5 h-5" />
-                                            {getFinalStats().accuracy}
-                                        </p>
-                                        <p className="text-xs text-[var(--text-secondary)]">%</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-[var(--text-secondary)] mb-1">Characters</p>
-                                        <p className="text-3xl font-bold text-purple-500 flex items-center justify-center gap-1">
-                                            <BookOpen className="w-5 h-5" />
-                                            {getFinalStats().totalChars}
-                                        </p>
-                                        <p className="text-xs text-[var(--text-secondary)]">typed</p>
-                                    </div>
+                                    )}
                                 </div>
-
-                                {(getFinalStats().wpm >= highScores.wpm && getFinalStats().wpm > 0) && (
-                                    <p className="mt-4 text-[var(--accent-green)] font-semibold">
-                                        New High Score!
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="space-y-3">
-                                <button
-                                    onClick={() => startGame(gameMode, timeLimit)}
-                                    className="w-full py-4 px-8 bg-[var(--accent-green)] text-white rounded-full font-semibold text-lg hover:opacity-90 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <RotateCcw className="w-5 h-5" />
-                                    Try Again
-                                </button>
-                                <button
-                                    onClick={goToMenu}
-                                    className="w-full py-3 px-8 bg-[var(--bg-primary)] text-[var(--paragraph-text)] rounded-full font-medium hover:bg-[var(--border-color)] transition-all flex items-center justify-center gap-2"
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                    Back to Menu
-                                </button>
-                            </div>
-                        </div>
+                            }
+                        >
+                            <button
+                                onClick={goToMenu}
+                                className="w-full py-2 px-6 bg-[var(--bg-primary)] text-[var(--paragraph-text)] rounded-full font-medium hover:bg-[var(--border-color)] transition-all flex items-center justify-center gap-2 text-sm"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                                Back to Menu
+                            </button>
+                        </GameResultLayout>
                     )}
                 </div>
             </div>

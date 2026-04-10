@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PatternGame from "@/components/PatternGame";
+import RecommendedArticles from "@/components/RecommendedArticles";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
@@ -61,6 +62,10 @@ export default function NumberPatternPage() {
                         </div>
                     </div>
                 </section>
+            </div>
+
+            <div className="mt-16 bg-[var(--bg-primary)]">
+                <RecommendedArticles />
             </div>
         </div>
     );

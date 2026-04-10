@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Brain, Trophy, Play, RotateCcw, ChevronLeft, Clock, MousePointer, Star } from "lucide-react";
-import AdBanner from "./AdBanner";
+import GameResultLayout from "./GameResultLayout";
 
 type Difficulty = "easy" | "medium" | "hard";
 type GameState = "menu" | "playing" | "completed";
@@ -339,21 +339,16 @@ export default function MemoryGame() {
                 )}
 
                 {gameState === "completed" && (
-                    <div className="bg-[var(--bg-secondary)] rounded-2xl p-6 md:p-8 shadow-lg max-w-md mx-auto">
-                        <div className="text-center">
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--accent-green)]/20 flex items-center justify-center">
-                                <Trophy className="w-8 h-8 text-yellow-500" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-[var(--heading-text)] mb-2">
-                                Congratulations!
-                            </h2>
-                            <p className="text-[var(--paragraph-text)] mb-6 text-sm">
-                                You matched all the pairs!
-                            </p>
-
-                            {/* <AdBanner className="mb-6" /> */}
-
-                            <div className="bg-[var(--bg-primary)] rounded-xl p-4 mb-6">
+                    <GameResultLayout
+                        score={moves}
+                        highScore={bestScores[difficulty] || 0}
+                        onRestart={() => startGame(difficulty)}
+                        title="Congratulations!"
+                        subtitle="You matched all the pairs!"
+                        icon={<Trophy className="w-8 h-8 text-yellow-500" />}
+                        iconBgColor="bg-[var(--accent-green)]/20"
+                        customContent={
+                            <div className="bg-[var(--bg-primary)] rounded-xl p-4 mb-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <p className="text-xs text-[var(--text-secondary)] mb-1">Time</p>
@@ -375,25 +370,16 @@ export default function MemoryGame() {
                                     </p>
                                 )}
                             </div>
-
-                            <div className="space-y-2">
-                                <button
-                                    onClick={() => startGame(difficulty)}
-                                    className="w-full py-3 px-6 bg-[var(--accent-green)] text-white rounded-full font-semibold text-base hover:opacity-90 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <RotateCcw className="w-4 h-4" />
-                                    Play Again
-                                </button>
-                                <button
-                                    onClick={goToMenu}
-                                    className="w-full py-2.5 px-6 bg-[var(--bg-primary)] text-[var(--paragraph-text)] rounded-full font-medium text-sm hover:bg-[var(--border-color)] transition-all flex items-center justify-center gap-2"
-                                >
-                                    <ChevronLeft className="w-4 h-4" />
-                                    Back to Menu
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                        }
+                    >
+                        <button
+                            onClick={goToMenu}
+                            className="w-full py-2 px-6 bg-[var(--bg-primary)] text-[var(--paragraph-text)] rounded-full font-medium hover:bg-[var(--border-color)] transition-all flex items-center justify-center gap-2 text-sm"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                            Back to Menu
+                        </button>
+                    </GameResultLayout>
                 )}
             </div>
         </div>

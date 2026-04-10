@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Lightbulb, Trophy, Play, RotateCcw, ChevronLeft, Clock, Heart, Target } from "lucide-react";
-import AdBanner from "./AdBanner";
+import GameResultLayout from "./GameResultLayout";
 
 type GameMode = "endless" | "timed";
 type GameState = "menu" | "playing" | "gameover";
@@ -441,48 +441,34 @@ export default function PatternGame() {
                     )}
 
                     {gameState === "gameover" && (
-                        <div className="text-center">
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--accent-green)]/20 flex items-center justify-center">
-                                <Trophy className="w-8 h-8 text-yellow-500" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-[var(--heading-text)] mb-2">
-                                {gameMode === "endless" ? "Game Over!" : "Time's Up!"}
-                            </h2>
-                            <p className="text-[var(--paragraph-text)] mb-6 text-sm">
-                                {gameMode === "endless" 
-                                    ? "You ran out of lives!" 
-                                    : "Great effort! Here's how you did:"}
-                            </p>
-
-                            {/* <AdBanner className="mb-6" /> */}
-
-                            <div className="bg-[var(--bg-primary)] rounded-xl p-4 mb-6">
-                                <p className="text-sm text-[var(--text-secondary)] mb-1">Final Score</p>
-                                <p className="text-4xl font-bold text-[var(--accent-green)]">{score}</p>
-                                {score >= bestScore && score > 0 && (
-                                    <p className="mt-2 text-sm text-[var(--accent-green)] font-semibold">
-                                        New Best Score!
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <button
-                                    onClick={() => startGame(gameMode)}
-                                    className="w-full py-3 px-6 bg-[var(--accent-green)] text-white rounded-full font-semibold text-base hover:opacity-90 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <RotateCcw className="w-4 h-4" />
-                                    Play Again
-                                </button>
-                                <button
-                                    onClick={goToMenu}
-                                    className="w-full py-2.5 px-6 bg-[var(--bg-primary)] text-[var(--paragraph-text)] rounded-full font-medium text-sm hover:bg-[var(--border-color)] transition-all flex items-center justify-center gap-2"
-                                >
-                                    <ChevronLeft className="w-4 h-4" />
-                                    Back to Menu
-                                </button>
-                            </div>
-                        </div>
+                        <GameResultLayout
+                            score={score}
+                            highScore={bestScore || 0}
+                            onRestart={() => startGame(gameMode)}
+                            title={gameMode === "endless" ? "Game Over!" : "Time's Up!"}
+                            subtitle={gameMode === "endless" ? "You ran out of lives!" : "Great effort! Here's how you did:"}
+                            icon={<Trophy className="w-8 h-8 text-yellow-500" />}
+                            iconBgColor="bg-[var(--accent-green)]/20"
+                            customContent={
+                                <div className="bg-[var(--bg-primary)] rounded-xl p-4 mb-4">
+                                    <p className="text-sm text-[var(--text-secondary)] mb-1">Final Score</p>
+                                    <p className="text-4xl font-bold text-[var(--accent-green)]">{score}</p>
+                                    {score >= bestScore && score > 0 && (
+                                        <p className="mt-2 text-sm text-[var(--accent-green)] font-semibold">
+                                            New Best Score!
+                                        </p>
+                                    )}
+                                </div>
+                            }
+                        >
+                            <button
+                                onClick={goToMenu}
+                                className="w-full py-2 px-6 bg-[var(--bg-primary)] text-[var(--paragraph-text)] rounded-full font-medium hover:bg-[var(--border-color)] transition-all flex items-center justify-center gap-2 text-sm"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                                Back to Menu
+                            </button>
+                        </GameResultLayout>
                     )}
                 </div>
             </div>

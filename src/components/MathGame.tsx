@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Calculator, Heart, Zap, Trophy, Play, RotateCcw } from "lucide-react";
-import AdBanner from "./AdBanner";
+import { Calculator, Heart, Zap, Trophy, Play } from "lucide-react";
+import GameResultLayout from "./GameResultLayout";
 
 type Operation = "+" | "-" | "×" | "÷";
 
@@ -424,46 +424,11 @@ export default function MathGame() {
                     )}
 
                     {gameState === "gameover" && (
-                        <div className="text-center">
-                            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center">
-                                <Heart className="w-10 h-10 text-red-500" />
-                            </div>
-                            <h2 className="text-3xl font-bold text-[var(--heading-text)] mb-2">
-                                Game Over!
-                            </h2>
-                            <p className="text-[var(--paragraph-text)] mb-8">
-                                Great effort! Keep practicing to improve your score.
-                            </p>
-
-                            {/* <AdBanner className="mb-8" /> */}
-
-                            <div className="bg-[var(--bg-primary)] rounded-xl p-6 mb-8">
-                                <div className="mb-4">
-                                    <p className="text-sm text-[var(--text-secondary)] mb-1">Your Score</p>
-                                    <p className="text-5xl font-bold text-[var(--accent-green)]">{score}</p>
-                                </div>
-                                <div className="pt-4 border-t border-[var(--border-color)]">
-                                    <p className="text-sm text-[var(--text-secondary)] mb-1">High Score</p>
-                                    <p className="text-2xl font-bold text-[var(--heading-text)] flex items-center justify-center gap-2">
-                                        <Trophy className="w-5 h-5 text-yellow-500" />
-                                        {highScore}
-                                    </p>
-                                </div>
-                                {score >= highScore && score > 0 && (
-                                    <p className="mt-4 text-[var(--accent-green)] font-semibold">
-                                        New High Score!
-                                    </p>
-                                )}
-                            </div>
-
-                            <button
-                                onClick={startGame}
-                                className="w-full py-4 px-8 bg-[var(--accent-green)] text-white rounded-full font-semibold text-lg hover:opacity-90 transition-all flex items-center justify-center gap-2"
-                            >
-                                <RotateCcw className="w-5 h-5" />
-                                Play Again
-                            </button>
-                        </div>
+                        <GameResultLayout
+                            score={score}
+                            highScore={highScore}
+                            onRestart={startGame}
+                        />
                     )}
                 </div>
 

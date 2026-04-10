@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Zap, Trophy, Play, RotateCcw, ChevronLeft, Target, Keyboard } from "lucide-react";
-import AdBanner from "./AdBanner";
+import GameResultLayout from "./GameResultLayout";
 
 type GameState = "idle" | "waiting" | "ready" | "clicked" | "result" | "tooSoon";
 
@@ -399,48 +399,43 @@ export default function ReactionGame() {
                                     </div>
                                 </>
                             ) : (
-                                <>
-                                    <h2 className="text-3xl font-bold text-[var(--heading-text)] mb-2">
-                                        Your Result
-                                    </h2>
-                                    <div className="text-7xl font-bold text-[var(--accent-green)] mb-2">
-                                        {reactionTime} ms
+                                <GameResultLayout
+                                    score={reactionTime}
+                                    highScore={bestScore || 0}
+                                    onRestart={tryAgain}
+                                    title="Your Result"
+                                    subtitle={perf.label}
+                                    icon={<Target className="w-8 h-8 text-yellow-500" />}
+                                    iconBgColor="bg-[var(--accent-green)]/20"
+                                    customContent={
+                                        <div className="bg-[var(--bg-primary)] rounded-xl p-4 mb-4">
+                                            <p className="text-4xl font-bold text-[var(--accent-green)] mb-2">
+                                                {reactionTime} ms
+                                            </p>
+                                            <p className={`text-lg font-semibold ${perf.color}`}>
+                                                {perf.label}
+                                            </p>
+                                            {bestScore > 0 && reactionTime <= bestScore && (
+                                                <p className="text-sm text-[var(--accent-green)] font-semibold mt-2">
+                                                    New Personal Best!
+                                                </p>
+                                            )}
+                                        </div>
+                                    }
+                                >
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); goToMenu(); }}
+                                        className="w-full py-2 px-6 bg-[var(--bg-primary)] text-[var(--paragraph-text)] rounded-full font-medium hover:bg-[var(--border-color)] transition-all flex items-center justify-center gap-2 text-sm"
+                                    >
+                                        <ChevronLeft className="w-4 h-4" />
+                                        Back to Menu
+                                    </button>
+                                    <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+                                        <Keyboard className="w-3 h-3" />
+                                        <span>Press Enter to try again</span>
                                     </div>
-                                    <p className={`text-2xl font-semibold mb-6 ${perf.color}`}>
-                                        {perf.label}
-                                    </p>
-
-                                    {/* <AdBanner className="mb-8" /> */}
-
-                                    {bestScore > 0 && reactionTime <= bestScore && (
-                                        <p className="text-[var(--accent-green)] font-semibold mb-6">
-                                            New Personal Best!
-                                        </p>
-                                    )}
-                                </>
+                                </GameResultLayout>
                             )}
-
-                            <div className="space-y-3">
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); tryAgain(); }}
-                                    className="w-full py-4 px-8 bg-[var(--accent-green)] text-white rounded-full font-semibold text-lg hover:opacity-90 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <RotateCcw className="w-5 h-5" />
-                                    Try Again
-                                </button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); goToMenu(); }}
-                                    className="w-full py-3 px-8 bg-[var(--bg-primary)] text-[var(--paragraph-text)] rounded-full font-medium hover:bg-[var(--border-color)] transition-all flex items-center justify-center gap-2"
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                    Back to Menu
-                                </button>
-                            </div>
-
-                            <div className="mt-4 flex items-center justify-center gap-2 text-sm text-[var(--text-secondary)]">
-                                <Keyboard className="w-4 h-4" />
-                                <span>Press Enter to try again · Esc for menu</span>
-                            </div>
                         </div>
                     )}
                 </div>
