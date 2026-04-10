@@ -19,6 +19,7 @@ body {
   --button-text: #ffffff;
   --bg-primary: #ffffff;
   --bg-secondary: #f3f4f6;
+  --section-title: #1f2937;
 }
 
 .dark {
@@ -32,6 +33,7 @@ body {
   --button-text: #ffffff;
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
+  --section-title: #ffffff;
 }
 
 /* ===== Launchpad Slider ===== */

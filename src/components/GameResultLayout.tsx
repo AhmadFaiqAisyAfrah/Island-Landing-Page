@@ -82,15 +82,15 @@ export default function GameResultLayout({
 
     return (
         <div className="max-w-lg mx-auto">
-            <div className="bg-[var(--bg-secondary)] rounded-2xl p-6 md:p-8 shadow-lg">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
                 {/* Meme Image */}
                 <div className="text-center">
                     <img
                         src={randomImage}
                         alt="Game Over"
-                        className="w-full max-h-56 object-contain rounded-xl mx-auto bg-white"
+                        className="w-full max-h-56 object-contain rounded-xl mx-auto bg-slate-100 dark:bg-slate-700"
                     />
-                    <p className="mt-4 text-sm text-gray-400 italic">
+                    <p className="mt-4 text-sm text-slate-500 dark:text-slate-400 italic">
                         {caption}
                     </p>
                 </div>
@@ -107,21 +107,21 @@ export default function GameResultLayout({
                 </div>
 
                 {/* Title */}
-                <h2 className="text-2xl md:text-3xl font-bold text-center text-[var(--heading-text)] mt-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-center text-slate-900 dark:text-white mt-4">
                     {title}
                 </h2>
-                <p className="text-center text-[var(--paragraph-text)] mt-2 text-sm">
+                <p className="text-center text-slate-600 dark:text-slate-400 mt-2 text-sm">
                     {subtitle}
                 </p>
 
                 {/* Score Display */}
                 {customContent || (
-                    <div className="bg-[var(--bg-primary)] rounded-xl p-6 mt-6 text-center">
-                        <p className="text-sm text-[var(--text-secondary)] mb-2">Your Score</p>
-                        <p className="text-5xl font-bold text-[var(--accent-green)]">{score}</p>
-                        <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
-                            <p className="text-sm text-[var(--text-secondary)] mb-1">High Score</p>
-                            <p className="text-2xl font-bold text-[var(--heading-text)] flex items-center justify-center gap-2">
+                    <div className="bg-slate-100 dark:bg-slate-700 rounded-xl p-6 mt-6 text-center">
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Your Score</p>
+                        <p className="text-5xl font-bold text-emerald-600 dark:text-emerald-400">{score}</p>
+                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-600">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">High Score</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-white flex items-center justify-center gap-2">
                                 <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                 </svg>
@@ -129,7 +129,7 @@ export default function GameResultLayout({
                             </p>
                         </div>
                         {isNewHighScore && (
-                            <p className="mt-3 text-sm text-[var(--accent-green)] font-semibold">
+                            <p className="mt-3 text-sm text-emerald-600 dark:text-emerald-400 font-semibold">
                                 🎉 New High Score!
                             </p>
                         )}
@@ -139,7 +139,7 @@ export default function GameResultLayout({
                 {/* CTA Button */}
                 <button
                     onClick={onRestart}
-                    className="w-full py-4 px-6 bg-[var(--accent-green)] text-white rounded-full font-semibold text-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 mt-6"
+                    className="w-full py-4 px-6 bg-emerald-500 dark:bg-emerald-600 text-white rounded-full font-semibold text-lg hover:bg-emerald-600 dark:hover:bg-emerald-500 transition-all flex items-center justify-center gap-2 mt-6"
                 >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -148,15 +148,15 @@ export default function GameResultLayout({
                 </button>
 
                 {articles.length > 0 && (
-                    <div className="mt-6 border-t border-white/10 pt-4">
+                    <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-4">
                         <div className="flex items-center justify-between mb-3">
-                            <p className="text-sm text-gray-400">
+                            <p className="text-sm text-slate-600 dark:!text-slate-200">
                                 📚 Rekomendasi untuk kamu
                             </p>
                             <Link
                                 href="/articles"
                                 onClick={(e) => e.stopPropagation()}
-                                className="text-sm text-[var(--accent-green)] hover:text-green-400 transition"
+                                className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition"
                             >
                                 Lihat semua artikel →
                             </Link>
@@ -169,7 +169,7 @@ export default function GameResultLayout({
                                     className="block relative z-10"
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                                    <div className="flex items-center gap-3 hover:bg-white/5 p-2 rounded-lg transition">
+                                    <div className="flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-lg transition">
                                         {article.coverImage ? (
                                             <img
                                                 src={article.coverImage}
@@ -177,15 +177,15 @@ export default function GameResultLayout({
                                                 className="w-12 h-12 object-cover rounded-md"
                                             />
                                         ) : (
-                                            <div className="w-12 h-12 bg-gradient-to-br from-green-500/20 to-purple-500/20 rounded-md flex items-center justify-center text-lg">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 dark:from-emerald-900/30 to-purple-100 dark:to-purple-900/30 rounded-md flex items-center justify-center text-lg">
                                                 📚
                                             </div>
                                         )}
                                         <div className="flex-1">
-                                            <p className="text-xs text-gray-500 uppercase">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 uppercase">
                                                 {article.category}
                                             </p>
-                                            <p className="text-sm text-gray-300 line-clamp-2">
+                                            <p className="text-sm text-slate-700 dark:text-slate-200 line-clamp-2">
                                                 {article.title}
                                             </p>
                                         </div>

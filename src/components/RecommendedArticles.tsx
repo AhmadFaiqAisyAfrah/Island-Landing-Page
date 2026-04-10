@@ -33,7 +33,7 @@ function ArticleCard({ article }: ArticleCardProps) {
         <article className="group">
             <Link 
                 href={`/articles/${article.slug}`}
-                className="block bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-300 rounded-xl overflow-hidden border border-white/5 hover:border-[var(--accent-green)]/30"
+                className="block bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-400"
             >
                 <div className="relative overflow-hidden">
                     {coverImage ? (
@@ -44,12 +44,12 @@ function ArticleCard({ article }: ArticleCardProps) {
                             loading="lazy"
                         />
                     ) : (
-                        <div className="w-full h-44 bg-gradient-to-br from-[var(--accent-green)]/20 via-purple-500/10 to-blue-500/20 flex items-center justify-center">
+                        <div className="w-full h-44 bg-gradient-to-br from-emerald-100 dark:from-emerald-900/30 via-purple-100 dark:via-purple-900/30 to-blue-100 dark:to-blue-900/30 flex items-center justify-center">
                             <span className="text-5xl">📚</span>
                         </div>
                     )}
                     <div className="absolute top-3 left-3">
-                        <span className="px-3 py-1 bg-[var(--accent-green)] text-white text-xs font-semibold rounded-full uppercase tracking-wide shadow-lg">
+                        <span className="px-3 py-1 bg-emerald-500 dark:bg-emerald-600 text-white text-xs font-semibold rounded-full uppercase tracking-wide shadow-lg">
                             {category}
                         </span>
                     </div>
@@ -57,7 +57,7 @@ function ArticleCard({ article }: ArticleCardProps) {
 
                 <div className="p-4">
                     <h3 
-                        className="font-semibold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent-green)] transition-colors duration-200"
+                        className="font-semibold text-slate-900 dark:text-white leading-snug line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-200"
                         itemProp="headline"
                     >
                         {title}
@@ -65,7 +65,7 @@ function ArticleCard({ article }: ArticleCardProps) {
                     
                     {description && (
                         <p 
-                            className="text-gray-400 text-sm mt-2 line-clamp-3 leading-relaxed"
+                            className="text-slate-600 dark:text-slate-400 text-sm mt-2 line-clamp-3 leading-relaxed"
                             itemProp="description"
                         >
                             {description}
@@ -73,7 +73,7 @@ function ArticleCard({ article }: ArticleCardProps) {
                     )}
 
                     {publishDate && (
-                        <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
+                        <div className="flex items-center gap-2 mt-3 text-xs text-slate-500 dark:text-slate-500">
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
@@ -88,18 +88,18 @@ function ArticleCard({ article }: ArticleCardProps) {
 
 function ArticleCardSkeleton() {
     return (
-        <div className="bg-[var(--bg-secondary)] rounded-xl overflow-hidden animate-pulse">
-            <div className="w-full h-44 bg-gray-800" />
+        <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden animate-pulse border border-slate-200 dark:border-slate-700">
+            <div className="w-full h-44 bg-slate-200 dark:bg-slate-700" />
             <div className="p-4">
-                <div className="h-4 bg-gray-800 rounded w-1/4 mb-3" />
+                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4 mb-3" />
                 <div className="space-y-2">
-                    <div className="h-5 bg-gray-800 rounded" />
-                    <div className="h-5 bg-gray-800 rounded w-3/4" />
+                    <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded" />
+                    <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-3/4" />
                 </div>
                 <div className="mt-3 space-y-1.5">
-                    <div className="h-3 bg-gray-800 rounded w-full" />
-                    <div className="h-3 bg-gray-800 rounded w-5/6" />
-                    <div className="h-3 bg-gray-800 rounded w-4/6" />
+                    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-full" />
+                    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-5/6" />
+                    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-4/6" />
                 </div>
             </div>
         </div>
@@ -151,12 +151,14 @@ export default function RecommendedArticles({ limit = 6, showTitle = true, title
 
     if (loading) {
         return (
-            <section className="max-w-6xl mx-auto px-4 mb-20">
+            <section className="max-w-6xl mx-auto px-4 mb-20 bg-transparent">
                 {showTitle && (
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                            <span className="text-2xl">🔥</span>
-                            {title}
+                    <div className="mb-6">
+                        <h2 
+                            className="text-xl font-semibold"
+                            style={{ color: 'var(--section-title)' }}
+                        >
+                            🔥 Rekomendasi Terbaru
                         </h2>
                     </div>
                 )}
@@ -174,21 +176,14 @@ export default function RecommendedArticles({ limit = 6, showTitle = true, title
     }
 
     return (
-        <section className="max-w-6xl mx-auto px-4 mb-20">
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                    <span className="text-2xl">🔥</span>
-                    {title}
-                </h2>
-                <Link 
-                    href="/articles" 
-                    className="text-[var(--accent-green)] hover:text-green-300 transition-colors text-sm font-medium flex items-center gap-1 group"
+        <section className="max-w-6xl mx-auto px-4 mb-20 bg-transparent">
+            <div className="mb-6">
+                <h2 
+                    className="text-xl font-semibold"
+                    style={{ color: 'var(--section-title)' }}
                 >
-                    Lihat semua
-                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                </Link>
+                    🔥 Rekomendasi Terbaru
+                </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
