@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import ThemeAwareLogo from "./ThemeAwareLogo";
 
-const footerSections: { title: string; social?: boolean; links: { label: string; href: string; icon?: string }[] }[] = [
+const footerSections: { title: string; social?: boolean; links: { label: string; href: string; icon?: string; badge?: string }[] }[] = [
     {
         title: "Social Media",
         social: true,
@@ -60,6 +60,16 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
             { label: "Contact", href: "/contact" },
         ],
     },
+    {
+        title: "Shop",
+        links: [
+            { label: "All Products", href: "/shop" },
+            { label: "Best Seller", href: "/shop/best-seller", badge: "NEW" },
+            { label: "New Arrivals", href: "/shop/new", badge: "HOT" },
+            { label: "Island Merch", href: "/shop/merch" },
+            { label: "Cart", href: "/shop/cart" },
+        ],
+    },
 ];
 
 export default function Footer() {
@@ -71,7 +81,7 @@ export default function Footer() {
                     <ThemeAwareLogo className="h-16 md:h-20 w-auto mx-auto mb-4 object-contain bg-transparent" />
 
                     {/* Navigation columns */}
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-8 w-full mb-8">
+                    <div className="grid grid-cols-2 md:grid-cols-7 gap-8 w-full mb-8">
                         {footerSections.map((section) => (
                             <div key={section.title} className="text-center md:text-left">
                                 <h4 className="text-sm font-semibold text-[var(--heading-text)] mb-4 uppercase tracking-wider">
@@ -101,9 +111,14 @@ export default function Footer() {
                                             ) : (
                                                 <Link
                                                     href={link.href}
-                                                    className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors"
+                                                    className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors inline-flex items-center"
                                                 >
                                                     {link.label}
+                                                    {link.badge && (
+                                                        <span className="ml-1.5 bg-[var(--accent-green)] text-[var(--bg-secondary)] text-[10px] px-1.5 py-0.5 rounded">
+                                                            {link.badge}
+                                                        </span>
+                                                    )}
                                                 </Link>
                                             )}
                                         </li>

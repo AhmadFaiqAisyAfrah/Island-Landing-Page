@@ -6,17 +6,26 @@ import type { PageObjectResponse } from '@notionhq/client/build/src/api-endpoint
 const NOTION_TOKEN = process.env.NOTION_TOKEN || '';
 const DATABASE_ID = process.env.DATABASE_ID || ''; // Note: matches .env.local variable name
 const NOTION_TOKEN_V2 = process.env.NOTION_TOKEN_V2 || '';
+const NOTION_PRODUCTS_DB_ID = process.env.NOTION_PRODUCTS_DB_ID || '';
+const NOTION_API_KEY_PRODUCTS = process.env.NOTION_API_KEY_PRODUCTS || '';
 
 // Debug logging in development
 if (process.env.NODE_ENV === 'development') {
     console.log('[Notion] NOTION_TOKEN:', NOTION_TOKEN ? '✓ Set' : '✗ Missing');
     console.log('[Notion] DATABASE_ID:', DATABASE_ID ? '✓ Set' : '✗ Missing');
     console.log('[Notion] NOTION_TOKEN_V2:', NOTION_TOKEN_V2 ? '✓ Set' : '✗ Missing');
+    console.log('[Notion] NOTION_PRODUCTS_DB_ID:', NOTION_PRODUCTS_DB_ID ? '✓ Set' : '✗ Missing');
+    console.log('[Notion] NOTION_API_KEY_PRODUCTS:', NOTION_API_KEY_PRODUCTS ? '✓ Set' : '✗ Missing');
 }
 
 // Official client for querying databases (only initialize if token exists)
 export const notion = new Client({
     auth: NOTION_TOKEN || undefined,
+});
+
+// Separate client for products DB (may have different integration)
+export const notionProducts = new Client({
+    auth: NOTION_API_KEY_PRODUCTS || NOTION_TOKEN || undefined,
 });
 
 // Unofficial client for react-notion-x to get full block data
@@ -27,7 +36,7 @@ export const notionAPI = new NotionAPI({
 
 // Export for checking availability
 export const isNotionConfigured = Boolean(NOTION_TOKEN && DATABASE_ID);
-export { NOTION_TOKEN, DATABASE_ID };
+export { NOTION_TOKEN, DATABASE_ID, NOTION_PRODUCTS_DB_ID };
 
 export interface BlogPost {
     id: string;
@@ -516,5 +525,158 @@ export async function getPostRecordMap(pageId: string) {
     } catch (error) {
         console.error(`[Notion] Error fetching record map for page ${pageId}:`, error);
         return null;
+    }
+}
+
+export interface Product {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    shortDescription: string;
+    price: number;
+    discountPrice: number | null;
+    currency: string;
+    image: string | undefined;
+    category: string;
+    tags: string[];
+    link: string;
+    status: 'Active' | 'Inactive';
+    inStock: boolean;
+}
+
+export async function getAllProducts(): Promise<Product[]> {
+    if (!NOTION_TOKEN || !NOTION_PRODUCTS_DB_ID) {
+        console.warn('[Notion] Not configured - returning empty products. Set NOTION_TOKEN and NOTION_PRODUCTS_DB_ID.');
+        console.log('[Notion] NOTION_TOKEN:', NOTION_TOKEN ? 'set' : 'missing');
+        console.log('[Notion] NOTION_PRODUCTS_DB_ID:', NOTION_PRODUCTS_DB_ID || 'missing');
+        return [];
+    }
+
+    try {
+        console.log('[Notion] getAllProducts() - Starting fetch...');
+        console.log('[Notion] Products DB ID:', NOTION_PRODUCTS_DB_ID);
+        console.log('[Notion] Using token:', NOTION_API_KEY_PRODUCTS ? 'NOTION_API_KEY_PRODUCTS' : NOTION_TOKEN ? 'NOTION_TOKEN' : 'NONE');
+
+        if (!NOTION_API_KEY_PRODUCTS && !NOTION_TOKEN) {
+            console.error('[Notion] ❌ No API key available for products!');
+            return [];
+        }
+
+        // Query ALL products (no filter to fetch everything)
+        const client = NOTION_API_KEY_PRODUCTS ? notionProducts : notion;
+        const response = await client.databases.query({
+            database_id: NOTION_PRODUCTS_DB_ID,
+        });
+
+        console.log('[Notion] 🔍 TOTAL results from Notion:', response.results.length);
+        
+        if (response.results.length === 0) {
+            console.warn('[Notion] ⚠️ No products found. Check:');
+            console.warn('[Notion] 1. Is integration shared with database?');
+            console.warn('[Notion] 2. Does database have any pages?');
+            return [];
+        }
+
+        // Log ALL status values found
+        const statusCounts: Record<string, number> = {};
+        (response.results as PageObjectResponse[]).forEach((page) => {
+            const props = page.properties || {};
+            const statusProp = props['status'] || props['Status'] || props['Status '];
+            let status = 'NO_STATUS_PROPERTY';
+            if (statusProp?.type === 'select') {
+                status = statusProp.select?.name || 'EMPTY';
+            }
+            statusCounts[status] = (statusCounts[status] || 0) + 1;
+        });
+        console.log('[Notion] 📊 Status distribution:', statusCounts);
+        
+        if (response.results.length === 0) {
+            console.warn('[Notion] ⚠️ No products found in database. Checking if database is empty or integration has access.');
+            return [];
+        }
+
+        // Log all property names from first result for debugging
+        if (response.results[0]) {
+            const firstPage = response.results[0] as PageObjectResponse;
+            console.log('[Notion] 📋 First product property names:', Object.keys(firstPage.properties || {}).join(', '));
+        }
+
+        const products: Product[] = [];
+        
+        for (const result of response.results) {
+            try {
+                const page = result as PageObjectResponse;
+                const props = page.properties || {};
+                
+                // Log status for each product (only first few for debug)
+                const statusProp = props['status'] || props['Status'];
+                const status = statusProp?.type === 'select' ? statusProp.select?.name : null;
+                const productName = extractPropertyValue(props['Name']) || extractPropertyValue(props['Title']) || 'Unnamed';
+                if (products.length < 3) {
+                    console.log(`[Notion] Product "${productName}" - status:`, status || 'NO_STATUS');
+                }
+                
+                // Only skip explicitly "inactive" or "Inactive" products
+                if (status === 'inactive' || status === 'Inactive') {
+                    console.log('[Notion] ⚠️ Skipping inactive product:', page.id);
+                    continue;
+                }
+                
+                // Accept products with:
+                // - No status property (assume published for new products)
+                // Handle thumbnail - check both file and external URLs
+                let thumbnail = '';
+                const imageProp = props['Thumbnail'] || props['Image'] || props['image'];
+                if (imageProp?.type === 'files' && imageProp.files?.length > 0) {
+                    const file = imageProp.files[0];
+                    if (file?.type === 'file' && file.file?.url) {
+                        thumbnail = file.file.url;
+                    } else if (file?.type === 'external' && file.external?.url) {
+                        thumbnail = file.external.url;
+                    }
+                }
+                
+                // Get tags from multi_select
+                let tags: string[] = [];
+                const tagProp = props['tag'] || props['Tag'] || props['tags'];
+                if (tagProp?.type === 'multi_select') {
+                    tags = tagProp.multi_select?.map((t: { name: string }) => t.name) || [];
+                }
+                
+                // Get affiliate link
+                const linkProp = props['affiliate link'] || props['affiliate_link'] || props['link'];
+                const affiliateLink = linkProp?.type === 'url' ? linkProp.url : '';
+                
+                // Get stock status
+                const stockProp = props['stock'] || props['Stock'] || props['inStock'];
+                const inStockValue = stockProp?.type === 'checkbox' ? stockProp.checkbox : true;
+                
+                products.push({
+                    id: page.id || '',
+                    name: (extractPropertyValue(props['Name']) as string) || (extractPropertyValue(props['Title']) as string) || 'Unnamed Product',
+                    slug: (extractPropertyValue(props['slug']) as string) || (extractPropertyValue(props['Slug']) as string) || 'no-slug',
+                    description: (extractPropertyValue(props['full description']) as string) || (extractPropertyValue(props['Description']) as string) || '',
+                    shortDescription: (extractPropertyValue(props['short description']) as string) || '',
+                    price: Number(extractPropertyValue(props['price'])) || Number(extractPropertyValue(props['Price'])) || 0,
+                    discountPrice: Number(extractPropertyValue(props['discount price'])) || Number(extractPropertyValue(props['discountPrice'])) || null,
+                    currency: (extractPropertyValue(props['currency']) as string) || 'IDR',
+                    image: thumbnail || undefined,
+                    category: (extractPropertyValue(props['category']) as string) || (extractPropertyValue(props['Category']) as string) || 'General',
+                    tags,
+                    link: affiliateLink || '#',
+                    status: ((extractPropertyValue(props['status']) as Product['status']) || 'Active') as Product['status'],
+                    inStock: Boolean(inStockValue),
+                });
+            } catch (err) {
+                console.warn('[Notion] Error mapping product:', err);
+            }
+        }
+
+        console.log('[Notion] ✅ getAllProducts() - Final products:', products.length);
+        return products;
+    } catch (error) {
+        console.error('[Notion] Error in getAllProducts():', error);
+        return [];
     }
 }
