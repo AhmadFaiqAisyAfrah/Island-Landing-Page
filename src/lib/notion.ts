@@ -57,7 +57,7 @@ export interface BlogPost {
 
 type NotionPropertyValue = PageObjectResponse['properties'][string];
 
-function extractPropertyValue(property: NotionPropertyValue | null | undefined): string | boolean | null {
+function extractPropertyValue(property: NotionPropertyValue | null | undefined): string | boolean | number | null {
     // Guard against null/undefined property
     if (!property) return null;
 
@@ -76,6 +76,8 @@ function extractPropertyValue(property: NotionPropertyValue | null | undefined):
                 return property.date?.start || '';
             case 'checkbox':
                 return property.checkbox ?? false;
+            case 'number':
+                return property.number ?? 0;
             case 'files':
                 if (property.files && property.files.length > 0) {
                     const file = property.files[0];
@@ -652,14 +654,31 @@ export async function getAllProducts(): Promise<Product[]> {
                 const stockProp = props['stock'] || props['Stock'] || props['inStock'];
                 const inStockValue = stockProp?.type === 'checkbox' ? stockProp.checkbox : true;
                 
+                // Get price directly from number type for accuracy
+                const priceProp = props['price'] || props['Price'];
+                const priceValue: number = (priceProp?.type === 'number' ? priceProp.number : Number(extractPropertyValue(priceProp))) || 0;
+                
+                // Get discount price
+                const discountProp = props['discount price'] || props['discountPrice'];
+                const rawDiscount = discountProp?.type === 'number' ? discountProp.number : Number(extractPropertyValue(discountProp));
+                const discountValue: number | null = (rawDiscount && rawDiscount > 0) ? rawDiscount : null;
+                
+                if (products.length < 3) {
+                    console.log(`[Notion] Price debug for "${productName}":`, {
+                        priceProp: priceValue,
+                        discountProp: discountValue,
+                        rawPrice: props['price'],
+                    });
+                }
+                
                 products.push({
                     id: page.id || '',
                     name: (extractPropertyValue(props['Name']) as string) || (extractPropertyValue(props['Title']) as string) || 'Unnamed Product',
                     slug: (extractPropertyValue(props['slug']) as string) || (extractPropertyValue(props['Slug']) as string) || 'no-slug',
                     description: (extractPropertyValue(props['full description']) as string) || (extractPropertyValue(props['Description']) as string) || '',
                     shortDescription: (extractPropertyValue(props['short description']) as string) || '',
-                    price: Number(extractPropertyValue(props['price'])) || Number(extractPropertyValue(props['Price'])) || 0,
-                    discountPrice: Number(extractPropertyValue(props['discount price'])) || Number(extractPropertyValue(props['discountPrice'])) || null,
+                    price: priceValue,
+                    discountPrice: (discountValue ?? null) as number | null,
                     currency: (extractPropertyValue(props['currency']) as string) || 'IDR',
                     image: thumbnail || undefined,
                     category: (extractPropertyValue(props['category']) as string) || (extractPropertyValue(props['Category']) as string) || 'General',

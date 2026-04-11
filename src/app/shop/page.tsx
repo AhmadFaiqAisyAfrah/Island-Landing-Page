@@ -13,7 +13,11 @@ export default async function ShopPage() {
     const products = await getAllProducts();
     
     console.log('[Shop] Products loaded:', products.length);
-    console.log('[Shop] First product:', products[0] ? JSON.stringify(products[0]).substring(0, 200) : 'none');
+    if (products.length > 0) {
+        console.log('[Shop] First product price:', products[0].price);
+        console.log('[Shop] First product discountPrice:', products[0].discountPrice);
+        console.log('[Shop] First product image:', products[0].image ? 'set' : 'none');
+    }
 
     return (
         <div className="min-h-screen flex flex-col pt-32 pb-16 bg-[var(--color-cream)]">
@@ -32,42 +36,47 @@ export default async function ShopPage() {
                     
                     {products.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {products.map((product) => (
+                            {products.map((product) => {
+                                const displayPrice = product.discountPrice || product.price;
+                                const originalPrice = product.discountPrice ? product.price : null;
+                                return (
                                 <a 
                                     key={product.id} 
                                     href={product.link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-[var(--color-pastel-sand)] hover:shadow-md transition-all"
+                                    className="bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-[var(--color-pastel-sand)] hover:shadow-md hover:-translate-y-1 transition-all"
                                 >
                                     {product.image && (
-                                        <img 
-                                            src={product.image} 
-                                            alt={product.name}
-                                            className="w-full h-48 object-cover rounded-lg mb-4"
-                                        />
+                                        <div className="w-full h-56 bg-slate-950 rounded-xl mb-4 flex items-center justify-center overflow-hidden">
+                                            <img 
+                                                src={product.image} 
+                                                alt={product.name}
+                                                className="max-w-full max-h-full object-contain p-4"
+                                            />
+                                        </div>
                                     )}
-                                    <div className="flex items-center gap-2 mb-2">
+                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                                         {product.tags.map((tag) => (
                                             <span key={tag} className="bg-[var(--accent-green)] text-white text-xs px-2 py-1 rounded">
                                                 {tag}
                                             </span>
                                         ))}
                                     </div>
-                                    <h3 className="font-semibold text-lg text-[var(--color-text-dark)]">{product.name}</h3>
-                                    <p className="text-[var(--color-text-muted)] text-sm">{product.shortDescription || product.description}</p>
-                                    <div className="mt-2 flex items-center gap-2">
-                                        {product.discountPrice ? (
+                                    <h3 className="font-semibold text-lg text-[var(--color-text-dark)] leading-tight">{product.name}</h3>
+                                    <p className="text-[var(--color-text-muted)] text-sm mt-1 line-clamp-2">{product.shortDescription || product.description}</p>
+                                    <div className="mt-3 flex items-center gap-2">
+                                        {originalPrice ? (
                                             <>
-                                                <span className="text-gray-400 line-through">Rp {product.price.toLocaleString('id-ID')}</span>
-                                                <span className="font-bold text-[var(--color-text-dark)]">Rp {product.discountPrice.toLocaleString('id-ID')}</span>
+                                                <span className="text-gray-400 line-through text-sm">Rp {originalPrice.toLocaleString('id-ID')}</span>
+                                                <span className="font-bold text-lg text-[var(--accent-green)]">Rp {displayPrice.toLocaleString('id-ID')}</span>
                                             </>
                                         ) : (
-                                            <span className="font-bold text-[var(--color-text-dark)]">Rp {product.price.toLocaleString('id-ID')}</span>
+                                            <span className="font-bold text-lg text-[var(--color-text-dark)]">Rp {displayPrice.toLocaleString('id-ID')}</span>
                                         )}
                                     </div>
                                 </a>
-                            ))}
+                                )})}
                         </div>
                     ) : (
                         <div className="text-center py-12">
