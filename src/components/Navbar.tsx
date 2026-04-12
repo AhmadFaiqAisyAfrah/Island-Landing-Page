@@ -83,17 +83,17 @@ export default function Navbar() {
                                 </button>
                                 <button
                                     onClick={() => setShowAuthModal(true)}
-                                    className="rounded-full border border-[var(--accent-green)] px-4 py-2 text-sm font-semibold text-[var(--accent-green)] hover:bg-[var(--accent-green)] hover:text-white transition-all"
+                                    className="island-btn island-btn-sm"
                                 >
-                                    Sign Up
+                                    <span>Sign Up</span>
                                 </button>
                                 <a
                                     href="https://islandapp.id/"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="rounded-full bg-[var(--button-bg)] px-5 py-2 text-sm font-semibold text-[var(--button-text)] shadow-[0_10px_20px_rgba(8,15,26,0.25)] hover:shadow-[0_14px_26px_rgba(8,15,26,0.32)] hover:bg-[var(--button-hover)] transition-all"
+                                    className="island-btn island-btn-sm island-btn-primary"
                                 >
-                                    Get the App
+                                    <span>Get the App</span>
                                 </a>
                             </>
                         )}
@@ -142,9 +142,9 @@ export default function Navbar() {
                                     </button>
                                     <button
                                         onClick={() => setShowAuthModal(true)}
-                                        className="rounded-full border border-[var(--accent-green)] px-4 py-2 text-sm font-semibold text-[var(--accent-green)] hover:bg-[var(--accent-green)] hover:text-white transition-all"
+                                        className="island-btn island-btn-sm"
                                     >
-                                        Sign Up
+                                        <span>Sign Up</span>
                                     </button>
                                 </>
                             )}
@@ -154,9 +154,9 @@ export default function Navbar() {
                                 href="https://islandapp.id/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-block rounded-full bg-[var(--button-bg)] px-5 py-2 text-sm font-semibold text-[var(--button-text)] shadow-[0_10px_20px_rgba(8,15,26,0.25)] hover:bg-[var(--button-hover)] text-center"
+                                className="island-btn island-btn-sm island-btn-primary"
                             >
-                                Get the App
+                                <span>Get the App</span>
                             </a>
                         )}
                     </div>

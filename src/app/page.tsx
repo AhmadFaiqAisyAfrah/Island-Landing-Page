@@ -1,3 +1,5 @@
+'use client';
+
 import HeroSection from "@/components/HeroSection";
 import WhatIsIsland from "@/components/WhatIsIsland";
 import EcosystemSection from "@/components/EcosystemSection";
@@ -7,11 +9,6 @@ import GamesPreview from "@/components/GamesPreview";
 import ArticlesPreview from "@/components/ArticlesPreview";
 import IslandAppSection from "@/components/IslandAppSection";
 
-export const metadata = {
-    title: "Island — Platform for Knowledge, Growth, and Impact",
-    description: "Explore insights, train your brain, and support meaningful change across Indonesia's islands. Island combines education, brain training games, and charity initiatives.",
-};
-
 export default function Home() {
     const jsonLd = {
         '@context': 'https://schema.org',
@@ -20,10 +17,6 @@ export default function Home() {
         url: 'https://islandapp.id',
         logo: 'https://ik.imagekit.io/kv42h83lq/island-logo.png',
         description: 'A digital platform focused on education, information, and real-world impact.',
-        founder: {
-            '@type': 'Person',
-            name: 'Ahmad Faiq'
-        },
         sameAs: [
             'https://www.instagram.com/islandapp.id',
             'https://www.tiktok.com/@islandapp.id',

@@ -25,26 +25,14 @@ export default function HeroSection() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link
-                            href="/articles"
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--accent-green)] text-white rounded-full font-semibold hover:opacity-90 transition-opacity"
-                        >
-                            <BookOpen className="w-5 h-5" />
-                            Explore Articles
+                        <Link href="/articles" className="island-btn island-btn-primary">
+                            <span><BookOpen className="w-5 h-5" />Explore Articles</span>
                         </Link>
-                        <Link
-                            href="/games"
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--bg-secondary)] text-[var(--heading-text)] rounded-full font-semibold hover:bg-[var(--border-color)] transition-colors border border-[var(--border-color)]"
-                        >
-                            <Gamepad2 className="w-5 h-5" />
-                            Try Learning Games
+                        <Link href="/games" className="island-btn island-btn-secondary">
+                            <span><Gamepad2 className="w-5 h-5" />Try Learning Games</span>
                         </Link>
-                        <Link
-                            href="/charity"
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--bg-secondary)] text-[var(--heading-text)] rounded-full font-semibold hover:bg-[var(--border-color)] transition-colors border border-[var(--border-color)]"
-                        >
-                            <Heart className="w-5 h-5 text-red-500" />
-                            Support Charity
+                        <Link href="/charity" className="island-btn island-btn-secondary">
+                            <span><Heart className="w-5 h-5 text-red-500" />Support Charity</span>
                         </Link>
                     </div>
                 </div>

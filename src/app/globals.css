@@ -486,8 +486,139 @@ body {
 }
 
 .dark .island-app-page .border-gray-200,
-.dark .island-app-page .border-gray-300,
 .island-app-page:where(.dark *) .border-gray-200,
 .island-app-page:where(.dark *) .border-gray-300 {
   border-color: rgba(255, 255, 255, 0.1);
 }
+
+/* ===== Island Button Styles ===== */
+
+/* Base button - clean, modern, minimal */
+.island-btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    color: #10b981;
+    border: 2px solid #10b981;
+    border-radius: 9999px;
+    letter-spacing: 0.5px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.35s ease;
+    cursor: pointer;
+    background: transparent;
+}
+
+.island-btn span {
+    position: relative;
+    z-index: 2;
+}
+
+.island-btn::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background: #10b981;
+    transition: all 0.35s ease;
+    border-radius: 9999px;
+    z-index: 1;
+}
+
+/* Hover - fill from left to right */
+.island-btn:hover {
+    color: white;
+    border-color: #10b981;
+}
+
+.island-btn:hover::after {
+    width: 100%;
+}
+
+/* Active - press effect */
+.island-btn:active {
+    transform: scale(0.98);
+}
+
+/* Primary (filled default) */
+.island-btn-primary {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+.island-btn-primary::after {
+    display: none;
+}
+
+.island-btn-primary:hover {
+    background: #059669;
+    border-color: #059669;
+}
+
+/* Secondary (gray) */
+.island-btn-secondary {
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.island-btn-secondary::after {
+    background: #e5e7eb;
+}
+
+.island-btn-secondary:hover {
+    color: #111827;
+    border-color: #d1d5db;
+}
+
+/* Ghost (text only) */
+.island-btn-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: #4b5563;
+}
+
+.island-btn-ghost::after {
+    background: #f3f4f4;
+}
+
+.island-btn-ghost:hover {
+    color: #111827;
+    border-color: transparent;
+}
+
+.dark .island-btn-ghost {
+    color: #94a3b8;
+}
+
+.dark .island-btn-ghost::after {
+    background: #1e293b;
+}
+
+.dark .island-btn-ghost:hover {
+    color: #f8fafc;
+}
+
+/* Sizes */
+.island-btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.island-btn-md {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+.island-btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+}
+
+
