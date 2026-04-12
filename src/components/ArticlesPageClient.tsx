@@ -125,38 +125,40 @@ function CategoryNav({
 function TagNav({ 
     tags, 
     selected, 
-    onSelect 
+    onSelect,
+    showAll = false,
+    onToggleAll
 }: { 
     tags: { name: string; count: number }[]; 
     selected: string | null;
     onSelect: (tag: string | null) => void;
+    showAll?: boolean;
+    onToggleAll?: () => void;
 }) {
+    const MAX_VISIBLE_TAGS = 8;
+    const displayTags = showAll ? tags : tags.slice(0, MAX_VISIBLE_TAGS);
+    const hasMore = !showAll && tags.length > MAX_VISIBLE_TAGS;
+
     if (tags.length === 0) return null;
 
     return (
         <nav style={{
-            marginBottom: '32px',
+            marginBottom: '24px',
             padding: '16px 0',
             borderBottom: '1px solid #eee'
         }}>
             <div style={{
                 display: 'flex',
                 gap: '8px',
-                overflowX: 'auto',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
                 flexWrap: 'wrap'
             }}>
-                <style>{`
-                    .tag-nav::-webkit-scrollbar { display: none; }
-                `}</style>
                 <button
                     onClick={() => onSelect(null)}
                     style={{
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '6px',
-                        padding: selected === null ? '8px 16px' : '6px 14px',
+                        padding: '6px 14px',
                         fontSize: '12px',
                         fontWeight: selected === null ? 600 : 500,
                         color: selected === null ? '#fff' : '#666',
@@ -172,7 +174,7 @@ function TagNav({
                 >
                     Semua
                 </button>
-                {tags.map(({ name, count }) => (
+                {displayTags.map(({ name, count }) => (
                     <button
                         key={name}
                         onClick={() => onSelect(name)}
@@ -180,7 +182,7 @@ function TagNav({
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '6px',
-                            padding: selected === name ? '8px 16px' : '6px 14px',
+                            padding: '6px 14px',
                             fontSize: '12px',
                             fontWeight: selected === name ? 600 : 500,
                             color: selected === name ? '#fff' : '#555',
@@ -202,8 +204,80 @@ function TagNav({
                         </span>
                     </button>
                 ))}
+                {hasMore && (
+                    <button
+                        onClick={onToggleAll}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            padding: '6px 14px',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            color: '#e63946',
+                            backgroundColor: 'transparent',
+                            border: '1px solid #e63946',
+                            borderRadius: '100px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        +{tags.length - MAX_VISIBLE_TAGS} lainnya
+                    </button>
+                )}
+                {showAll && tags.length > MAX_VISIBLE_TAGS && (
+                    <button
+                        onClick={onToggleAll}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            padding: '6px 14px',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            color: '#666',
+                            backgroundColor: 'transparent',
+                            border: '1px solid #ddd',
+                            borderRadius: '100px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        Tutup
+                    </button>
+                )}
             </div>
         </nav>
+    );
+}
+
+function SearchBar({ 
+    value, 
+    onChange 
+}: { 
+    value: string; 
+    onChange: (value: string) => void;
+}) {
+    return (
+        <div style={{ marginBottom: '20px' }}>
+            <input
+                type="text"
+                placeholder="Search articles or topics..."
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                style={{
+                    width: '100%',
+                    maxWidth: '400px',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    fontFamily: 'Georgia, serif',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s ease'
+                }}
+            />
+        </div>
     );
 }
 
@@ -359,6 +433,8 @@ export function ArticlesPageClient({ posts }: ArticlesPageClientProps) {
     const { layoutMode, changeLayout, mounted } = useLayoutMode();
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showAllTags, setShowAllTags] = useState(false);
     
     const safePosts = posts || [];
     
@@ -367,11 +443,23 @@ export function ArticlesPageClient({ posts }: ArticlesPageClientProps) {
         return Array.from(cats).sort();
     }, [safePosts]);
 
-    // Filter posts by selected category first
+    // Filter posts by search query first
+    const postsBySearch = useMemo(() => {
+        if (!searchQuery.trim()) return safePosts;
+        const query = searchQuery.toLowerCase();
+        return safePosts.filter((p) => {
+            const titleMatch = p.title?.toLowerCase().includes(query);
+            const tagMatch = p.tags?.some(t => t.toLowerCase().includes(query));
+            const descMatch = p.metaDescription?.toLowerCase().includes(query);
+            return titleMatch || tagMatch || descMatch;
+        });
+    }, [safePosts, searchQuery]);
+
+    // Filter posts by selected category
     const postsByCategory = useMemo(() => {
-        if (!selectedCategory) return safePosts;
-        return safePosts.filter((p) => (p.category || 'General') === selectedCategory);
-    }, [safePosts, selectedCategory]);
+        if (!selectedCategory) return postsBySearch;
+        return postsBySearch.filter((p) => (p.category || 'General') === selectedCategory);
+    }, [postsBySearch, selectedCategory]);
 
     // Extract tags from filtered posts (based on selected category)
     const tagsWithCounts = useMemo(() => {
@@ -379,7 +467,6 @@ export function ArticlesPageClient({ posts }: ArticlesPageClientProps) {
         postsByCategory.forEach((post) => {
             if (post.tags && post.tags.length > 0) {
                 post.tags.forEach((tag) => {
-                    // Count only from posts matching the selected category
                     tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
                 });
             }
@@ -446,17 +533,20 @@ export function ArticlesPageClient({ posts }: ArticlesPageClientProps) {
                     }}
                 />
 
+                <SearchBar value={searchQuery} onChange={setSearchQuery} />
+
                 <TagNav 
                     tags={tagsWithCounts} 
                     selected={selectedTag}
                     onSelect={(tag) => {
-                        // Auto-reset if selected tag doesn't exist in new category
                         if (tag && !tagsWithCounts.some(t => t.name === tag)) {
                             setSelectedTag(null);
                         } else {
                             setSelectedTag(tag);
                         }
                     }}
+                    showAll={showAllTags}
+                    onToggleAll={() => setShowAllTags(!showAllTags)}
                 />
 
                 {mounted && (
