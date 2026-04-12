@@ -2,11 +2,13 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getPostBySlug, getPublishedPosts } from '@/lib/notion';
+import { getPostBySlug, getPublishedPosts, type BlogPost } from '@/lib/notion';
+import { extractHeadingsFromBlocks, generateAnchorId, isEmojiSection, type TocItem } from '@/lib/notion-toc';
 import { ArrowLeft } from 'lucide-react';
 import { Client } from '@notionhq/client';
 import { ArticleCoverImage } from '@/components/ImageWithCaption';
 import { TagsDisplay } from '@/components/TagsDisplay';
+import { TableOfContents } from '@/components/TableOfContents';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -91,49 +93,58 @@ async function getBlocks(blockId: string) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderBlock(block: any, index: number) {
-    if (!block || !block.type) return null;
+    if (!block || typeof block !== 'object' || !block.type) return null;
 
     const blockType = block.type;
     const blockContent = block[blockType];
     
-    if (!blockContent) return null;
+    if (!blockContent || typeof blockContent !== 'object') return null;
 
     const richText = blockContent.rich_text || [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const text = richText.map((t: any) => t?.plain_text || '').join('');
 
     switch (blockType) {
-        case 'heading_1':
+        case 'heading_1': {
+            const anchorId = text.trim() ? generateAnchorId(text) : '';
             return (
-                <h1 key={block.id || index} style={styles.h1}>
+                <h1 id={anchorId} key={block.id || index} style={styles.h1}>
                     {text}
                 </h1>
             );
-        case 'heading_2':
+        }
+        case 'heading_2': {
+            const anchorId = text.trim() ? generateAnchorId(text) : '';
             return (
-                <h2 key={block.id || index} style={styles.h2}>
+                <h2 id={anchorId} key={block.id || index} style={styles.h2}>
                     {text}
                 </h2>
             );
-        case 'heading_3':
+        }
+        case 'heading_3': {
+            const anchorId = text.trim() ? generateAnchorId(text) : '';
             return (
-                <h3 key={block.id || index} style={styles.h3}>
+                <h3 id={anchorId} key={block.id || index} style={styles.h3}>
                     {text}
                 </h3>
             );
-        case 'paragraph':
+        }
+        case 'paragraph': {
+            const anchorId = isEmojiSection(text) ? generateAnchorId(text) : '';
             if (!text.trim()) return <div key={block.id || index} style={styles.paragraphSpacing} />;
             return (
-                <p key={block.id || index} style={styles.paragraph}>
+                <p id={anchorId} key={block.id || index} style={styles.paragraph}>
                     {text}
                 </p>
             );
-        case 'bulleted_list_item':
+        }
+        case 'bulleted_list_item': {
             return (
                 <li key={block.id || index} style={styles.listItem}>
                     {text}
                 </li>
             );
+        }
         case 'numbered_list_item':
             return (
                 <li key={block.id || index} style={styles.listItem}>
@@ -169,12 +180,14 @@ function renderBlock(block: any, index: number) {
                 </figure>
             );
         }
-        case 'callout':
+        case 'callout': {
+            const anchorId = isEmojiSection(text) ? generateAnchorId(text) : '';
             return (
-                <div key={block.id || index} style={styles.callout}>
+                <div id={anchorId} key={block.id || index} style={styles.callout}>
                     <p style={styles.calloutText}>{text}</p>
                 </div>
             );
+        }
         case 'to_do': {
             const checked = blockContent.checked || false;
             return (
@@ -278,6 +291,7 @@ const styles = {
         color: '#111',
         marginTop: '48px',
         marginBottom: '16px',
+        scrollMarginTop: '100px',
     } as React.CSSProperties,
     h2: {
         fontFamily: 'Georgia, "Times New Roman", serif',
@@ -287,6 +301,7 @@ const styles = {
         color: '#111',
         marginTop: '40px',
         marginBottom: '12px',
+        scrollMarginTop: '100px',
     } as React.CSSProperties,
     h3: {
         fontFamily: 'Georgia, "Times New Roman", serif',
@@ -296,6 +311,7 @@ const styles = {
         color: '#111',
         marginTop: '32px',
         marginBottom: '8px',
+        scrollMarginTop: '100px',
     } as React.CSSProperties,
     listItem: {
         marginLeft: '24px',
@@ -382,6 +398,57 @@ const styles = {
         textAlign: 'center' as const,
         marginTop: '32px',
     } as React.CSSProperties,
+    relatedSection: {
+        marginTop: '64px',
+        paddingTop: '40px',
+        borderTop: '1px solid #eee',
+    } as React.CSSProperties,
+    relatedTitle: {
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '28px',
+        fontWeight: 700,
+        color: '#111',
+        marginBottom: '24px',
+    } as React.CSSProperties,
+    relatedGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        gap: '24px',
+    } as React.CSSProperties,
+    articleCard: {
+        borderRadius: '12px',
+        overflow: 'hidden',
+        border: '1px solid #eee',
+        transition: 'all 0.3s ease',
+    } as React.CSSProperties,
+    articleCardImage: {
+        width: '100%',
+        height: '180px',
+        objectFit: 'cover',
+    } as React.CSSProperties,
+    articleCardContent: {
+        padding: '16px',
+    } as React.CSSProperties,
+    articleCardCategory: {
+        display: 'inline-block',
+        fontSize: '11px',
+        fontWeight: 700,
+        textTransform: 'uppercase' as const,
+        color: '#e63946',
+        marginBottom: '8px',
+    } as React.CSSProperties,
+    articleCardTitle: {
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '18px',
+        fontWeight: 700,
+        color: '#111',
+        lineHeight: 1.4,
+        marginBottom: '8px',
+    } as React.CSSProperties,
+    articleCardDate: {
+        fontSize: '13px',
+        color: '#888',
+    } as React.CSSProperties,
     cta: {
         marginTop: '64px',
         paddingTop: '40px',
@@ -443,9 +510,18 @@ export default async function BlogPostPage(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let blocks: any[] = [];
     let contentError = false;
+    let tocItems: TocItem[] = [];
+    let relatedArticles: BlogPost[] = [];
 
     try {
         blocks = await getBlocks(post.id);
+        tocItems = extractHeadingsFromBlocks(blocks);
+        
+        const allPosts = await getPublishedPosts();
+        relatedArticles = allPosts
+            .filter(p => p.id !== post.id)
+            .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
+            .slice(0, 4);
     } catch (error) {
         console.error('[Notion] Failed to fetch blocks:', error);
         contentError = true;
@@ -552,6 +628,8 @@ export default async function BlogPostPage(
                     />
                 ) : null}
 
+                {tocItems.length > 0 && <TableOfContents items={tocItems} />}
+
                 <div style={styles.content}>
                     {contentError ? (
                         <div style={styles.errorBox}>
@@ -573,20 +651,39 @@ export default async function BlogPostPage(
                     )}
                 </div>
 
-                <div style={styles.cta}>
-                    <h3 style={styles.ctaTitle}>Find your focus with Island</h3>
-                    <p style={styles.ctaText}>
-                        Try our free pomodoro timer and start building sustainable productivity habits today.
-                    </p>
-                    <div style={styles.ctaButtons}>
-                        <Link href="/explore/pomodoro" style={styles.ctaPrimary}>
-                            Start Focus Session
-                        </Link>
-                        <Link href="/explore" style={styles.ctaSecondary}>
-                            Explore Tools
-                        </Link>
-                    </div>
-                </div>
+                {relatedArticles.length > 0 && (
+                    <section style={styles.relatedSection}>
+                        <h2 style={styles.relatedTitle}>Artikel Terbaru</h2>
+                        <div style={styles.relatedGrid}>
+                            {relatedArticles.map((article) => (
+                                <Link
+                                    key={article.id}
+                                    href={`/articles/${article.slug}`}
+                                    style={styles.articleCard}
+                                >
+                                    {article.coverImage && (
+                                        <img
+                                            src={article.coverImage}
+                                            alt={article.title}
+                                            style={styles.articleCardImage}
+                                        />
+                                    )}
+                                    <div style={styles.articleCardContent}>
+                                        <span style={styles.articleCardCategory}>
+                                            {article.category}
+                                        </span>
+                                        <h3 style={styles.articleCardTitle}>
+                                            {article.title}
+                                        </h3>
+                                        <span style={styles.articleCardDate}>
+                                            {formatDate(article.publishDate)}
+                                        </span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
             </article>
         </div>
     );
