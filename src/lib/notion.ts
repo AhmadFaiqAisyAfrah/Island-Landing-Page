@@ -95,24 +95,65 @@ function extractPropertyValue(property: NotionPropertyValue | null | undefined):
 }
 
 function getPageCoverUrl(page: PageObjectResponse | undefined): string | undefined {
-    if (!page?.cover) {
-        console.log('[Notion] ⚠️ No page cover found');
+    if (!page) {
+        console.log('[Notion] ⚠️ Page is undefined');
         return undefined;
     }
     
-    try {
-        if (page.cover.type === 'file' && page.cover.file?.url) {
-            console.log('[Notion] ✅ Cover URL (file):', page.cover.file.url.substring(0, 80));
-            return page.cover.file.url;
+    let coverUrl: string | undefined = undefined;
+    
+    // Find ANY property with type "files" dynamically
+    const props = page.properties || {};
+    const propEntries = Object.entries(props);
+    console.log('[Notion] 📋 ALL PROPERTIES:', propEntries.map(([k, v]) => `${k}:${v.type}`).join(', '));
+    
+    // Find first property with files type that has files
+    const filePropertyEntry = propEntries.find(
+        ([, prop]) => {
+            const p = prop as { type?: string; files?: unknown[] } | undefined;
+            return p?.type === 'files' && p?.files && p.files.length > 0;
         }
-        if (page.cover.type === 'external' && page.cover.external?.url) {
-            console.log('[Notion] ✅ Cover URL (external):', page.cover.external.url.substring(0, 80));
-            return page.cover.external.url;
+    );
+    
+    if (filePropertyEntry) {
+        const [propName, fileProp] = filePropertyEntry;
+        console.log('[Notion] 📋 FILES PROPERTY FOUND:', propName);
+        
+        const file = (fileProp as { files: unknown[] }).files[0] as { type?: string; file?: { url: string }; external?: { url: string } };
+        console.log('[Notion] 📋 File raw:', JSON.stringify(file).substring(0, 150));
+        
+        if (file?.type === 'file' && file.file?.url) {
+            coverUrl = file.file.url;
+            console.log('[Notion] ✅ Resolved from', propName, '(file):', coverUrl.substring(0, 80));
         }
-    } catch (err) {
-        console.warn('[Notion] Error extracting cover URL:', err);
+        else if (file?.type === 'external' && file.external?.url) {
+            coverUrl = file.external.url;
+            console.log('[Notion] ✅ Resolved from', propName, '(external):', coverUrl.substring(0, 80));
+        }
     }
-    return undefined;
+    else {
+        console.log('[Notion] ⚠️ No files property found');
+    }
+    
+    // Fallback to page.cover (legacy)
+    if (!coverUrl && page.cover) {
+        console.log('[Notion] 📋 Trying page.cover fallback');
+        const cover = page.cover as { type: string; file?: { url: string }; external?: { url: string } };
+        if (cover?.type === 'file' && cover.file?.url) {
+            coverUrl = cover.file.url;
+        }
+        else if (cover?.type === 'external' && cover.external?.url) {
+            coverUrl = cover.external.url;
+        }
+    }
+    
+    console.log('[Notion] 📋 FINAL RESOLVED COVER URL:', coverUrl?.substring(0, 80) || 'UNDEFINED');
+    
+    if (!coverUrl) {
+        console.log('[Notion] ⚠️ No cover image found');
+    }
+    
+    return coverUrl;
 }
 
 function getCategoryFromPage(page: PageObjectResponse | undefined): string {
@@ -252,7 +293,14 @@ function mapNotionPageToBlogPost(page: PageObjectResponse | undefined): BlogPost
 
     try {
         const coverUrl = getPageCoverUrl(page);
-        const coverImageFromProperty = extractPropertyValue(page.properties?.['Cover Image']) as string | undefined;
+        
+        // Try multiple property names for cover image
+        const coverImageFromProperty = 
+            extractPropertyValue(page.properties?.['Cover Image']) as string | undefined ||
+            extractPropertyValue(page.properties?.['Gambar']) as string | undefined ||
+            extractPropertyValue(page.properties?.['Cover Image ']) as string | undefined ||
+            extractPropertyValue(page.properties?.['Image']) as string | undefined;
+        
         const category = getCategoryFromPage(page);
         const lastUpdated = getLastUpdated(page);
         const imageCaption = getImageCaption(page);
@@ -263,7 +311,7 @@ function mapNotionPageToBlogPost(page: PageObjectResponse | undefined): BlogPost
         console.log('[Notion] 📋 Page properties:', propNames.join(', '));
         console.log('[Notion] 📋 Mapping result:');
         console.log('    - id:', page.id);
-        console.log('    - coverUrl:', coverUrl ? '✅ found' : '❌ not found');
+        console.log('    - coverUrl (page cover):', coverUrl ? '✅ found' : '❌ not found');
         console.log('    - coverImageFromProperty:', coverImageFromProperty ? '✅ found' : '❌ not found');
         console.log('    - category:', category);
         console.log('    - lastUpdated:', lastUpdated);

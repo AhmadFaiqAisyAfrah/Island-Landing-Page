@@ -67,3 +67,8 @@ Thumbs.db
 .cache/
 tmp/
 
+# =========================
+# Claude local config (sensitive)
+# =========================
+.claude/settings.local.json
+
