@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import { getPostBySlug, getPublishedPosts, type BlogPost } from '@/lib/notion';
 import { extractHeadingsFromBlocks, generateAnchorId, isEmojiSection, type TocItem } from '@/lib/notion-toc';
@@ -9,6 +8,42 @@ import { Client } from '@notionhq/client';
 import { ArticleCoverImage } from '@/components/ImageWithCaption';
 import { TagsDisplay } from '@/components/TagsDisplay';
 import { TableOfContents } from '@/components/TableOfContents';
+
+// Notion Block Types
+type RichTextItem = {
+    plain_text: string;
+    href?: string | null;
+    annotations?: {
+        bold?: boolean;
+        italic?: boolean;
+        strikethrough?: boolean;
+        underline?: boolean;
+        code?: boolean;
+        color?: string;
+    };
+};
+
+type TableCell = RichTextItem[];
+
+type TableRowBlock = {
+    id: string;
+    type: 'table_row';
+    table_row: {
+        cells: TableCell[];
+    };
+};
+
+type TableBlockContent = {
+    has_column_header: boolean;
+    has_row_header: boolean;
+    children?: TableRowBlock[];
+};
+
+type NotionBlock = {
+    id: string;
+    type: string;
+    [key: string]: unknown;
+};
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -64,13 +99,12 @@ export async function generateStaticParams() {
     }));
 }
 
-async function getBlocks(blockId: string) {
+async function getBlocks(blockId: string): Promise<NotionBlock[]> {
     const notion = new Client({
         auth: process.env.NOTION_TOKEN || '',
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let blocks: any[] = [];
+    let blocks: NotionBlock[] = [];
     let cursor: string | undefined = undefined;
 
     try {
@@ -80,12 +114,10 @@ async function getBlocks(blockId: string) {
                 start_cursor: cursor,
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const blocksWithChildren: any[] = [];
+            const blocksWithChildren: NotionBlock[] = [];
 
             for (const block of response.results) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const blockAny = block as any;
+                const blockAny = block as NotionBlock;
                 const blockType = blockAny.type;
                 // Fetch children for table blocks
                 if (blockType === 'table') {
@@ -93,14 +125,14 @@ async function getBlocks(blockId: string) {
                         block_id: blockAny.id,
                     });
                     blocksWithChildren.push({
-                        ...block,
+                        ...blockAny,
                         [blockType]: {
-                            ...blockAny[blockType],
+                            ...(blockAny[blockType] as Record<string, unknown>),
                             children: tableChildren.results,
                         },
                     });
                 } else {
-                    blocksWithChildren.push(block);
+                    blocksWithChildren.push(blockAny);
                 }
             }
 
@@ -115,18 +147,16 @@ async function getBlocks(blockId: string) {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderBlock(block: any, index: number) {
+function renderBlock(block: NotionBlock, index: number) {
     if (!block || typeof block !== 'object' || !block.type) return null;
 
     const blockType = block.type;
-    const blockContent = block[blockType];
+    const blockContent = block[blockType] as Record<string, unknown> | undefined;
     
     if (!blockContent || typeof blockContent !== 'object') return null;
 
-    const richText = blockContent.rich_text || [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const text = richText.map((t: any) => t?.plain_text || '').join('');
+    const richText = (blockContent.rich_text || []) as RichTextItem[];
+    const text = richText.map((t) => t?.plain_text || '').join('');
 
     switch (blockType) {
         case 'heading_1': {
@@ -192,9 +222,9 @@ function renderBlock(block: any, index: number) {
                 <hr key={block.id || index} style={styles.divider} />
             );
         case 'image': {
-            const imageUrl = blockContent?.external?.url || blockContent?.file?.url || '';
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const caption = richText.map((t: any) => t?.plain_text || '').join('') || '';
+            const imageContent = blockContent as { external?: { url?: string }; file?: { url?: string }; rich_text?: RichTextItem[] };
+            const imageUrl = imageContent?.external?.url || imageContent?.file?.url || '';
+            const caption = richText.map((t) => t?.plain_text || '').join('') || '';
             if (!imageUrl) return null;
             return (
                 <figure key={block.id || index} style={styles.figure}>
@@ -213,7 +243,8 @@ function renderBlock(block: any, index: number) {
             );
         }
         case 'to_do': {
-            const checked = blockContent.checked || false;
+            const todoContent = blockContent as { checked?: boolean };
+            const checked = todoContent?.checked || false;
             return (
                 <div key={block.id || index} style={styles.todoItem}>
                     <input type="checkbox" checked={checked} readOnly style={styles.checkbox} />
@@ -222,23 +253,24 @@ function renderBlock(block: any, index: number) {
             );
         }
         case 'table': {
+            const tableContent = blockContent as TableBlockContent;
+            const rows = tableContent?.children || [];
             return (
                 <div key={block.id || index} style={styles.tableWrapper}>
                     <table style={styles.table}>
-                        {blockContent.children?.map((row: any, rowIndex: number) => {
-                            const cells = row.table_row?.cells || [];
-                            const isHeader = rowIndex === 0 && blockContent.has_column_header;
-                            const Tag = isHeader ? 'th' : 'td';
+                        {rows.map((row, rowIndex) => {
+                            const rowData = row as TableRowBlock;
+                            const cells = rowData.table_row?.cells || [];
+                            const isHeader = rowIndex === 0 && tableContent?.has_column_header;
+                            const CellTag = isHeader ? 'th' : 'td';
                             return (
-                                <tr key={row.id || rowIndex}>
-                                    {cells.map((cell: any[], cellIndex: number) => {
-                                        const cellText = Array.isArray(cell) 
-                                            ? cell.map((t: any) => t?.plain_text || '').join('')
-                                            : '';
+                                <tr key={rowData.id || rowIndex}>
+                                    {cells.map((cell, cellIndex) => {
+                                        const cellText = cell.map((t) => t?.plain_text || '').join('');
                                         return (
-                                            <Tag key={cellIndex} style={isHeader ? styles.tableHeader : styles.tableCell}>
+                                            <CellTag key={cellIndex} style={isHeader ? styles.tableHeader : styles.tableCell}>
                                                 {cellText}
-                                            </Tag>
+                                            </CellTag>
                                         );
                                     })}
                                 </tr>
@@ -581,8 +613,7 @@ export default async function BlogPostPage(
         notFound();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let blocks: any[] = [];
+    let blocks: NotionBlock[] = [];
     let contentError = false;
     let tocItems: TocItem[] = [];
     let relatedArticles: BlogPost[] = [];
