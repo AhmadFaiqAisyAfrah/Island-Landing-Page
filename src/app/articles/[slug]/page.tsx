@@ -80,7 +80,31 @@ async function getBlocks(blockId: string) {
                 start_cursor: cursor,
             });
 
-            blocks = [...blocks, ...response.results];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const blocksWithChildren: any[] = [];
+
+            for (const block of response.results) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const blockAny = block as any;
+                const blockType = blockAny.type;
+                // Fetch children for table blocks
+                if (blockType === 'table') {
+                    const tableChildren = await notion.blocks.children.list({
+                        block_id: blockAny.id,
+                    });
+                    blocksWithChildren.push({
+                        ...block,
+                        [blockType]: {
+                            ...blockAny[blockType],
+                            children: tableChildren.results,
+                        },
+                    });
+                } else {
+                    blocksWithChildren.push(block);
+                }
+            }
+
+            blocks = [...blocks, ...blocksWithChildren];
             cursor = response.has_more ? response.next_cursor || undefined : undefined;
         } while (cursor);
 
@@ -196,6 +220,36 @@ function renderBlock(block: any, index: number) {
                     <span style={checked ? styles.todoChecked : styles.todoText}>{text}</span>
                 </div>
             );
+        }
+        case 'table': {
+            return (
+                <div key={block.id || index} style={styles.tableWrapper}>
+                    <table style={styles.table}>
+                        {blockContent.children?.map((row: any, rowIndex: number) => {
+                            const cells = row.table_row?.cells || [];
+                            const isHeader = rowIndex === 0 && blockContent.has_column_header;
+                            const Tag = isHeader ? 'th' : 'td';
+                            return (
+                                <tr key={row.id || rowIndex}>
+                                    {cells.map((cell: any[], cellIndex: number) => {
+                                        const cellText = Array.isArray(cell) 
+                                            ? cell.map((t: any) => t?.plain_text || '').join('')
+                                            : '';
+                                        return (
+                                            <Tag key={cellIndex} style={isHeader ? styles.tableHeader : styles.tableCell}>
+                                                {cellText}
+                                            </Tag>
+                                        );
+                                    })}
+                                </tr>
+                            );
+                        })}
+                    </table>
+                </div>
+            );
+        }
+        case 'table_row': {
+            return null;
         }
         default:
             if (text.trim()) {
@@ -493,6 +547,26 @@ const styles = {
         fontSize: '15px',
         fontWeight: 500,
         transition: 'all 0.2s ease',
+    } as React.CSSProperties,
+    tableWrapper: {
+        overflowX: 'auto',
+        margin: '24px 0',
+    } as React.CSSProperties,
+    table: {
+        width: '100%',
+        borderCollapse: 'collapse',
+        fontSize: '14px',
+    } as React.CSSProperties,
+    tableHeader: {
+        backgroundColor: '#f9fafb',
+        fontWeight: 600,
+        padding: '12px',
+        textAlign: 'left',
+        border: '1px solid #e5e7eb',
+    } as React.CSSProperties,
+    tableCell: {
+        padding: '12px',
+        border: '1px solid #e5e7eb',
     } as React.CSSProperties,
 };
 

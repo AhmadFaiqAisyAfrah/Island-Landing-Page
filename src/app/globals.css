@@ -621,4 +621,61 @@ body {
     font-size: 1.125rem;
 }
 
+/* ===== Notion Table Styles ===== */
+
+.notion-simple-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+    overflow-x: auto;
+    display: block;
+}
+
+.notion-simple-table td {
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    vertical-align: top;
+}
+
+.notion-simple-table th {
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    font-weight: 600;
+    text-align: left;
+}
+
+.notion-simple-table-header-row td {
+    background-color: #f9fafb;
+    font-weight: 600;
+}
+
+.notion-simple-table-row:hover {
+    background-color: #f9fafb;
+}
+
+.dark .notion-simple-table td {
+    border-color: #374151;
+    color: #f8fafc;
+}
+
+.dark .notion-simple-table th {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #f8fafc;
+}
+
+.dark .notion-simple-table-header-row td {
+    background-color: #1f2937;
+}
+
+.dark .notion-simple-table-row:hover {
+    background-color: #1f2937;
+}
+
+.dark .notion-simple-table-row:hover {
+    background-color: #1f2937;
+}
+
 
