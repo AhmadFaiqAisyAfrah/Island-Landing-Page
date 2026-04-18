@@ -1,628 +1,181 @@
 @import "tailwindcss";
 
+/* ===== Typography Theme - Tailwind v4 ===== */
+@theme {
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-heading: var(--font-heading), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
 /* ===== Base Styles ===== */
-body {
-  background-color: var(--bg-primary);
-  color: var(--heading-text);
-}
-
-/* ===== CSS Variables for Theme ===== */
-
-:root {
-  --nav-bg: rgba(248, 250, 252, 0.9);
-  --border-color: #e5e7eb;
-  --heading-text: #111827;
-  --paragraph-text: #4b5563;
-  --accent-green: #10b981;
-  --button-bg: #10b981;
-  --button-hover: #059669;
-  --button-text: #ffffff;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f3f4f6;
-  --section-title: #1f2937;
-}
-
-.dark {
-  --nav-bg: rgba(11, 30, 45, 0.95);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --heading-text: #f8fafc;
-  --paragraph-text: #94a3b8;
-  --accent-green: #34d399;
-  --button-bg: #059669;
-  --button-hover: #047857;
-  --button-text: #ffffff;
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --section-title: #ffffff;
-}
-
-/* ===== Launchpad Slider ===== */
-
-.launchpad-wrapper {
-  position: relative;
-  z-index: 10;
-  width: 100%;
-  max-width: 1200px;
-  margin: 48px auto 32px;
-  padding: 0;
-  overflow: hidden;
-}
-
-.launchpad-slider {
-  display: flex;
-  gap: 24px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
+html {
   scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
-  padding: 20px 24px;
-  scrollbar-width: none;
 }
 
-.launchpad-slider::-webkit-scrollbar {
-  display: none;
+body {
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  background-color: white;
+  color: #111827;
 }
 
-.launchpad-slide {
-  flex: 0 0 auto;
-  width: 280px;
-  scroll-snap-align: start;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 0 40px rgba(16, 185, 129, 0.1);
-}
-
-.launchpad-slide-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 24px;
-  object-fit: contain;
-}
-
-.launchpad-dots {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.launchpad-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  background-color: rgba(156, 163, 175, 0.4);
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.launchpad-dot.active {
-  background-color: #10b981;
-  transform: scale(1.25);
-}
-
-@media (max-width: 639px) {
-  .launchpad-slide {
-    width: 240px;
-  }
-
-  .launchpad-slider {
-    padding: 16px 16px;
-    gap: 16px;
-  }
-}
-
-/* ===== Island App Premium Theme Override ===== */
-/* This uses Tailwind's dark: variant with the html.dark class from next-themes */
-
-/* ===== BASE STYLES ===== */
-
-.island-app-page {
-  background: linear-gradient(to bottom, #f8fafc, #ffffff);
-  min-height: 100vh;
-}
-
-/* Dark Mode - matches html.dark */
-.dark .island-app-page,
-.island-app-page:where(.dark *) {
-  background: linear-gradient(to bottom, #0B1E2D, #0a1520);
-}
-
-/* ===== SECTION STYLES ===== */
-
-.island-app-page section {
-  background: transparent;
-}
-
-/* Hero Section */
-.island-app-page > section:first-child {
-  background: linear-gradient(to bottom, #dbeafe, #eff6ff, #ffffff) !important;
-}
-
-.dark .island-app-page > section:first-child,
-.island-app-page:where(.dark *) > section:first-child {
-  background: linear-gradient(to bottom, #0B1E2D, #0f1f2e, #0a1520) !important;
-}
-
-/* ===== NAVBAR FIX ===== */
-/* Override the main navbar when inside island-app-page */
-
-.island-app-page ~ * nav,
-.island-app-page nav,
-.island-app-page header.fixed,
-.island-app-page + div nav {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border-bottom: 1px solid #e5e7eb !important;
-}
-
-/* Dark navbar when inside dark mode */
-.dark .island-app-page ~ * nav,
-.dark .island-app-page nav,
-.dark .island-app-page header.fixed,
-.island-app-page:where(.dark *) nav {
-  background: rgba(11, 30, 45, 0.98) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-/* ===== BUTTON STYLES ===== */
-
-/* Primary Button - Gradient Glowing */
-.island-app-page a.bg-pastel-green-deep,
-.island-app-page button.bg-pastel-green-deep,
-.island-app-page .bg-pastel-green-deep {
-  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #0d9488 100%) !important;
-  color: #ffffff !important;
+/* ===== Headings Typography ===== */
+h1, h2, h3, h4, h5, h6,
+.heading {
+  font-family: var(--font-heading);
   font-weight: 600;
-  border: none;
-  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4), 0 8px 10px -6px rgba(16, 185, 129, 0.3) !important;
-  transition: all 0.3s ease;
-}
-
-.dark .island-app-page a.bg-pastel-green-deep,
-.dark .island-app-page button.bg-pastel-green-deep,
-.dark .island-app-page .bg-pastel-green-deep,
-.island-app-page:where(.dark *) a.bg-pastel-green-deep {
-  background: linear-gradient(135deg, #059669 0%, #047857 50%, #0f766e 100%) !important;
-  box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.5), 0 8px 10px -6px rgba(5, 150, 105, 0.4) !important;
-}
-
-.island-app-page a.bg-pastel-green-deep:hover,
-.island-app-page button.bg-pastel-green-deep:hover {
-  transform: scale(1.05);
-  box-shadow: 0 20px 35px -5px rgba(16, 185, 129, 0.5), 0 10px 15px -5px rgba(16, 185, 129, 0.4) !important;
-}
-
-/* Secondary Button - Outline */
-.island-app-page a[class*="border-2"],
-.island-app-page button[class*="border-2"],
-.island-app-page .rounded-full.border-2 {
-  border-color: rgba(16, 185, 129, 0.5) !important;
-  color: #059669 !important;
-  background: transparent;
-}
-
-.dark .island-app-page a[class*="border-2"],
-.dark .island-app-page button[class*="border-2"],
-.dark .island-app-page .rounded-full.border-2 {
-  border-color: rgba(52, 211, 153, 0.5) !important;
-  color: #34d399 !important;
-}
-
-.island-app-page a[class*="border-2"]:hover {
-  background: rgba(16, 185, 129, 0.1) !important;
-  border-color: #10b981 !important;
-}
-
-.dark .island-app-page a[class*="border-2"]:hover {
-  background: rgba(52, 211, 153, 0.15) !important;
-  border-color: #34d399 !important;
-}
-
-/* ===== CARD STYLES ===== */
-
-.island-app-page .bg-white {
-  background-color: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
-  transition: all 0.3s ease;
-}
-
-.dark .island-app-page .bg-white,
-.island-app-page:where(.dark *) .bg-white {
-  background-color: #132A3E !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
-}
-
-.island-app-page .bg-white:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-  border-color: rgba(16, 185, 129, 0.3) !important;
-}
-
-.dark .island-app-page .bg-white:hover {
-  box-shadow: 0 20px 25px -5px rgba(52, 211, 153, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.3) !important;
-  border-color: rgba(52, 211, 153, 0.3) !important;
-}
-
-/* ===== TEXT COLORS ===== */
-
-/* Headings */
-.island-app-page h1,
-.island-app-page h2,
-.island-app-page h3,
-.island-app-page h4 {
+  line-height: 1.3;
+  letter-spacing: -0.02em;
   color: #111827;
 }
 
-.dark .island-app-page h1,
-.dark .island-app-page h2,
-.dark .island-app-page h3,
-.dark .island-app-page h4,
-.island-app-page:where(.dark *) h1,
-.island-app-page:where(.dark *) h2,
-.island-app-page:where(.dark *) h3,
-.island-app-page:where(.dark *) h4 {
-  color: #f8fafc;
+/* H1 - Hero titles */
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
-/* Body text */
-.island-app-page p {
-  color: #4b5563;
+/* H2 - Section titles */
+h2 {
+  font-size: 2rem;
+  font-weight: 600;
 }
 
-.dark .island-app-page p,
-.island-app-page:where(.dark *) p {
-  color: #94a3b8;
+/* H3 - Subsection titles */
+h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
-/* Text utilities */
-.island-app-page .text-text-dark {
-  color: #111827;
+/* H4-H6 - Minor headings */
+h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
-.dark .island-app-page .text-text-dark {
-  color: #f8fafc;
+h5 {
+  font-size: 1.125rem;
+  font-weight: 500;
 }
 
-.island-app-page .text-text-muted {
-  color: #6b7280;
+h6 {
+  font-size: 1rem;
+  font-weight: 500;
 }
 
-.dark .island-app-page .text-text-muted {
-  color: #94a3b8;
+/* ===== Body & UI Typography ===== */
+p, span, a, button, input, label, li, td, th {
+  font-family: var(--font-sans);
 }
 
-/* Accent text colors */
-.island-app-page .text-pastel-green-deep {
-  color: #10b981;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-.dark .island-app-page .text-pastel-green-deep {
-  color: #34d399;
+/* ===== Scroll offset for anchored headings ===== */
+h1[id], h2[id], h3[id], h4[id], h5[id], h6[id] {
+  scroll-margin-top: 100px;
 }
 
-.island-app-page .text-pastel-blue-deep {
-  color: #0ea5e9;
+/* ===== Table of Contents (Daftar Isi) ===== */
+.toc-container {
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  border-left: 3px solid #e5e5e5;
 }
 
-.dark .island-app-page .text-pastel-blue-deep {
-  color: #38bdf8;
+.toc-title {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #666;
+  margin-bottom: 16px;
+  margin-top: 0;
 }
 
-/* ===== BACKGROUND OVERRIDES ===== */
-
-.island-app-page .bg-cream {
-  background-color: #ffffff;
+.toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.dark .island-app-page .bg-cream {
-  background-color: #0B1E2D;
+.toc-item {
+  margin: 0;
 }
 
-.island-app-page .bg-cream-dark {
-  background-color: #f9fafb;
+.toc-item.level-1 {
+  font-weight: 600;
+  margin: 8px 0;
 }
 
-.dark .island-app-page .bg-cream-dark {
-  background-color: #0a1520;
+.toc-item.level-1 .toc-link {
+  font-size: 15px;
 }
 
-/* ===== FAQ SECTION ===== */
-
-.island-app-page #faq,
-.island-app-page section[id="faq"],
-.island-app-page [id="faq"] {
-  background: #f9fafb;
+.toc-item.level-2 {
+  padding-left: 16px;
+  margin: 6px 0;
 }
 
-.dark .island-app-page #faq,
-.dark .island-app-page section[id="faq"],
-.dark .island-app-page [id="faq"],
-.island-app-page:where(.dark *) #faq {
-  background: #0B1E2D;
+.toc-item.level-2 .toc-link {
+  font-size: 14px;
+  opacity: 0.9;
 }
 
-/* FAQ Accordion Items */
-.island-app-page .rounded-xl,
-.island-app-page .rounded-lg {
-  background-color: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
+.toc-item.level-3 {
+  padding-left: 32px;
+  margin: 4px 0;
 }
 
-.dark .island-app-page .rounded-xl,
-.dark .island-app-page .rounded-lg,
-.island-app-page:where(.dark *) .rounded-xl,
-.island-app-page:where(.dark *) .rounded-lg {
-  background-color: #132A3E !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+.toc-item.level-3 .toc-link {
+  font-size: 13px;
+  opacity: 0.75;
 }
 
-.island-app-page .rounded-xl:hover,
-.island-app-page .rounded-lg:hover {
-  background-color: #f9fafb;
-  border-color: rgba(16, 185, 129, 0.3);
+.toc-link {
+  display: block;
+  padding: 6px 0;
+  text-decoration: none;
+  color: #444;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  line-height: 1.4;
 }
 
-.dark .island-app-page .rounded-xl:hover,
-.dark .island-app-page .rounded-lg:hover,
-.island-app-page:where(.dark *) .rounded-xl:hover,
-.island-app-page:where(.dark *) .rounded-lg:hover {
-  background-color: #1a3a52;
-  border-color: rgba(52, 211, 153, 0.3);
+.toc-link:hover {
+  color: #059669;
+  transform: translateX(2px);
 }
 
-/* FAQ text colors */
-.island-app-page .text-gray-800 {
-  color: #1f2937;
+.toc-link.active {
+  color: #dc2626;
+  font-weight: 500;
 }
 
-.dark .island-app-page .text-gray-800,
-.island-app-page:where(.dark *) .text-gray-800 {
-  color: #f3f4f6;
+/* Left border guides for hierarchy */
+.toc-item.level-2 .toc-link {
+  border-left: 2px solid transparent;
+  padding-left: 12px;
 }
 
-.island-app-page .text-gray-400 {
-  color: #9ca3af;
+.toc-item.level-2 .toc-link:hover {
+  border-left-color: #059669;
 }
 
-.dark .island-app-page .text-gray-400,
-.island-app-page:where(.dark *) .text-gray-400 {
-  color: rgba(255, 255, 255, 0.5);
+.toc-item.level-3 .toc-link {
+  border-left: 2px solid transparent;
+  padding-left: 12px;
 }
 
-/* ===== GRADIENT TEXT ===== */
-
-.island-app-page .bg-gradient-to-r {
-  background: linear-gradient(to right, #10b981, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.dark .island-app-page .bg-gradient-to-r,
-.island-app-page:where(.dark *) .bg-gradient-to-r {
-  background: linear-gradient(to right, #34d399, #22d3ee);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ===== SHADOW EFFECTS ===== */
-
-.island-app-page .shadow-lg {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04) !important;
-}
-
-.dark .island-app-page .shadow-lg {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* ===== WAVE SVG ===== */
-
-.island-app-page svg path[fill="#FDFAF3"],
-.island-app-page svg path[fill="#ffffff"] {
-  fill: #ffffff;
-}
-
-.dark .island-app-page svg path[fill="#FDFAF3"],
-.dark .island-app-page svg path[fill="#ffffff"] {
-  fill: #0a1520;
-}
-
-/* ===== PASTEL BACKGROUNDS ===== */
-
-.island-app-page .bg-pastel-green\/20,
-.island-app-page .bg-pastel-green\/10 {
-  background-color: rgba(16, 185, 129, 0.12);
-}
-
-.dark .island-app-page .bg-pastel-green\/20,
-.dark .island-app-page .bg-pastel-green\/10 {
-  background-color: rgba(52, 211, 153, 0.1);
-}
-
-.island-app-page .bg-pastel-blue\/20,
-.island-app-page .bg-pastel-blue\/15 {
-  background-color: rgba(14, 165, 233, 0.12);
-}
-
-.dark .island-app-page .bg-pastel-blue\/20,
-.dark .island-app-page .bg-pastel-blue\/15 {
-  background-color: rgba(56, 189, 248, 0.08);
-}
-
-.island-app-page .bg-pastel-green-deep\/25 {
-  background-color: rgba(16, 185, 129, 0.15);
-}
-
-.dark .island-app-page .bg-pastel-green-deep\/25 {
-  background-color: rgba(52, 211, 153, 0.12);
-}
-
-/* ===== TRANSITIONS ===== */
-
-.island-app-page * {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-}
-
-.island-app-page .transition-all,
-.island-app-page button,
-.island-app-page a {
-  transition: all 0.3s ease;
-}
-
-/* ===== BORDER OVERRIDES ===== */
-
-.island-app-page .border-gray-200,
-.island-app-page .border-gray-300 {
-  border-color: #e5e7eb;
-}
-
-.dark .island-app-page .border-gray-200,
-.island-app-page:where(.dark *) .border-gray-200,
-.island-app-page:where(.dark *) .border-gray-300 {
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-/* ===== Island Button Styles ===== */
-
-/* Base button - clean, modern, minimal */
-.island-btn {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-family: inherit;
-    font-weight: 600;
-    text-decoration: none;
-    color: #10b981;
-    border: 2px solid #10b981;
-    border-radius: 9999px;
-    letter-spacing: 0.5px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.35s ease;
-    cursor: pointer;
-    background: transparent;
-}
-
-.island-btn span {
-    position: relative;
-    z-index: 2;
-}
-
-.island-btn::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0%;
-    height: 100%;
-    background: #10b981;
-    transition: all 0.35s ease;
-    border-radius: 9999px;
-    z-index: 1;
-}
-
-/* Hover - fill from left to right */
-.island-btn:hover {
-    color: white;
-    border-color: #10b981;
-}
-
-.island-btn:hover::after {
-    width: 100%;
-}
-
-/* Active - press effect */
-.island-btn:active {
-    transform: scale(0.98);
-}
-
-/* Primary (filled default) */
-.island-btn-primary {
-    background: #10b981;
-    color: white;
-    border-color: #10b981;
-}
-
-.island-btn-primary::after {
-    display: none;
-}
-
-.island-btn-primary:hover {
-    background: #059669;
-    border-color: #059669;
-}
-
-/* Secondary (gray) */
-.island-btn-secondary {
-    color: #374151;
-    border-color: #d1d5db;
-}
-
-.island-btn-secondary::after {
-    background: #e5e7eb;
-}
-
-.island-btn-secondary:hover {
-    color: #111827;
-    border-color: #d1d5db;
-}
-
-/* Ghost (text only) */
-.island-btn-ghost {
-    background: transparent;
-    border-color: transparent;
-    color: #4b5563;
-}
-
-.island-btn-ghost::after {
-    background: #f3f4f4;
-}
-
-.island-btn-ghost:hover {
-    color: #111827;
-    border-color: transparent;
-}
-
-.dark .island-btn-ghost {
-    color: #94a3b8;
-}
-
-.dark .island-btn-ghost::after {
-    background: #1e293b;
-}
-
-.dark .island-btn-ghost:hover {
-    color: #f8fafc;
-}
-
-/* Sizes */
-.island-btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-}
-
-.island-btn-md {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-}
-
-.island-btn-lg {
-    padding: 1rem 2rem;
-    font-size: 1.125rem;
+.toc-item.level-3 .toc-link:hover {
+  border-left-color: #059669;
 }
 
 /* ===== Notion Table Styles ===== */
-
 .notion-simple-table {
     width: 100%;
     border-collapse: collapse;
@@ -654,28 +207,3 @@ body {
 .notion-simple-table-row:hover {
     background-color: #f9fafb;
 }
-
-.dark .notion-simple-table td {
-    border-color: #374151;
-    color: #f8fafc;
-}
-
-.dark .notion-simple-table th {
-    background-color: #1f2937;
-    border-color: #374151;
-    color: #f8fafc;
-}
-
-.dark .notion-simple-table-header-row td {
-    background-color: #1f2937;
-}
-
-.dark .notion-simple-table-row:hover {
-    background-color: #1f2937;
-}
-
-.dark .notion-simple-table-row:hover {
-    background-color: #1f2937;
-}
-
-

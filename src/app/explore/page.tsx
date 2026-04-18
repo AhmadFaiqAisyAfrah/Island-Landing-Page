@@ -42,32 +42,19 @@ const tools = [
 
 export default function ExplorePage() {
     return (
-        <div className="pt-24 min-h-screen bg-gradient-to-b from-sky-200 via-sky-100 to-white dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 relative overflow-hidden">
-            {/* Stars for dark mode */}
-            <div className="hidden dark:block absolute inset-0 pointer-events-none">
-                <div className="absolute top-20 left-10 w-1 h-1 bg-white rounded-full animate-twinkle opacity-80" style={{ animationDelay: "0s" }}></div>
-                <div className="absolute top-32 right-20 w-1.5 h-1.5 bg-white rounded-full animate-twinkle opacity-60" style={{ animationDelay: "0.5s" }}></div>
-                <div className="absolute top-48 left-1/4 w-1 h-1 bg-white rounded-full animate-twinkle opacity-70" style={{ animationDelay: "1s" }}></div>
-                <div className="absolute top-16 right-1/3 w-1 h-1 bg-white rounded-full animate-twinkle opacity-50" style={{ animationDelay: "1.5s" }}></div>
-                <div className="absolute top-64 left-10 w-1.5 h-1.5 bg-white rounded-full animate-twinkle opacity-40" style={{ animationDelay: "2s" }}></div>
-                <div className="absolute top-40 right-10 w-1 h-1 bg-white rounded-full animate-twinkle opacity-60" style={{ animationDelay: "2.5s" }}></div>
-                <div className="absolute top-52 left-1/3 w-1 h-1 bg-white rounded-full animate-twinkle opacity-50" style={{ animationDelay: "3s" }}></div>
-                <div className="absolute top-28 left-1/2 w-1.5 h-1.5 bg-white rounded-full animate-twinkle opacity-70" style={{ animationDelay: "0.3s" }}></div>
-                <div className="absolute top-72 right-1/4 w-1 h-1 bg-white rounded-full animate-twinkle opacity-40" style={{ animationDelay: "1.2s" }}></div>
-                <div className="absolute top-36 left-20 w-1 h-1 bg-white rounded-full animate-twinkle opacity-50" style={{ animationDelay: "1.8s" }}></div>
-            </div>
+        <div className="pt-24 min-h-screen bg-gradient-to-b from-sky-200 via-sky-100 to-white relative overflow-hidden">
             
             <div className="max-w-[900px] mx-auto px-6 py-24 relative z-10">
                 {/* Hero Section */}
                 <section className="relative flex flex-col lg:flex-row items-center gap-12 lg:gap-16 mb-24">
-                    {/* Animated clouds - hidden in dark mode */}
-                    <div className="absolute top-12 left-0 w-44 opacity-40 animate-cloud-move hidden dark:hidden">
+                    {/* Animated clouds */}
+                    <div className="absolute top-12 left-0 w-44 opacity-40 animate-cloud-move">
                         <CloudSVG variant="soft" />
                     </div>
-                    <div className="absolute top-28 right-0 w-56 opacity-35 animate-cloud-move hidden dark:hidden" style={{ animationDelay: "2s" }}>
+                    <div className="absolute top-28 right-0 w-56 opacity-35 animate-cloud-move" style={{ animationDelay: "2s" }}>
                         <CloudSVG />
                     </div>
-                    <div className="absolute top-44 left-1/4 w-32 opacity-25 animate-cloud-move hidden dark:hidden" style={{ animationDelay: "3s" }}>
+                    <div className="absolute top-44 left-1/4 w-32 opacity-25 animate-cloud-move" style={{ animationDelay: "3s" }}>
                         <CloudSVG variant="small" />
                     </div>
 

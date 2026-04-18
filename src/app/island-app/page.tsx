@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar";
 import IslandAppContent from "@/components/island/IslandAppContent";
 
 export const metadata = {
@@ -6,5 +7,10 @@ export const metadata = {
 };
 
 export default function IslandAppPage() {
-    return <IslandAppContent />;
+    return (
+        <main>
+            <Navbar />
+            <IslandAppContent />
+        </main>
+    );
 }

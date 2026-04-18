@@ -48,7 +48,7 @@ export default async function ShopPage() {
                                     className="bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-[var(--color-pastel-sand)] hover:shadow-md hover:-translate-y-1 transition-all"
                                 >
                                     {product.image && (
-                                        <div className="w-full h-56 bg-slate-950 rounded-xl mb-4 flex items-center justify-center overflow-hidden">
+                                        <div className="w-full h-56 bg-gray-100 rounded-xl mb-4 flex items-center justify-center overflow-hidden">
                                             <img 
                                                 src={product.image} 
                                                 alt={product.name}

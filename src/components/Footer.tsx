@@ -74,17 +74,15 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
 
 export default function Footer() {
     return (
-        <footer className="bg-[var(--bg-secondary)] border-t border-[var(--border-color)]">
+        <footer className="bg-gray-50 border-t border-gray-200">
             <div className="mx-auto max-w-6xl px-6 py-12">
                 <div className="flex flex-col items-center">
-                    {/* Logo badge */}
                     <ThemeAwareLogo className="h-16 md:h-20 w-auto mx-auto mb-4 object-contain bg-transparent" />
 
-                    {/* Navigation columns */}
                     <div className="grid grid-cols-2 md:grid-cols-7 gap-8 w-full mb-8">
                         {footerSections.map((section) => (
                             <div key={section.title} className="text-center md:text-left">
-                                <h4 className="text-sm font-semibold text-[var(--heading-text)] mb-4 uppercase tracking-wider">
+                                <h4 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wider">
                                     {section.title}
                                 </h4>
                                 <ul className="space-y-3">
@@ -95,7 +93,7 @@ export default function Footer() {
                                                     href={link.href}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex items-center gap-2 text-sm text-[var(--paragraph-text)] hover:opacity-70 transition-opacity"
+                                                    className="flex items-center gap-2 text-sm text-gray-600 hover:opacity-70 transition-opacity"
                                                 >
                                                     {link.icon && (
                                                         <Image 
@@ -111,11 +109,11 @@ export default function Footer() {
                                             ) : (
                                                 <Link
                                                     href={link.href}
-                                                    className="text-sm text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors inline-flex items-center"
+                                                    className="text-sm text-gray-600 hover:text-emerald-600 transition-colors inline-flex items-center"
                                                 >
                                                     {link.label}
                                                     {link.badge && (
-                                                        <span className="ml-1.5 bg-[var(--accent-green)] text-[var(--bg-secondary)] text-[10px] px-1.5 py-0.5 rounded">
+                                                        <span className="ml-1.5 bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded">
                                                             {link.badge}
                                                         </span>
                                                     )}
@@ -128,8 +126,7 @@ export default function Footer() {
                         ))}
                     </div>
 
-                    {/* Copyright */}
-                    <p className="text-xs text-[var(--text-secondary)]">
+                    <p className="text-xs text-gray-500">
                         © 2026 Island — All rights reserved
                     </p>
                 </div>

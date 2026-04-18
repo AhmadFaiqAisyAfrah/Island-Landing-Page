@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import ThemeToggle from "@/components/ThemeToggle";
 import UserMenu from "@/components/UserMenu";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
@@ -17,134 +15,129 @@ export default function Navbar() {
     const pathname = usePathname();
     const { user, loading } = useAuth();
 
-    const isMarketingPage =
-        pathname.startsWith("/explore") ||
-        pathname.startsWith("/articles") ||
-        pathname.startsWith("/privacy") ||
-        pathname.startsWith("/terms") ||
-        pathname.startsWith("/contact") ||
-        pathname.startsWith("/about") ||
-        pathname.startsWith("/data-deletion") ||
-        pathname.startsWith("/island-app");
-
-    const isDashboard = !isMarketingPage;
-
-    const marketingLinks = [
+    const navLinks = [
         { label: "Island App", href: "/island-app" },
         { label: "Explore", href: "/explore" },
         { label: "Articles", href: "/articles" },
     ];
 
-    const dashboardLinks = [
-        { label: "Features", href: "/#features" },
-        { label: "Trust", href: "/#transparency" },
-        { label: "FAQ", href: "/#faq" },
-        { label: "Explore", href: "/explore" },
-        { label: "Articles", href: "/articles" },
-    ];
-
-    const navLinks = isDashboard ? dashboardLinks : marketingLinks;
-
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--nav-bg)] backdrop-blur-md border-b border-[var(--border-color)]">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-200">
             <div className="mx-auto max-w-6xl flex items-center justify-between px-6 py-4">
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 text-xl font-bold text-[var(--heading-text)]">
-                    <ThemeAwareLogo className="h-14 md:h-16 w-auto object-contain bg-transparent" priority />
-                    <span>Island</span>
+                <Link
+                    href="/"
+                    className="flex items-center gap-2 text-xl font-bold"
+                >
+                    <ThemeAwareLogo
+                        className="h-14 md:h-16 w-auto object-contain bg-transparent"
+                        priority
+                    />
+                    <span 
+                        className="text-gray-900"
+                        style={{ fontFamily: "var(--font-heading), Georgia, serif", fontWeight: 700 }}
+                    >
+                        Island
+                    </span>
                 </Link>
 
-                {/* Desktop Links */}
                 <div className="hidden md:flex items-center gap-8">
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className={`text-sm transition-colors ${pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href)) ? "text-[var(--accent-green)] font-semibold" : "text-[var(--paragraph-text)] hover:text-[var(--accent-green)]"}`}
-                        >
-                            {link.label}
-                        </Link>
-                    ))}
+                    {navLinks.map((link) => {
+                        const isActive =
+                            pathname === link.href ||
+                            (link.href !== "/" && pathname.startsWith(link.href));
+                        return (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={`text-sm font-medium transition-colors hover:opacity-80 ${
+                                    isActive ? "text-emerald-600" : "text-gray-600"
+                                }`}
+                            >
+                                {link.label}
+                            </Link>
+                        );
+                    })}
 
-                    <div className="flex items-center gap-3 border-l border-[var(--border-color)] pl-4 ml-2">
-                        <ThemeToggle />
-
+                    <div className="flex items-center gap-3 border-l border-gray-200 pl-4 ml-2">
                         {loading ? (
-                            <div className="w-8 h-8 rounded-full bg-[var(--bg-secondary)] animate-pulse" />
+                            <div className="w-8 h-8 rounded-full animate-pulse bg-gray-200" />
                         ) : user ? (
                             <UserMenu />
                         ) : (
                             <>
                                 <button
                                     onClick={() => setShowAuthModal(true)}
-                                    className="text-sm font-medium text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors"
+                                    className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                                 >
                                     Sign In
                                 </button>
                                 <button
                                     onClick={() => setShowAuthModal(true)}
-                                    className="island-btn island-btn-sm"
+                                    className="px-4 py-2 text-sm font-medium border-2 border-emerald-500 text-emerald-600 rounded-full hover:bg-emerald-50 transition-colors"
                                 >
-                                    <span>Sign Up</span>
+                                    Sign Up
                                 </button>
                                 <a
                                     href="https://islandapp.id/"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="island-btn island-btn-sm island-btn-primary"
+                                    className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-full hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-sm"
                                 >
-                                    <span>Get the App</span>
+                                    Get the App
                                 </a>
                             </>
                         )}
                     </div>
                 </div>
 
-                {/* Mobile Toggle */}
                 <button
                     onClick={() => setOpen(!open)}
-                    className="md:hidden text-[var(--heading-text)]"
+                    className="md:hidden text-gray-900"
                     aria-label="Toggle menu"
                 >
                     {open ? <X size={24} /> : <Menu size={24} />}
                 </button>
             </div>
 
-            {/* Mobile Menu */}
             {open && (
-                <div className="md:hidden bg-[var(--nav-bg)] backdrop-blur-md border-t border-[var(--border-color)] px-6 pb-6 pt-2 space-y-4 animate-fade-in-up">
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            onClick={() => setOpen(false)}
-                            className={`block text-sm transition-colors ${pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href)) ? "text-[var(--accent-green)] font-semibold" : "text-[var(--paragraph-text)] hover:text-[var(--accent-green)]"}`}
-                        >
-                            {link.label}
-                        </Link>
-                    ))}
+                <div className="md:hidden px-6 pb-6 pt-2 space-y-4 bg-white/95 border-t border-gray-200">
+                    {navLinks.map((link) => {
+                        const isActive =
+                            pathname === link.href ||
+                            (link.href !== "/" && pathname.startsWith(link.href));
+                        return (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                onClick={() => setOpen(false)}
+                                className={`block text-sm font-medium transition-colors ${
+                                    isActive ? "text-emerald-600" : "text-gray-600"
+                                }`}
+                            >
+                                {link.label}
+                            </Link>
+                        );
+                    })}
 
-                    <div className="flex flex-col gap-3 pt-2 border-t border-[var(--border-color)]">
+                    <div className="flex flex-col gap-3 pt-4 border-t border-gray-200">
                         <div className="flex items-center gap-3">
-                            <ThemeToggle />
-
                             {loading ? (
-                                <div className="w-8 h-8 rounded-full bg-[var(--bg-secondary)] animate-pulse" />
+                                <div className="w-8 h-8 rounded-full animate-pulse bg-gray-200" />
                             ) : user ? (
                                 <UserMenu />
                             ) : (
                                 <>
                                     <button
                                         onClick={() => setShowAuthModal(true)}
-                                        className="text-sm font-medium text-[var(--paragraph-text)] hover:text-[var(--accent-green)] transition-colors"
+                                        className="text-sm font-medium text-gray-600"
                                     >
                                         Sign In
                                     </button>
                                     <button
                                         onClick={() => setShowAuthModal(true)}
-                                        className="island-btn island-btn-sm"
+                                        className="px-4 py-2 text-sm font-medium border-2 border-emerald-500 text-emerald-600 rounded-full"
                                     >
-                                        <span>Sign Up</span>
+                                        Sign Up
                                     </button>
                                 </>
                             )}
@@ -154,16 +147,15 @@ export default function Navbar() {
                                 href="https://islandapp.id/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="island-btn island-btn-sm island-btn-primary"
+                                className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-full text-center"
                             >
-                                <span>Get the App</span>
+                                Get the App
                             </a>
                         )}
                     </div>
                 </div>
             )}
 
-            {/* Auth Modal */}
             {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
         </nav>
     );

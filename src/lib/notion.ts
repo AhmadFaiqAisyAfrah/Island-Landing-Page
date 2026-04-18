@@ -38,6 +38,194 @@ export const notionAPI = new NotionAPI({
 export const isNotionConfigured = Boolean(NOTION_TOKEN && DATABASE_ID);
 export { NOTION_TOKEN, DATABASE_ID, NOTION_PRODUCTS_DB_ID };
 
+// Reference Types for Automatic Bibliography
+export interface Reference {
+    author: string;
+    year: string;
+    title?: string;
+    source?: string;
+    url?: string;
+}
+
+export interface ExtractedReferences {
+    inlineCitations: Reference[];
+    explicitReferences: Reference[];
+    combinedReferences: Reference[];
+}
+
+// Detect inline citations (Author, Year) pattern like (Bank Indonesia, 2024)
+const CITATION_PATTERN = /\(([A-Z][^(]*?),\s*(\d{4})(?:\s*[-–]\s*(\d{4}))?\)/g;
+
+// Reference section headers (Indonesian & English)
+const REFERENCE_HEADERS = [
+    'referensi',
+    'daftar pustaka',
+    'sources',
+    'bibliography',
+    'references',
+    'sumber',
+];
+
+function isReferenceHeader(text: string): boolean {
+    const normalizedText = text.toLowerCase().trim();
+    return REFERENCE_HEADERS.some(header => normalizedText.includes(header));
+}
+
+function extractTextFromRichText(richText: Array<{ plain_text?: string }>): string {
+    return richText.map(t => t?.plain_text || '').join('');
+}
+
+function extractInlineCitations(content: string): Reference[] {
+    const citations: Reference[] = [];
+    const matches = content.matchAll(CITATION_PATTERN);
+    
+    for (const match of matches) {
+        const author = match[1]?.trim();
+        const year = match[2]?.trim();
+        
+        if (author && year && author.length > 1) {
+            citations.push({
+                author,
+                year,
+            });
+        }
+    }
+    
+    return citations;
+}
+
+export function extractReferencesFromBlocks(blocks: unknown[]): ExtractedReferences {
+    const inlineCitations: Reference[] = [];
+    const explicitReferences: Reference[] = [];
+    let inReferenceSection = false;
+    
+    for (const block of blocks) {
+        if (!block || typeof block !== 'object') continue;
+        
+        const blockAny = block as Record<string, unknown>;
+        const blockType = blockAny.type as string;
+        const blockContent = blockAny[blockType] as Record<string, unknown> | undefined;
+        
+        if (!blockContent) continue;
+        
+        // Handle different block types
+        let text = '';
+        
+        if (blockType === 'heading_1' || blockType === 'heading_2' || blockType === 'heading_3') {
+            const richText = blockContent.rich_text as Array<{ plain_text?: string }> || [];
+            text = extractTextFromRichText(richText);
+            
+            // Check if this is a reference section header
+            if (text && isReferenceHeader(text)) {
+                inReferenceSection = true;
+                continue;
+            }
+            
+            // Stop collecting if we hit another major section after reference
+            if (inReferenceSection && !isReferenceHeader(text)) {
+                const firstFewWords = text.toLowerCase().split(' ').slice(0, 3).join(' ');
+                if (REFERENCE_HEADERS.every(h => !firstFewWords.includes(h))) {
+                    // Check if it's a normal heading that marks new section
+                    if (blockType === 'heading_2' && text.length > 5) {
+                        inReferenceSection = false;
+                    }
+                }
+            }
+        } else if (blockType === 'paragraph') {
+            const richText = blockContent.rich_text as Array<{ plain_text?: string }> || [];
+            text = extractTextFromRichText(richText);
+        } else if (blockType === 'bulleted_list_item' || blockType === 'numbered_list_item') {
+            const richText = blockContent.rich_text as Array<{ plain_text?: string }> || [];
+            text = extractTextFromRichText(richText);
+        }
+        
+        if (!text) continue;
+        
+        // Extract inline citations from all text
+        const citations = extractInlineCitations(text);
+        inlineCitations.push(...citations);
+        
+        // Collect explicit references from reference section
+        if (inReferenceSection) {
+            // Parse explicit reference format: Author. (Year). Title. Source
+            const refMatch = text.match(/^(.+?)\.\s*\((\d{4})\)(?:[\.,]\s*(.+?))?[\.,]?\s*(.+)?$/);
+            if (refMatch) {
+                explicitReferences.push({
+                    author: refMatch[1]?.trim() || '',
+                    year: refMatch[2]?.trim() || '',
+                    title: refMatch[3]?.trim() || undefined,
+                    source: refMatch[4]?.trim() || undefined,
+                });
+            } else {
+                // Fallback: just use the whole line as a reference
+                explicitReferences.push({
+                    author: text,
+                    year: '',
+                });
+            }
+        }
+    }
+    
+    // Deduplicate citations
+    const seen = new Set<string>();
+    const uniqueInlineCitations = inlineCitations.filter(ref => {
+        const key = `${ref.author}|${ref.year}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+    
+    // Combine: explicit references first, then inline (deduplicated)
+    const combinedReferences = [...explicitReferences];
+    for (const citation of uniqueInlineCitations) {
+        const existsInExplicit = explicitReferences.some(
+            r => r.author === citation.author && r.year === citation.year
+        );
+        if (!existsInExplicit) {
+            combinedReferences.push(citation);
+        }
+    }
+    
+    console.log('[References] Extracted:', {
+        inlineCitations: inlineCitations.length,
+        explicitReferences: explicitReferences.length,
+        combinedReferences: combinedReferences.length,
+        references: combinedReferences,
+    });
+    
+    return {
+        inlineCitations: uniqueInlineCitations,
+        explicitReferences,
+        combinedReferences,
+    };
+}
+
+export function formatHarvard(reference: Reference): string {
+    const { author, year, title, source } = reference;
+    
+    if (!author) return '';
+    
+    // If no year, just return author
+    if (!year) return author;
+    
+    let formatted = `${author}. (${year})`;
+    
+    if (title) {
+        formatted += `. ${title}`;
+    }
+    
+    if (source) {
+        formatted += `. ${source}`;
+    }
+    
+    return formatted;
+}
+
+export function formatSimpleCitation(reference: Reference): string {
+    if (!reference.author || !reference.year) return '';
+    return `(${reference.author}, ${reference.year})`;
+}
+
 export interface BlogPost {
     id: string;
     title: string;

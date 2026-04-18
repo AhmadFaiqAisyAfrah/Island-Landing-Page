@@ -1,11 +1,11 @@
 export default function EmotionalSection() {
     return (
         <section className="relative py-28 overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-blue-50">
-            <div className="relative z-10 mx-auto max-w-3xl px-6 text-center space-y-8">
+            <div className="max-w-3xl mx-auto px-6 text-center space-y-8">
                 <div className="flex justify-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: "200ms" }} />
-                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" style={{ animationDelay: "500ms" }} />
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: "200ms" }} />
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" style={{ animationDelay: "500ms" }} />
                 </div>
 
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">

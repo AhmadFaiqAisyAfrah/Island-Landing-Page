@@ -1,17 +1,17 @@
-import OldHeroSection from "@/components/island/OldHeroSection";
-import OldFeaturesSection from "@/components/island/OldFeaturesSection";
-import OldEmotionalSection from "@/components/island/OldEmotionalSection";
-import OldTransparencySection from "@/components/island/OldTransparencySection";
-import OldFAQSection from "@/components/island/OldFAQSection";
+import HeroSection from "@/components/island/HeroSection";
+import FeaturesSection from "@/components/island/FeaturesSection";
+import EmotionalSection from "@/components/island/EmotionalSection";
+import TransparencySection from "@/components/island/TransparencySection";
+import FAQSection from "@/components/island/FAQSection";
 
 export default function IslandAppContent() {
     return (
         <div className="island-app-page">
-            <OldHeroSection />
-            <OldFeaturesSection />
-            <OldEmotionalSection />
-            <OldTransparencySection />
-            <OldFAQSection />
+            <HeroSection />
+            <FeaturesSection />
+            <EmotionalSection />
+            <TransparencySection />
+            <FAQSection />
         </div>
     );
 }

@@ -5,10 +5,14 @@ export interface TocItem {
 }
 
 export function generateAnchorId(text: string): string {
+    if (!text) return '';
+    
     return text
         .toLowerCase()
-        .replace(/[^\w\s]/gi, '')
-        .replace(/\s+/g, '-');
+        .replace(/[^\w\s-]/gu, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
 }
 
 export function getPlainText(richText?: { plain_text?: string }[]): string {
@@ -34,10 +38,10 @@ export function extractHeadingsFromBlocks(blocks: unknown[]): TocItem[] {
     if (!blocks || !Array.isArray(blocks)) return [];
     
     const headings: TocItem[] = [];
-    const MAX_ITEMS = 12;
+    const seenIds = new Set<string>();
 
     for (const block of blocks) {
-        if (headings.length >= MAX_ITEMS) break;
+        if (!block || typeof block !== 'object') continue;
 
         const b = block as {
             type?: string;
@@ -46,50 +50,52 @@ export function extractHeadingsFromBlocks(blocks: unknown[]): TocItem[] {
             heading_1?: { rich_text?: { plain_text?: string }[] };
             paragraph?: { rich_text?: { plain_text?: string }[] };
             callout?: { rich_text?: { plain_text?: string }[] };
-            bulleted_list_item?: { rich_text?: { plain_text?: string }[] };
         };
 
-        if (b.type === 'heading_2') {
+        let text = '';
+        let level = 2;
+
+        if (b.type === 'heading_1') {
+            const richText = b.heading_1?.rich_text;
+            text = getPlainText(richText);
+            level = 2;
+        } else if (b.type === 'heading_2') {
             const richText = b.heading_2?.rich_text;
-            const text = getPlainText(richText);
-            if (text.trim()) {
-                headings.push({
-                    id: generateAnchorId(text),
-                    text: text.trim(),
-                    level: 2,
-                });
-            }
+            text = getPlainText(richText);
+            level = 2;
         } else if (b.type === 'heading_3') {
             const richText = b.heading_3?.rich_text;
-            const text = getPlainText(richText);
-            if (text.trim()) {
-                headings.push({
-                    id: generateAnchorId(text),
-                    text: text.trim(),
-                    level: 3,
-                });
-            }
-        } else if (b.type === 'heading_1') {
-            const richText = b.heading_1?.rich_text;
-            const text = getPlainText(richText);
-            if (text.trim()) {
-                headings.push({
-                    id: generateAnchorId(text),
-                    text: text.trim(),
-                    level: 2,
-                });
-            }
+            text = getPlainText(richText);
+            level = 3;
         } else if (b.type === 'paragraph' || b.type === 'callout') {
             const richText = b[b.type]?.rich_text;
-            const text = getPlainText(richText);
+            text = getPlainText(richText);
             
             if (text.trim() && isEmojiMarker(text) && !isNormalSentence(text)) {
-                headings.push({
-                    id: generateAnchorId(text),
-                    text: text.trim(),
-                    level: 3,
-                });
+                level = 3;
+            } else {
+                text = '';
             }
+        }
+
+        if (text.trim()) {
+            let id = generateAnchorId(text);
+            
+            // Handle duplicate IDs
+            if (seenIds.has(id)) {
+                let counter = 2;
+                while (seenIds.has(`${id}-${counter}`)) {
+                    counter++;
+                }
+                id = `${id}-${counter}`;
+            }
+            seenIds.add(id);
+
+            headings.push({
+                id,
+                text: text.trim(),
+                level,
+            });
         }
     }
 

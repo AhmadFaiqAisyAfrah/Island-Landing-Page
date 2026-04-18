@@ -20,6 +20,8 @@ export function TableOfContents({ items }: TableOfContentsProps) {
         if (!isMounted || typeof window === 'undefined') return;
         if (error) return;
 
+        if (!items || items.length === 0) return;
+
         try {
             const observer = new IntersectionObserver(
                 (entries) => {
@@ -29,10 +31,13 @@ export function TableOfContents({ items }: TableOfContentsProps) {
                         }
                     });
                 },
-                { rootMargin: '-80px 0px -80% 0px' }
+                { 
+                    rootMargin: '-100px 0px -70% 0px',
+                    threshold: 0,
+                }
             );
 
-            items?.forEach((item) => {
+            items.forEach((item) => {
                 if (!item?.id) return;
                 const element = document.getElementById(item.id);
                 if (element) observer.observe(element);
@@ -60,49 +65,18 @@ export function TableOfContents({ items }: TableOfContentsProps) {
     if (error) return null;
 
     return (
-        <nav
-            style={{
-                backgroundColor: '#f9f9f9',
-                borderRadius: '8px',
-                padding: '20px 24px',
-                marginBottom: '32px',
-            }}
-        >
-            <h2
-                style={{
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    textTransform: 'uppercase' as const,
-                    letterSpacing: '1px',
-                    color: '#666',
-                    marginBottom: '16px',
-                }}
-            >
-                Daftar Isi
-            </h2>
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        <nav className="toc-container">
+            <h2 className="toc-title">Daftar Isi</h2>
+            <ul className="toc-list">
                 {items.map((item) => (
-                    <li key={item.id}>
+                    <li key={item.id} className={`toc-item level-${item.level}`}>
                         <a
                             href={`#${item.id}`}
                             onClick={(e) => {
                                 e.preventDefault();
                                 handleClick(item.id);
                             }}
-                            style={{
-                                display: 'block',
-                                padding: item.level === 3 ? '6px 0 6px 16px' : '6px 0',
-                                fontSize: item.level === 3 ? '14px' : '15px',
-                                color: activeId === item.id ? '#e63946' : '#444',
-                                textDecoration: 'none',
-                                borderLeft:
-                                    item.level === 3
-                                        ? '2px solid #ddd'
-                                        : 'none',
-                                marginLeft: item.level === 3 ? '8px' : '0',
-                                transition: 'color 0.2s ease',
-                                cursor: 'pointer',
-                            }}
+                            className={`toc-link ${activeId === item.id ? 'active' : ''}`}
                         >
                             {item.text}
                         </a>

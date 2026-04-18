@@ -1,8 +1,9 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getPostBySlug, getPublishedPosts, type BlogPost } from '@/lib/notion';
+import { getPostBySlug, getPublishedPosts, extractReferencesFromBlocks, type BlogPost, type Reference } from '@/lib/notion';
 import { extractHeadingsFromBlocks, generateAnchorId, isEmojiSection, type TocItem } from '@/lib/notion-toc';
+import { ReferencesSection } from '@/components/ReferencesSection';
 import { ArrowLeft } from 'lucide-react';
 import { Client } from '@notionhq/client';
 import { ArticleCoverImage } from '@/components/ImageWithCaption';
@@ -331,7 +332,7 @@ const styles = {
         marginBottom: '12px',
     } as React.CSSProperties,
     title: {
-        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontFamily: 'var(--font-heading)',
         fontSize: '44px',
         fontWeight: 700,
         lineHeight: 1.15,
@@ -358,7 +359,7 @@ const styles = {
         marginBottom: '48px',
     } as React.CSSProperties,
     content: {
-        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontFamily: 'var(--font-heading)',
         fontSize: '20px',
         lineHeight: 1.8,
         color: '#111',
@@ -370,7 +371,7 @@ const styles = {
         height: '24px',
     } as React.CSSProperties,
     h1: {
-        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontFamily: 'var(--font-heading)',
         fontSize: '32px',
         fontWeight: 700,
         lineHeight: 1.3,
@@ -380,7 +381,7 @@ const styles = {
         scrollMarginTop: '100px',
     } as React.CSSProperties,
     h2: {
-        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontFamily: 'var(--font-heading)',
         fontSize: '26px',
         fontWeight: 700,
         lineHeight: 1.3,
@@ -390,7 +391,7 @@ const styles = {
         scrollMarginTop: '100px',
     } as React.CSSProperties,
     h3: {
-        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontFamily: 'var(--font-heading)',
         fontSize: '22px',
         fontWeight: 700,
         lineHeight: 1.3,
@@ -490,7 +491,7 @@ const styles = {
         borderTop: '1px solid #eee',
     } as React.CSSProperties,
     relatedTitle: {
-        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontFamily: 'var(--font-heading)',
         fontSize: '28px',
         fontWeight: 700,
         color: '#111',
@@ -524,7 +525,7 @@ const styles = {
         marginBottom: '8px',
     } as React.CSSProperties,
     articleCardTitle: {
-        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontFamily: 'var(--font-heading)',
         fontSize: '18px',
         fontWeight: 700,
         color: '#111',
@@ -542,7 +543,7 @@ const styles = {
         textAlign: 'center' as const,
     } as React.CSSProperties,
     ctaTitle: {
-        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontFamily: 'var(--font-heading)',
         fontSize: '28px',
         fontWeight: 700,
         color: '#111',
@@ -617,10 +618,18 @@ export default async function BlogPostPage(
     let contentError = false;
     let tocItems: TocItem[] = [];
     let relatedArticles: BlogPost[] = [];
+    let references: Reference[] = [];
 
     try {
         blocks = await getBlocks(post.id);
         tocItems = extractHeadingsFromBlocks(blocks);
+        console.log('[TOC] Extracted headings:', tocItems);
+        
+        // Extract references from content (only for published posts)
+        if (post.status === 'Published') {
+            const extractedRefs = extractReferencesFromBlocks(blocks);
+            references = extractedRefs.combinedReferences;
+        }
         
         const allPosts = await getPublishedPosts();
         relatedArticles = allPosts
@@ -755,6 +764,10 @@ export default async function BlogPostPage(
                         </div>
                     )}
                 </div>
+
+                {references.length > 0 && (
+                    <ReferencesSection references={references} />
+                )}
 
                 {relatedArticles.length > 0 && (
                     <section style={styles.relatedSection}>

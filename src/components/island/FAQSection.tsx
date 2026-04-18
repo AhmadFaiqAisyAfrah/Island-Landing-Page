@@ -50,13 +50,10 @@ export default function FAQSection() {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
     return (
-        <section
-            id="faq"
-            className="py-24 bg-gray-50"
-        >
-            <div className="mx-auto max-w-3xl px-6">
+        <section id="faq" className="py-24 bg-white">
+            <div className="max-w-3xl mx-auto px-6">
                 <div className="text-center space-y-4 mb-14">
-                    <span className="inline-block rounded-full bg-emerald-50 border border-emerald-200 px-4 py-1.5 text-xs font-medium text-emerald-700">
+                    <span className="inline-block rounded-full bg-emerald-100 border border-emerald-200 px-4 py-1.5 text-xs font-medium text-emerald-700">
                         💬 Questions?
                     </span>
                     <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
@@ -80,7 +77,7 @@ export default function FAQSection() {
                                         {faq.q}
                                     </span>
                                     <ChevronDown
-                                        className={`w-5 h-5 text-gray-500 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                                        className={`w-5 h-5 text-gray-400 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
                                     />
                                 </button>
                                 <div

@@ -406,7 +406,7 @@ export default function FlashcardViewer({
                         {onDeleteCard && (
                             <button
                                 onClick={() => setShowDeleteConfirm(true)}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--card-bg)] border border-[var(--border-color)] text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-gray-200 text-sm text-red-500 hover:bg-red-50 transition-colors"
                             >
                                 <Trash2 className="w-3.5 h-3.5" />
                                 Delete

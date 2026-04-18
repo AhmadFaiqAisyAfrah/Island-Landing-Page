@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/context/AuthContext";
-import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
     subsets: ["latin"],
     variable: "--font-sans",
+});
+
+const playfair = Playfair_Display({
+    subsets: ["latin"],
+    variable: "--font-heading",
+    display: "swap",
 });
 
 const LOGO_URL = "https://ik.imagekit.io/kv42h83lq/Salinan%20dari%20Secarik%20Semangat.%20(4).png";
@@ -83,7 +88,7 @@ export default function RootLayout({
     };
 
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang="en">
             <head>
                 <link rel="icon" type="image/png" sizes="32x32" href={LOGO_URL} />
                 <link rel="icon" type="image/png" sizes="180x180" href={LOGO_URL} />
@@ -99,14 +104,12 @@ export default function RootLayout({
                     crossOrigin="anonymous"
                 ></script>
             </head>
-            <body className={`${inter.variable} font-sans antialiased`}>
-                <ThemeProvider>
-                    <AuthProvider>
-                        <Navbar />
-                        <main>{children}</main>
-                        <Footer />
-                    </AuthProvider>
-                </ThemeProvider>
+            <body className={`${inter.variable} ${playfair.variable} font-sans antialiased bg-white`}>
+                <AuthProvider>
+                    <Navbar />
+                    <main>{children}</main>
+                    <Footer />
+                </AuthProvider>
             </body>
         </html>
     );
