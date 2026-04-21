@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import { Upload, Image, Download, X, FileText } from "lucide-react";
 
