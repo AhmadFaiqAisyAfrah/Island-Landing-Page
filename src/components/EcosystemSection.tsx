@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Gamepad2, Heart, ArrowRight } from "lucide-react";
+import { BookOpen, Gamepad2, Wrench, ArrowRight } from "lucide-react";
 
 const pillars = [
     {
@@ -17,11 +17,11 @@ const pillars = [
         color: "#2563eb",
     },
     {
-        icon: Heart,
-        title: "Island Charity",
-        description: "Real impact initiatives focused on clean water and nutrition in Indonesia's islands.",
-        href: "/charity",
-        color: "#dc2626",
+        icon: Wrench,
+        title: "Island Study Tools",
+        description: "Productivity tools including flashcards, pomodoro timer, and focus helpers.",
+        href: "/explore",
+        color: "#7c3aed",
     },
 ];
 
@@ -34,7 +34,7 @@ export default function EcosystemSection() {
                         The Island Ecosystem
                     </h2>
                     <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                        Three pillars working together to create meaningful impact
+                        Three pillars working together to help you learn, grow, and build skills
                     </p>
                 </div>
 

@@ -38,6 +38,63 @@ export const notionAPI = new NotionAPI({
 export const isNotionConfigured = Boolean(NOTION_TOKEN && DATABASE_ID);
 export { NOTION_TOKEN, DATABASE_ID, NOTION_PRODUCTS_DB_ID };
 
+// Company Pages Database
+const NOTION_DATABASE_ID_COMPANY = process.env.NOTION_DATABASE_ID_COMPANY || '';
+
+export interface CompanyPage {
+    id: string;
+    title: string;
+    slug: string;
+    order: number;
+}
+
+export async function getCompanyPages(): Promise<CompanyPage[]> {
+    if (!NOTION_DATABASE_ID_COMPANY || !NOTION_TOKEN) {
+        console.log('[Notion] Company DB not configured');
+        return [];
+    }
+
+    try {
+        const response = await notion.databases.query({
+            database_id: NOTION_DATABASE_ID_COMPANY,
+            filter: {
+                property: 'status',
+                select: {
+                    equals: 'Published',
+                },
+            },
+            sorts: [
+                {
+                    property: 'order',
+                    direction: 'ascending',
+                },
+            ],
+        });
+
+        const pages: CompanyPage[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const page of response.results as any[]) {
+            const props = page.properties as Record<string, unknown>;
+            const nameProp = props?.Name as { title?: Array<{ plain_text?: string }> } | undefined;
+            const slugProp = props?.slug as { rich_text?: Array<{ plain_text?: string }> } | undefined;
+            const orderProp = props?.order as { number?: number } | undefined;
+            
+            pages.push({
+                id: page.id,
+                title: nameProp?.title?.[0]?.plain_text || '',
+                slug: slugProp?.rich_text?.[0]?.plain_text || '',
+                order: orderProp?.number || 0,
+            });
+        }
+
+        console.log('[Notion] Company pages fetched:', pages.length);
+        return pages;
+    } catch (error) {
+        console.error('[Notion] Error fetching company pages:', error);
+        return [];
+    }
+}
+
 // Reference Types for Automatic Bibliography
 export interface Reference {
     author: string;

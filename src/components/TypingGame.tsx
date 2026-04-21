@@ -1077,7 +1077,7 @@ export default function TypingGame() {
 
                                 <button
                                     onClick={() => startGame(gameMode, timeLimit)}
-                                    className="w-full py-4 px-8 bg-[var(--accent-green)] text-white rounded-full font-semibold text-lg hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                                    className="w-full py-4 px-8 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-lg shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center gap-2"
                                 >
                                     <Play className="w-5 h-5" />
                                     Start Game

@@ -3,8 +3,6 @@
 import HeroSection from "@/components/HeroSection";
 import WhatIsIsland from "@/components/WhatIsIsland";
 import EcosystemSection from "@/components/EcosystemSection";
-import ImpactSection from "@/components/ImpactSection";
-import CharityHighlight from "@/components/CharityHighlight";
 import GamesPreview from "@/components/GamesPreview";
 import ArticlesPreview from "@/components/ArticlesPreview";
 import IslandAppSection from "@/components/IslandAppSection";
@@ -16,7 +14,7 @@ export default function Home() {
         name: 'Island',
         url: 'https://islandapp.id',
         logo: 'https://ik.imagekit.io/kv42h83lq/island-logo.png',
-        description: 'A digital platform focused on education, information, and real-world impact.',
+        description: 'A digital platform focused on education, knowledge, and personal growth.',
         sameAs: [
             'https://www.instagram.com/islandapp.id',
             'https://www.tiktok.com/@islandapp.id',
@@ -34,8 +32,6 @@ export default function Home() {
             <HeroSection />
             <WhatIsIsland />
             <EcosystemSection />
-            <ImpactSection />
-            <CharityHighlight />
             <GamesPreview />
             <ArticlesPreview />
             <IslandAppSection />

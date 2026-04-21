@@ -353,7 +353,7 @@ export default function PatternGame() {
 
                             <button
                                 onClick={() => startGame(gameMode)}
-                                className="w-full max-w-xs mx-auto py-3 px-6 bg-[var(--accent-green)] text-white rounded-full font-semibold text-base hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                                className="w-full max-w-xs mx-auto py-3 px-6 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-base shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center gap-2"
                             >
                                 <Play className="w-4 h-4" />
                                 Start Game

@@ -19,20 +19,20 @@ const playfair = Playfair_Display({
 const LOGO_URL = "https://ik.imagekit.io/kv42h83lq/Salinan%20dari%20Secarik%20Semangat.%20(4).png";
 
 export const metadata: Metadata = {
-    title: "Island — Learn, Focus, and Create Real Impact",
+    title: "Island — Learn, Focus, and Grow Your Skills",
     description:
-        "Explore knowledge, improve focus, and create meaningful impact. Island combines learning, productivity, and purpose in one platform.",
+        "Explore knowledge, improve focus, and build skills. Island combines learning, productivity, and brain training in one platform.",
     keywords: [
         "island",
         "education",
         "learning",
         "focus",
         "productivity",
-        "charity",
-        "impact",
         "articles",
         "games",
         "brain training",
+        "study tools",
+        "flashcards",
     ],
     icons: {
         icon: [
@@ -43,9 +43,9 @@ export const metadata: Metadata = {
         apple: LOGO_URL,
     },
     openGraph: {
-        title: "Island — Learn, Focus, and Create Real Impact",
+        title: "Island — Learn, Focus, and Grow Your Skills",
         description:
-            "Explore knowledge, improve focus, and create meaningful impact. Island combines learning, productivity, and purpose in one platform.",
+            "Explore knowledge, improve focus, and build skills. Island combines learning, productivity, and brain training in one platform.",
         type: "website",
         url: "https://islandapp.id",
         siteName: "Island",
@@ -60,9 +60,9 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: "summary",
-        title: "Island — Learn, Focus, and Create Real Impact",
+        title: "Island — Learn, Focus, and Grow Your Skills",
         description:
-            "Explore knowledge, improve focus, and create meaningful impact. Island combines learning, productivity, and purpose in one platform.",
+            "Explore knowledge, improve focus, and build skills. Island combines learning, productivity, and brain training in one platform.",
         images: [LOGO_URL],
     },
 };
@@ -78,7 +78,7 @@ export default function RootLayout({
         name: "Island",
         url: "https://islandapp.id",
         logo: LOGO_URL,
-        description: "Explore knowledge, improve focus, and create meaningful impact.",
+        description: "Explore knowledge, improve focus, and build skills.",
         sameAs: [
             "https://www.instagram.com/islandapp.id",
             "https://www.tiktok.com/@islandapp.id",

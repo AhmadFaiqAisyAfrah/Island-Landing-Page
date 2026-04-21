@@ -117,7 +117,7 @@ export default function HeroSection() {
                             <span
                                 className="block text-xl sm:text-2xl lg:text-xl xl:text-2xl font-normal mt-3 text-gray-600"
                             >
-                                A Platform for Knowledge, Growth, and Impact
+                                A Platform for Knowledge, Growth, and Learning
                             </span>
                         </motion.h1>
 
@@ -146,12 +146,12 @@ export default function HeroSection() {
                             </Link>
 
                             <Link
-                                href="/charity"
-                                className="group px-6 py-3 rounded-full font-semibold text-sm text-pink-600 whitespace-nowrap transition-all duration-200 ease-out hover:scale-105 hover:bg-pink-50 border-2 border-pink-200 bg-white"
+                                href="/explore"
+                                className="group px-6 py-3 rounded-full font-semibold text-sm text-emerald-700 whitespace-nowrap transition-all duration-200 ease-out hover:scale-105 hover:bg-emerald-50 border-2 border-emerald-200 bg-white"
                             >
                                 <span className="flex items-center justify-center gap-2">
-                                    <span className="text-base leading-none">💧</span>
-                                    <span>Support Impact</span>
+                                    <span className="text-base leading-none">🛠️</span>
+                                    <span>Explore Tools</span>
                                 </span>
                             </Link>
                         </motion.div>
@@ -173,7 +173,7 @@ export default function HeroSection() {
                             className="mt-6 text-center lg:text-left"
                         >
                             <p className="text-sm text-gray-500">
-                                Building knowledge, growth, and impact since 2026
+                                Building knowledge, growth, and skills since 2026
                             </p>
                         </motion.div>
                     </motion.div>

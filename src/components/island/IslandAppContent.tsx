@@ -3,6 +3,7 @@ import FeaturesSection from "@/components/island/FeaturesSection";
 import EmotionalSection from "@/components/island/EmotionalSection";
 import TransparencySection from "@/components/island/TransparencySection";
 import FAQSection from "@/components/island/FAQSection";
+import CompanySection from "@/components/island/CompanySection";
 
 export default function IslandAppContent() {
     return (
@@ -12,6 +13,7 @@ export default function IslandAppContent() {
             <EmotionalSection />
             <TransparencySection />
             <FAQSection />
+            <CompanySection />
         </div>
     );
 }

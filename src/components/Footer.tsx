@@ -1,6 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import ThemeAwareLogo from "./ThemeAwareLogo";
+import { useEffect, useState } from "react";
+
+interface CompanyPage {
+    id: string;
+    title: string;
+    slug: string;
+}
 
 const footerSections: { title: string; social?: boolean; links: { label: string; href: string; icon?: string; badge?: string }[] }[] = [
     {
@@ -42,25 +51,6 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
         ],
     },
     {
-        title: "Charity",
-        links: [
-            { label: "Island Charity", href: "/charity" },
-            { label: "Air Bersih", href: "/charity" },
-            { label: "Nutrisi & Pangan", href: "/charity" },
-            { label: "Program Donasi", href: "/charity" },
-        ],
-    },
-    {
-        title: "Company",
-        links: [
-            { label: "About", href: "/about" },
-            { label: "Privacy Policy", href: "/privacy" },
-            { label: "Terms & Conditions", href: "/terms" },
-            { label: "Data Deletion", href: "/data-deletion" },
-            { label: "Contact", href: "/contact" },
-        ],
-    },
-    {
         title: "Shop",
         links: [
             { label: "All Products", href: "/shop" },
@@ -73,6 +63,15 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
 ];
 
 export default function Footer() {
+    const [companyPages, setCompanyPages] = useState<CompanyPage[]>([]);
+
+    useEffect(() => {
+        fetch("/api/company")
+            .then((res) => res.json())
+            .then((data) => setCompanyPages(data))
+            .catch((err) => console.error(err));
+    }, []);
+
     return (
         <footer className="bg-gray-50 border-t border-gray-200">
             <div className="mx-auto max-w-6xl px-6 py-12">
@@ -124,6 +123,35 @@ export default function Footer() {
                                 </ul>
                             </div>
                         ))}
+                        
+                        {/* Company Section - Static with CMS fallback */}
+                        <div className="text-center md:text-left">
+                            <h4 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wider font-serif">
+                                Company
+                            </h4>
+                            <ul className="space-y-3">
+                                {companyPages.length > 0 ? (
+                                    companyPages.map((page: CompanyPage) => (
+                                        <li key={page.id}>
+                                            <Link
+                                                href={`/company/${page.slug}`}
+                                                className="text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+                                            >
+                                                {page.title}
+                                            </Link>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <>
+                                        <li><Link href="/company/about" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">About</Link></li>
+                                        <li><Link href="/company/privacy" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Privacy Policy</Link></li>
+                                        <li><Link href="/company/terms" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Terms & Conditions</Link></li>
+                                        <li><Link href="/company/data-deletion" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Data Deletion</Link></li>
+                                        <li><Link href="/company/contact" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Contact</Link></li>
+                                    </>
+                                )}
+                            </ul>
+                        </div>
                     </div>
 
                     <p className="text-xs text-gray-500">
