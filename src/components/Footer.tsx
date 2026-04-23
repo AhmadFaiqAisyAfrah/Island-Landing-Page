@@ -71,11 +71,11 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
     {
         title: "Converter Tools",
         links: [
+            { label: "All Tools", href: "/tools", badge: "NEW" },
+            { label: "Image Tools", href: "/tools/image" },
+            { label: "PDF Tools", href: "/tools/pdf" },
             { label: "JPG to PDF", href: "/tools/jpg-to-pdf" },
             { label: "PDF to JPG", href: "/tools/pdf-to-jpg" },
-            { label: "JPG to PNG", href: "/tools/jpg-to-png" },
-            { label: "Image Converter", href: "/tools/image-converter" },
-            { label: "Merge PDF", href: "/tools/merge-pdf" },
         ],
     },
 ];
