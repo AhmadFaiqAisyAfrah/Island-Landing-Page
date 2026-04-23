@@ -68,6 +68,16 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
             { label: "Cart", href: "/shop/cart" },
         ],
     },
+    {
+        title: "Converter Tools",
+        links: [
+            { label: "JPG to PDF", href: "/tools/jpg-to-pdf" },
+            { label: "PDF to JPG", href: "/tools/pdf-to-jpg" },
+            { label: "JPG to PNG", href: "/tools/jpg-to-png" },
+            { label: "Image Converter", href: "/tools/image-converter" },
+            { label: "Merge PDF", href: "/tools/merge-pdf" },
+        ],
+    },
 ];
 
 export default function Footer() {
