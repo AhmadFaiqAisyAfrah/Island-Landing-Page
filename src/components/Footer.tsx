@@ -9,6 +9,7 @@ interface CompanyPage {
     id: string;
     title: string;
     slug: string;
+    order: number;
 }
 
 const footerSections: { title: string; social?: boolean; links: { label: string; href: string; icon?: string; badge?: string }[] }[] = [

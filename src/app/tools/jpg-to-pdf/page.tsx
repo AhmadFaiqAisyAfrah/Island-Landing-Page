@@ -1,4 +1,4 @@
-import JpgToPdfClient from "@/components/tools/JpgToPdfClient";
+import JpgToPdf from "@/components/tools/JpgToPdf";
 
 export const metadata = {
   title: "JPG to PDF - Island Tools",
@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <JpgToPdfClient />;
+  return <JpgToPdf />;
 }

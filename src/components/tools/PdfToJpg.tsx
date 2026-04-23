@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import * as pdfjsLib from "pdfjs-dist";
 import { Upload, Image, Download, X, FileText } from "lucide-react";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs";
 
 export default function PdfToJpg() {
   const [file, setFile] = useState<File | null>(null);
@@ -13,6 +9,15 @@ export default function PdfToJpg() {
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [pdfjsLib, setPdfjsLib] = useState<typeof import("pdfjs-dist") | null>(null);
+
+  useEffect(() => {
+    import("pdfjs-dist").then((lib) => {
+      lib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs";
+      setPdfjsLib(lib);
+    });
+  }, []);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -31,7 +36,7 @@ export default function PdfToJpg() {
   };
 
   const convert = async () => {
-    if (!file) return;
+    if (!file || !pdfjsLib) return;
 
     setLoading(true);
     setError("");
@@ -78,14 +83,15 @@ export default function PdfToJpg() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-12">
-      <div className="text-center mb-10">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl mb-4">
-          <Image className="w-8 h-8 text-blue-600" />
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1 max-w-2xl mx-auto py-12">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl mb-4">
+            <Image className="w-8 h-8 text-blue-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3 font-serif">PDF to JPG</h1>
+          <p className="text-gray-600">Extract images from PDF documents instantly</p>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-3 font-serif">PDF to JPG</h1>
-        <p className="text-gray-600">Extract images from PDF documents instantly</p>
-      </div>
 
       {!file ? (
         <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-8">
@@ -134,7 +140,7 @@ export default function PdfToJpg() {
       {file && !images.length && (
         <button
           onClick={convert}
-          disabled={loading}
+          disabled={loading || !pdfjsLib}
           className="w-full py-4 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? (
@@ -199,8 +205,9 @@ export default function PdfToJpg() {
       )}
 
       <p className="text-center text-sm text-gray-500 mt-6">
-        All conversions happen in your browser. Your files never leave your device.
-      </p>
+          All conversions happen in your browser. Your files never leave your device.
+        </p>
+      </div>
     </div>
   );
 }

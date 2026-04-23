@@ -9,6 +9,10 @@ const NOTION_TOKEN_V2 = process.env.NOTION_TOKEN_V2 || '';
 const NOTION_PRODUCTS_DB_ID = process.env.NOTION_PRODUCTS_DB_ID || '';
 const NOTION_API_KEY_PRODUCTS = process.env.NOTION_API_KEY_PRODUCTS || '';
 
+// Company CMS environment variables
+const NOTION_TOKEN_COMPANY_INFORMATION = process.env.NOTION_TOKEN_COMPANY_INFORMATION || '';
+const NOTION_DATABASE_ID_COMPANY = process.env.NOTION_DATABASE_ID_COMPANY || '';
+
 // Debug logging in development
 if (process.env.NODE_ENV === 'development') {
     console.log('[Notion] NOTION_TOKEN:', NOTION_TOKEN ? '✓ Set' : '✗ Missing');
@@ -16,6 +20,8 @@ if (process.env.NODE_ENV === 'development') {
     console.log('[Notion] NOTION_TOKEN_V2:', NOTION_TOKEN_V2 ? '✓ Set' : '✗ Missing');
     console.log('[Notion] NOTION_PRODUCTS_DB_ID:', NOTION_PRODUCTS_DB_ID ? '✓ Set' : '✗ Missing');
     console.log('[Notion] NOTION_API_KEY_PRODUCTS:', NOTION_API_KEY_PRODUCTS ? '✓ Set' : '✗ Missing');
+    console.log('[Notion] NOTION_TOKEN_COMPANY_INFORMATION:', NOTION_TOKEN_COMPANY_INFORMATION ? '✓ Set' : '✗ Missing');
+    console.log('[Notion] NOTION_DATABASE_ID_COMPANY:', NOTION_DATABASE_ID_COMPANY ? '✓ Set' : '✗ Missing');
 }
 
 // Official client for querying databases (only initialize if token exists)
@@ -28,6 +34,11 @@ export const notionProducts = new Client({
     auth: NOTION_API_KEY_PRODUCTS || NOTION_TOKEN || undefined,
 });
 
+// Company CMS client
+export const notionCompany = new Client({
+    auth: NOTION_TOKEN_COMPANY_INFORMATION || NOTION_TOKEN || undefined,
+});
+
 // Unofficial client for react-notion-x to get full block data
 export const notionAPI = new NotionAPI({
     activeUser: process.env.NOTION_ACTIVE_USER || undefined,
@@ -38,45 +49,71 @@ export const notionAPI = new NotionAPI({
 export const isNotionConfigured = Boolean(NOTION_TOKEN && DATABASE_ID);
 export { NOTION_TOKEN, DATABASE_ID, NOTION_PRODUCTS_DB_ID };
 
-// Company Pages Database
-const NOTION_DATABASE_ID_COMPANY = process.env.NOTION_DATABASE_ID_COMPANY || '';
+// Company Pages Database - Debug environment access
+console.log('[Notion] 🔍 ENV DEBUG - NOTION_DATABASE_ID_COMPANY:', NOTION_DATABASE_ID_COMPANY ? 'SET ✓' : 'MISSING ✗');
+console.log('[Notion] 🔍 ENV DEBUG - NOTION_TOKEN_COMPANY_INFORMATION:', NOTION_TOKEN_COMPANY_INFORMATION ? 'SET ✓' : 'MISSING ✗');
 
 export interface CompanyPage {
     id: string;
     title: string;
     slug: string;
     order: number;
+    contentHtml?: string;
 }
 
 export async function getCompanyPages(): Promise<CompanyPage[]> {
-    if (!NOTION_DATABASE_ID_COMPANY || !NOTION_TOKEN) {
-        console.log('[Notion] Company DB not configured');
+    if (!NOTION_DATABASE_ID_COMPANY) {
+        console.log('[Notion] ⚠️ NOTION_DATABASE_ID_COMPANY is empty');
         return [];
     }
 
     try {
-        const response = await notion.databases.query({
+        console.log('[Notion] Querying company DB:', NOTION_DATABASE_ID_COMPANY);
+        console.log('[Notion] Auth token:', NOTION_TOKEN_COMPANY_INFORMATION ? 'SET' : 'USE_MAIN_TOKEN');
+        
+        // First, get all pages without filter to see what's there
+        const allResponse = await notionCompany.databases.query({
             database_id: NOTION_DATABASE_ID_COMPANY,
-            filter: {
-                property: 'status',
-                select: {
-                    equals: 'Published',
-                },
-            },
-            sorts: [
-                {
-                    property: 'order',
-                    direction: 'ascending',
-                },
-            ],
         });
+        
+        console.log('[Notion] Total pages in DB:', allResponse.results.length);
+        
+        // Log all properties from first page for debugging
+        if (allResponse.results.length > 0) {
+            const firstPage = allResponse.results[0] as Record<string, unknown>;
+            const props = firstPage.properties as Record<string, { type: string }>;
+            console.log('[Notion] First page properties:', Object.keys(props || {}).join(', '));
+            console.log('[Notion] Property types:', Object.entries(props || {}).map(([k, v]) => `${k}:${v.type}`).join(', '));
+        }
+        
+        // Try unfiltered first, then apply filters
+        let response = allResponse;
+        
+        try {
+            response = await notionCompany.databases.query({
+                database_id: NOTION_DATABASE_ID_COMPANY,
+                filter: {
+                    property: 'status',
+                    select: { equals: 'published' },
+                },
+            });
+            console.log('[Notion] Filtered results:', response.results.length);
+        } catch (filterError) {
+            console.log('[Notion] Filter failed, using unfiltered results:', allResponse.results.length);
+        }
 
         const pages: CompanyPage[] = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         for (const page of response.results as any[]) {
             const props = page.properties as Record<string, unknown>;
-            const nameProp = props?.Name as { title?: Array<{ plain_text?: string }> } | undefined;
-            const slugProp = props?.slug as { rich_text?: Array<{ plain_text?: string }> } | undefined;
+            
+            // Try multiple property name variations
+            const namePropRaw = props?.Name || props?.Title || props?.name || props?.title;
+            const nameProp = namePropRaw as { title?: Array<{ plain_text?: string }> } | undefined;
+            
+            const slugPropRaw = props?.slug || props?.Slug || props?.URL;
+            const slugProp = slugPropRaw as { rich_text?: Array<{ plain_text?: string }> } | undefined;
+            
             const orderProp = props?.order as { number?: number } | undefined;
             
             pages.push({
@@ -88,10 +125,58 @@ export async function getCompanyPages(): Promise<CompanyPage[]> {
         }
 
         console.log('[Notion] Company pages fetched:', pages.length);
+        console.log('[Notion] Company pages:', pages.map(p => p.slug));
         return pages;
     } catch (error) {
         console.error('[Notion] Error fetching company pages:', error);
         return [];
+    }
+}
+
+export async function getCompanyPageBySlug(slug: string): Promise<CompanyPage | null> {
+    if (!NOTION_DATABASE_ID_COMPANY) {
+        console.log('[Notion] ⚠️ NOTION_DATABASE_ID_COMPANY is empty');
+        return null;
+    }
+
+    try {
+        console.log('[Notion] Fetching company page by slug:', slug);
+        
+        // Query all pages and find by slug
+        const response = await notionCompany.databases.query({
+            database_id: NOTION_DATABASE_ID_COMPANY,
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const page of response.results as any[]) {
+            const props = page.properties as Record<string, unknown>;
+            
+            const slugPropRaw = props?.slug || props?.Slug || props?.URL;
+            const slugProp = slugPropRaw as { rich_text?: Array<{ plain_text?: string }> } | undefined;
+            const pageSlug = slugProp?.rich_text?.[0]?.plain_text || '';
+
+            if (pageSlug.toLowerCase() === slug.toLowerCase()) {
+                console.log('[Notion] Found matching page:', pageSlug);
+                
+                const namePropRaw = props?.Name || props?.Title || props?.name || props?.title;
+                const nameProp = namePropRaw as { title?: Array<{ plain_text?: string }> } | undefined;
+                
+                const orderProp = props?.order as { number?: number } | undefined;
+                
+                return {
+                    id: page.id,
+                    title: nameProp?.title?.[0]?.plain_text || '',
+                    slug: pageSlug,
+                    order: orderProp?.number || 0,
+                };
+            }
+        }
+
+        console.log('[Notion] No page found with slug:', slug);
+        return null;
+    } catch (error) {
+        console.error('[Notion] Error fetching company page by slug:', error);
+        return null;
     }
 }
 

@@ -107,7 +107,7 @@ export default function RootLayout({
             <body className={`${inter.variable} ${playfair.variable} font-sans antialiased bg-white`}>
                 <AuthProvider>
                     <Navbar />
-                    <main>{children}</main>
+                    <main className="min-h-screen pt-16">{children}</main>
                     <Footer />
                 </AuthProvider>
             </body>
