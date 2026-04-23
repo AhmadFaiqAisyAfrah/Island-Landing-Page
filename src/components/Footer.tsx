@@ -45,13 +45,6 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
         ],
     },
     {
-        title: "Converter Tools",
-        links: [
-            { label: "JPG to PDF", href: "/tools/jpg-to-pdf" },
-            { label: "PDF to JPG", href: "/tools/pdf-to-jpg" },
-        ],
-    },
-    {
         title: "Articles",
         links: [
             { label: "All Articles", href: "/articles" },

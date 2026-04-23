@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Image, FileStack, Scissors, FileLock } from "lucide-react";
+import { FileText, Image, FileStack, Scissors, Minimize2, FileEdit, Table } from "lucide-react";
 
 export const metadata = {
   title: "PDF Tools - Island Tools",
@@ -39,8 +39,29 @@ const tools = [
     href: "/tools/compress-pdf",
     title: "Compress PDF",
     description: "Reduce PDF file size",
-    icon: FileLock,
+    icon: Minimize2,
     color: "bg-red-100 text-red-600",
+  },
+  {
+    href: "/tools/pdf-to-word",
+    title: "PDF to Word",
+    description: "Convert PDF to DOCX",
+    icon: FileEdit,
+    color: "bg-indigo-100 text-indigo-600",
+  },
+  {
+    href: "/tools/word-to-pdf",
+    title: "Word to PDF",
+    description: "Convert DOCX to PDF",
+    icon: FileEdit,
+    color: "bg-indigo-100 text-indigo-600",
+  },
+  {
+    href: "/tools/pdf-to-excel",
+    title: "PDF to Excel",
+    description: "Extract tables to Excel",
+    icon: Table,
+    color: "bg-green-100 text-green-600",
   },
 ];
 

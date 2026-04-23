@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Image, ArrowRightLeft, FileImage, FileStack, Shrink } from "lucide-react";
+import { FileText, Image, ArrowRightLeft, Shrink, Maximize2 } from "lucide-react";
 
 export const metadata = {
   title: "Image Tools - Island Tools",
@@ -22,6 +22,27 @@ const tools = [
     color: "bg-blue-100 text-blue-600",
   },
   {
+    href: "/tools/png-to-jpg",
+    title: "PNG to JPG",
+    description: "Convert PNG to JPG format",
+    icon: Image,
+    color: "bg-pink-100 text-pink-600",
+  },
+  {
+    href: "/tools/jpg-to-webp",
+    title: "JPG to WebP",
+    description: "Convert to WebP format",
+    icon: ArrowRightLeft,
+    color: "bg-violet-100 text-violet-600",
+  },
+  {
+    href: "/tools/webp-to-jpg",
+    title: "WebP to JPG",
+    description: "Convert WebP to JPG format",
+    icon: ArrowRightLeft,
+    color: "bg-teal-100 text-teal-600",
+  },
+  {
     href: "/tools/image-converter",
     title: "Image Converter",
     description: "Convert between JPG, PNG, WebP",
@@ -29,15 +50,8 @@ const tools = [
     color: "bg-purple-100 text-purple-600",
   },
   {
-    href: "/tools/png-to-jpg",
-    title: "PNG to JPG",
-    description: "Convert PNG to JPG format",
-    icon: FileImage,
-    color: "bg-pink-100 text-pink-600",
-  },
-  {
     href: "/tools/compress-image",
-    title: "Compress Image",
+    title: "Image Compressor",
     description: "Reduce image file size",
     icon: Shrink,
     color: "bg-orange-100 text-orange-600",
@@ -46,7 +60,7 @@ const tools = [
     href: "/tools/resize-image",
     title: "Resize Image",
     description: "Change image dimensions",
-    icon: FileStack,
+    icon: Maximize2,
     color: "bg-cyan-100 text-cyan-600",
   },
 ];
