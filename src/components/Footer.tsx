@@ -74,8 +74,6 @@ const footerSections: { title: string; social?: boolean; links: { label: string;
             { label: "All Tools", href: "/tools", badge: "NEW" },
             { label: "Image Tools", href: "/tools/image" },
             { label: "PDF Tools", href: "/tools/pdf" },
-            { label: "JPG to PDF", href: "/tools/jpg-to-pdf" },
-            { label: "PDF to JPG", href: "/tools/pdf-to-jpg" },
         ],
     },
 ];
